@@ -1,0 +1,81 @@
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "À propos",
+  description:
+    "L'association MEEED établit et diffuse un savoir-faire sur le maraîchage efficient en eau et en énergie décarbonée.",
+  path: "/a-propos",
+});
+
+export default function AboutPage() {
+  return (
+    <div className="container-meeed py-12">
+      <h1 className="text-3xl sm:text-4xl">À propos de MEEED</h1>
+      <div className="mt-4 h-1 w-24 rounded-full bg-accent" />
+
+      <div className="prose prose-neutral mt-8 max-w-3xl text-primary/80">
+        <p className="lead text-lg text-primary/70">
+          Association loi 1901 d&apos;intérêt général — Maraichage Efficient en Eau et en
+          Energie Décarbonée.
+        </p>
+
+        <h2 className="text-xl font-semibold text-primary-dark">Notre objet</h2>
+        <p>L&apos;association MEEED a pour objet :</p>
+        <ul className="list-disc space-y-3 pl-5">
+          <li>
+            Établir, décrire et maintenir un savoir-faire sur des solutions et moyens
+            technologiques applicables à un maraîchage de petite et moyenne dimension, visant
+            un usage efficient de l&apos;eau et des énergies décarbonées.
+          </li>
+          <li>
+            Communiquer, informer et former sur ces solutions afin de diffuser ce
+            savoir-faire auprès du monde agricole, en France et dans l&apos;espace
+            francophone.
+          </li>
+          <li>
+            Développer et faire évoluer les solutions déjà connues pour améliorer les
+            consommations d&apos;eau et les bilans carbone, par des alternatives innovantes et
+            plus performantes — et, quand c&apos;est possible, concevoir des prototypes adaptés,
+            plus performants ou moins chers, pour une diffusion plus large.
+          </li>
+          <li>
+            Agir de façon générale sur toutes les activités liées aux énergies renouvelables,
+            à l&apos;autonomie énergétique, à la décarbonation et à l&apos;optimisation des
+            usages de l&apos;eau et de l&apos;énergie.
+          </li>
+        </ul>
+
+        <h2 className="mt-10 text-xl font-semibold text-primary-dark">Notre approche</h2>
+        <p>
+          MEEED est une équipe de bénévoles qui imagine des projets pragmatiques et
+          réplicables pour apporter à la culture maraîchère des solutions innovantes sur
+          l&apos;eau et l&apos;énergie.
+        </p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            <strong>Des idées techniques</strong> pour réduire la consommation d&apos;eau et
+            la dépendance aux énergies fossiles.
+          </li>
+          <li>
+            <strong>Des dossiers réplicables</strong> : une fois nos projets testés, les
+            documents de création sont mis à disposition.
+          </li>
+          <li>
+            <strong>Des formations</strong> sur les sujets techniques et les réalisations de
+            nos projets.
+          </li>
+        </ul>
+
+        <p className="mt-6">
+          Nous pouvons vous accompagner pour répliquer l&apos;un de nos projets ou travailler
+          sur le vôtre avec nos compétences.{" "}
+          <a href="/contact" className="font-medium text-accent-dark hover:underline">
+            Contactez-nous
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  );
+}

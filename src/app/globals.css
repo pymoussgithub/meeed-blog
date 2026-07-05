@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-primary: #292f36;
+  --color-primary-dark: #1f2329;
+  --color-accent: #4ecdc4;
+  --color-accent-dark: #3b9a93;
+  --color-accent-blue: #4ebdf5;
+  --color-accent-green: #20c997;
+  --color-bg-soft: #d3f3f0;
+
+  --font-heading: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Roboto", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-primary antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    @apply font-bold text-primary-dark;
+  }
+}
+
+@layer utilities {
+  .container-meeed {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* TipTap article editor */
+  .article-editor-surface .ProseMirror {
+    @apply min-h-[18rem] px-4 py-4 text-[15px] leading-relaxed text-primary outline-none;
+  }
+
+  .article-editor-surface .ProseMirror > * + * {
+    margin-top: 0.75em;
+  }
+
+  .article-editor-surface .ProseMirror h2 {
+    @apply mt-5 text-xl font-bold text-primary-dark;
+  }
+
+  .article-editor-surface .ProseMirror h3 {
+    @apply mt-4 text-lg font-semibold text-primary-dark;
+  }
+
+  .article-editor-surface .ProseMirror p.is-editor-empty:first-child::before {
+    @apply pointer-events-none float-left h-0 text-primary/35;
+    content: attr(data-placeholder);
+  }
+
+  .article-editor-surface .ProseMirror a {
+    @apply text-accent-dark underline decoration-accent/40 underline-offset-2;
+  }
+
+  .article-editor-surface .ProseMirror blockquote {
+    @apply border-l-4 border-accent/40 pl-4 italic text-primary/80;
+  }
+
+  .article-editor-surface .ProseMirror ul {
+    @apply list-disc pl-6;
+  }
+
+  .article-editor-surface .ProseMirror ol {
+    @apply list-decimal pl-6;
+  }
+
+  .article-editor-surface .ProseMirror img {
+    @apply my-4 max-w-full rounded-xl shadow-sm;
+  }
+
+  .article-editor-surface .ProseMirror img.ProseMirror-selectednode {
+    @apply ring-2 ring-accent ring-offset-2;
+  }
+
+  .article-editor-surface .ProseMirror:focus {
+    @apply outline-none;
+  }
+}

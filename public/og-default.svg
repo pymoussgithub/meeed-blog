@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="MEEED">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d3f3f0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="80" y="280" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="700" fill="#292f36">MEEED</text>
+  <text x="80" y="380" font-family="Arial, Helvetica, sans-serif" font-size="36" fill="#3b9a93">Maraichage Efficient en Eau et en Energie Décarbonée</text>
+  <rect x="80" y="420" width="160" height="8" rx="4" fill="#4ecdc4"/>
+</svg>

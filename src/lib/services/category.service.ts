@@ -1,0 +1,78 @@
+import { ArticleStatus } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import type { CreateCategoryInput, UpdateCategoryInput } from "@/lib/validations/category";
+
+function publishedArticleWhere() {
+  return {
+    status: ArticleStatus.PUBLISHED,
+    publishedAt: { lte: new Date() },
+  };
+}
+
+export async function getAllCategories() {
+  return prisma.category.findMany({
+    orderBy: { sortOrder: "asc" },
+  });
+}
+
+export async function getPublishedCategories() {
+  return prisma.category.findMany({
+    where: {
+      articles: {
+        some: {
+          article: publishedArticleWhere(),
+        },
+      },
+    },
+    orderBy: { sortOrder: "asc" },
+    include: {
+      project: { select: { slug: true, isActive: true } },
+    },
+  });
+}
+
+export async function getCategoriesForArticleForm(selectedCategoryIds: string[] = []) {
+  const categories = await prisma.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: {
+      project: { select: { isActive: true } },
+    },
+  });
+
+  return categories
+    .filter(
+      (category) =>
+        !category.project ||
+        category.project.isActive ||
+        selectedCategoryIds.includes(category.id),
+    )
+    .map(({ project, ...category }) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      isProject: Boolean(project),
+    }));
+}
+
+export async function getCategoryBySlug(slug: string) {
+  return prisma.category.findUnique({
+    where: { slug },
+  });
+}
+
+export async function getCategoryById(id: string) {
+  return prisma.category.findUnique({
+    where: { id },
+  });
+}
+
+export async function createCategory(data: CreateCategoryInput) {
+  return prisma.category.create({ data });
+}
+
+export async function updateCategory(id: string, data: UpdateCategoryInput) {
+  return prisma.category.update({
+    where: { id },
+    data,
+  });
+}

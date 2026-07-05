@@ -1,0 +1,52 @@
+{
+  "name": "MEEED Magazine",
+  "description": "Site magazine de l'association MEEED — maraîchage efficient en eau et énergie décarbonée.",
+  "website": "https://meeed.fr",
+  "repository": "https://github.com/meeed/meeed-magazine",
+  "logo": "https://meeed.fr/logo-meeed.svg",
+  "keywords": ["nextjs", "magazine", "meeed", "agriculture"],
+  "stack": "heroku-24",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "env": {
+    "NEXTAUTH_URL": {
+      "description": "URL publique du site (ex. https://meeed.fr)",
+      "value": "https://meeed.fr",
+      "required": true
+    },
+    "NEXTAUTH_SECRET": {
+      "description": "Secret de session NextAuth (openssl rand -base64 32)",
+      "generator": "secret",
+      "required": true
+    },
+    "CLOUDINARY_CLOUD_NAME": {
+      "description": "Nom du cloud Cloudinary",
+      "required": true
+    },
+    "CLOUDINARY_API_KEY": {
+      "description": "Clé API Cloudinary",
+      "required": true
+    },
+    "CLOUDINARY_API_SECRET": {
+      "description": "Secret API Cloudinary",
+      "required": true
+    }
+  },
+  "scripts": {
+    "postdeploy": "echo 'Exécutez : heroku run npm run db:seed (une fois), puis changez le mot de passe admin.'"
+  }
+}
