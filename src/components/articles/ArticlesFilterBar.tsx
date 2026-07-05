@@ -22,7 +22,7 @@ type ArticlesFilterBarProps = {
 };
 
 const filterBtnBase =
-  "inline-flex h-10 min-w-0 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium shadow-sm transition-all hover:border-accent/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30";
+  "inline-flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium shadow-sm transition-all hover:border-accent/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30";
 
 export function ArticlesFilterBar({
   params,
@@ -57,12 +57,8 @@ export function ArticlesFilterBar({
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-linear-to-b from-bg-soft/30 to-white shadow-sm">
-        <div className="flex flex-col gap-3 px-4 py-4 sm:px-5 md:flex-row md:items-center md:gap-4">
-          <form
-            action="/actualites"
-            method="GET"
-            className="flex w-full shrink-0 gap-2 md:w-1/2 md:max-w-[50%]"
-          >
+        <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
+          <form action="/actualites" method="GET" className="flex w-full gap-2">
             {params.projectSlug ? (
               <input type="hidden" name="project" value={params.projectSlug} />
             ) : null}
@@ -98,7 +94,7 @@ export function ArticlesFilterBar({
             </button>
           </form>
 
-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2 md:justify-end">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <p className="sr-only">Filtrer par</p>
             <FilterSelect
               label="Thématique"
@@ -136,7 +132,7 @@ export function ArticlesFilterBar({
               onChange={(value) => navigate({ authorId: value || null })}
             />
 
-            <div className="relative">
+            <div className="relative min-w-0">
               <button
                 type="button"
                 onClick={() => setDateOpen((open) => !open)}
@@ -150,11 +146,11 @@ export function ArticlesFilterBar({
                 aria-expanded={dateOpen}
               >
                 <CalendarIcon className="h-4 w-4 shrink-0 opacity-60" />
-                <span className="flex flex-col items-start leading-none">
+                <span className="flex min-w-0 flex-1 flex-col items-start leading-none">
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-primary/45">
                     Période
                   </span>
-                  <span className="mt-0.5 max-w-[7rem] truncate text-sm">
+                  <span className="mt-0.5 w-full truncate text-left text-sm">
                     {dateActive
                       ? [params.dateFrom, params.dateTo].filter(Boolean).join(" → ")
                       : "Toutes les dates"}
@@ -170,7 +166,7 @@ export function ArticlesFilterBar({
                     onClick={() => setDateOpen(false)}
                     aria-hidden
                   />
-                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
+                  <div className="absolute left-0 right-0 z-20 mt-2 w-full rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:left-auto sm:w-72">
                     <p className="mb-3 text-sm font-semibold text-primary">Filtrer par date</p>
                     <div className="space-y-3">
                       <Input
@@ -288,7 +284,7 @@ function FilterSelect({
   const active = Boolean(value);
 
   return (
-    <div className="relative">
+    <div className="relative w-full min-w-0">
       <label htmlFor={`filter-${label}`} className="sr-only">
         {label}
       </label>
@@ -302,11 +298,11 @@ function FilterSelect({
         )}
       >
         <FilterIcon className="h-4 w-4 shrink-0 opacity-60" />
-        <span className="flex min-w-0 flex-col items-start leading-none">
+        <span className="flex min-w-0 flex-1 flex-col items-start leading-none">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-primary/45">
             {label}
           </span>
-          <span className="mt-0.5 max-w-[7rem] truncate text-sm sm:max-w-[9rem]">
+          <span className="mt-0.5 w-full truncate text-left text-sm">
             {active ? displayValue : placeholder}
           </span>
         </span>

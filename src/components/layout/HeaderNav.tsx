@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
+  { href: "/", label: "Accueil", match: "accueil" as const },
   { href: "/actualites", label: "Nos articles", match: "articles" as const },
   { href: "/projets", label: "Nos projets", match: "projets" as const },
   { href: "/documents", label: "Documents", match: "documents" as const },
@@ -15,6 +16,10 @@ function isNavItemActive(
   pathname: string,
   contentType: string | null,
 ) {
+  if (match === "accueil") {
+    return pathname === "/";
+  }
+
   if (match === "projets") {
     return pathname === "/projets" || pathname.startsWith("/projets/");
   }
