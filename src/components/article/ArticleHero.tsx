@@ -21,12 +21,12 @@ export function ArticleHero({ article }: ArticleHeroProps) {
   }
 
   return (
-    <div className="relative mx-auto h-48 w-full max-w-3xl overflow-hidden rounded-xl bg-bg-soft sm:h-56 md:h-64">
+    <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl">
       <Image
         src={coverUrl}
         alt={article.title}
         fill
-        className="object-contain p-4 sm:p-6"
+        className="object-cover"
         sizes="(max-width: 768px) 100vw, 768px"
         priority
       />

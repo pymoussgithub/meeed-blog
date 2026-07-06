@@ -67,7 +67,7 @@ export default async function ArticlePage({ params }: PageProps) {
   ]);
 
   return (
-    <article className="container-meeed py-8 sm:py-12">
+    <article className="container-meeed py-10 sm:py-14">
       <JsonLd
         data={[
           buildArticleJsonLd({
