@@ -25,6 +25,8 @@ export const createProjectSchema = z.object({
   summary: z.string().min(10, "Résumé trop court").max(500),
   description: z.string().max(5000).optional().nullable(),
   donationUrl: donationUrlSchema,
+  coverImageUrl: z.string().url().nullish(),
+  coverImagePublicId: z.string().nullish(),
   color: colorSchema,
   sortOrder: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true),

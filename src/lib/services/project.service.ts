@@ -121,6 +121,8 @@ export async function createProject(data: CreateProjectInput) {
         summary: data.summary,
         description: data.description ?? null,
         donationUrl: data.donationUrl || null,
+        coverImageUrl: data.coverImageUrl ?? null,
+        coverImagePublicId: data.coverImagePublicId ?? null,
         color: data.color ?? "#4ecdc4",
         sortOrder: data.sortOrder,
         isActive: data.isActive,
@@ -157,6 +159,10 @@ export async function updateProject(id: string, data: UpdateProjectInput) {
         ...(data.summary !== undefined ? { summary: data.summary } : {}),
         ...(data.description !== undefined ? { description: data.description } : {}),
         ...(data.donationUrl !== undefined ? { donationUrl: data.donationUrl || null } : {}),
+        ...(data.coverImageUrl !== undefined ? { coverImageUrl: data.coverImageUrl } : {}),
+        ...(data.coverImagePublicId !== undefined
+          ? { coverImagePublicId: data.coverImagePublicId }
+          : {}),
         ...(data.color !== undefined ? { color: data.color } : {}),
         ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
         ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
@@ -205,6 +211,10 @@ export async function deleteProject(id: string) {
 
   if (!project) {
     throw new Error("Projet introuvable");
+  }
+
+  if (project.coverImagePublicId) {
+    await removeCloudinaryAsset(project.coverImagePublicId, "image");
   }
 
   const articles = project.category.articles.map((link) => link.article);

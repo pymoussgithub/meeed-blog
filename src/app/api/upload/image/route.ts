@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   buildImageFolder,
+  buildProjectImageFolder,
   createSignedUploadParams,
   getCloudinaryPublicConfig,
 } from "@/lib/cloudinary";
@@ -9,8 +10,9 @@ import { UPLOAD_LIMITS } from "@/lib/upload-constants";
 import { requireUploadAuth } from "@/lib/auth-helpers";
 
 const imageUploadSchema = z.object({
-  purpose: z.enum(["cover", "inline"]).default("cover"),
+  purpose: z.enum(["cover", "inline", "project-cover"]).default("cover"),
   articleId: z.string().cuid().optional(),
+  projectId: z.string().cuid().optional(),
 });
 
 export async function POST(request: Request) {
@@ -21,7 +23,10 @@ export async function POST(request: Request) {
 
   try {
     const body = imageUploadSchema.parse(await request.json());
-    const folder = buildImageFolder(body.purpose, body.articleId);
+    const folder =
+      body.purpose === "project-cover"
+        ? buildProjectImageFolder(body.projectId)
+        : buildImageFolder(body.purpose, body.articleId);
     const { signature, timestamp } = createSignedUploadParams(folder);
     const { cloudName, apiKey } = getCloudinaryPublicConfig();
 

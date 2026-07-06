@@ -39,6 +39,10 @@ export function buildImageFolder(purpose: "cover" | "inline", articleId?: string
     : `meeed/articles/inline/${id}`;
 }
 
+export function buildProjectImageFolder(projectId?: string) {
+  return `meeed/projects/covers/${projectId ?? "draft"}`;
+}
+
 export function buildDocumentFolder(documentId?: string) {
   return `meeed/documents/${documentId ?? "draft"}`;
 }

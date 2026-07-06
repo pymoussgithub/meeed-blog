@@ -13,23 +13,27 @@ import { UPLOAD_LIMITS } from "@/lib/upload-constants";
 import { saveImageMetadata } from "@/lib/services/upload.service";
 
 type ImageUploadProps = {
-  purpose?: "cover" | "inline";
+  purpose?: "cover" | "inline" | "project-cover";
   articleId?: string;
+  projectId?: string;
   initialUrl?: string | null;
   initialPublicId?: string | null;
   onUploaded?: (metadata: ReturnType<typeof saveImageMetadata>) => void;
   onRemoved?: () => void;
   className?: string;
+  hint?: string;
 };
 
 export function ImageUpload({
   purpose = "cover",
   articleId,
+  projectId,
   initialUrl,
   initialPublicId,
   onUploaded,
   onRemoved,
   className,
+  hint,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialUrl ?? null);
   const [publicId, setPublicId] = useState<string | null>(initialPublicId ?? null);
@@ -57,6 +61,7 @@ export function ImageUpload({
 
     const metadata = saveImageMetadata(result.public_id, result.secure_url, {
       articleId,
+      projectId,
       purpose,
     });
 
@@ -96,15 +101,15 @@ export function ImageUpload({
         maxBytes={UPLOAD_LIMITS.imageMaxBytes}
         allowedMimeTypes={UPLOAD_LIMITS.imageMimeTypes}
         signatureEndpoint="/api/upload/image"
-        getSignatureBody={() => ({ purpose, articleId })}
+        getSignatureBody={() => ({ purpose, articleId, projectId })}
         resourceLabel="image"
         onUploaded={handleUploaded}
         onError={(message) => setToast({ message, variant: "error" })}
       />
 
       <p className="mt-2 text-xs text-primary/50">
-        Format recommandé pour la couverture : 16:9 (ex. 1200×675 px) — idéal pour le partage
-        WhatsApp.
+        {hint ??
+          "Format recommandé pour la couverture : 16:9 (ex. 1200×675 px) — idéal pour le partage WhatsApp."}
       </p>
 
       {previewUrl ? (

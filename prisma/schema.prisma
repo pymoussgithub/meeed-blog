@@ -65,16 +65,18 @@ model Category {
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  summary     String
-  description String?  @db.Text
-  donationUrl String?
-  color       String?  @default("#4ecdc4")
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  categoryId  String   @unique
+  id                 String   @id @default(cuid())
+  title              String
+  slug               String   @unique
+  summary            String
+  description        String?  @db.Text
+  donationUrl        String?
+  coverImageUrl      String?
+  coverImagePublicId String?
+  color              String?  @default("#4ecdc4")
+  sortOrder          Int      @default(0)
+  isActive           Boolean  @default(true)
+  categoryId         String   @unique
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

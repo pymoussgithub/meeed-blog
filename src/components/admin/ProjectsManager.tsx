@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createProjectAction, deleteProjectAction, updateProjectAction } from "@/actions/project.actions";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/Button";
 import { useDialog } from "@/components/ui/DialogProvider";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,8 @@ type ProjectRow = {
   summary: string;
   description: string | null;
   donationUrl: string | null;
+  coverImageUrl: string | null;
+  coverImagePublicId: string | null;
   color: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -265,6 +268,41 @@ export function ProjectsManager({ projects }: { projects: ProjectRow[] }) {
                 router.refresh();
               }}
             />
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-primary">Image du projet</p>
+              <ImageUpload
+                purpose="project-cover"
+                projectId={project.id}
+                initialUrl={project.coverImageUrl}
+                initialPublicId={project.coverImagePublicId}
+                hint="Format recommandé : 16:10 (ex. 960×600 px) — affiché sur la page Projets."
+                onUploaded={async (metadata) => {
+                  const result = await updateProjectAction(project.id, {
+                    coverImageUrl: metadata.url,
+                    coverImagePublicId: metadata.publicId,
+                  });
+                  if (!result.success) {
+                    setToast({ message: result.error, variant: "error" });
+                    return;
+                  }
+                  setToast({ message: "Image enregistrée.", variant: "success" });
+                  router.refresh();
+                }}
+                onRemoved={async () => {
+                  const result = await updateProjectAction(project.id, {
+                    coverImageUrl: null,
+                    coverImagePublicId: null,
+                  });
+                  if (!result.success) {
+                    setToast({ message: result.error, variant: "error" });
+                    return;
+                  }
+                  setToast({ message: "Image supprimée.", variant: "success" });
+                  router.refresh();
+                }}
+              />
+            </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <Input

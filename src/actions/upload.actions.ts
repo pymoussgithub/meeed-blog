@@ -5,7 +5,7 @@ import { removeCloudinaryAsset } from "@/lib/services/upload.server";
 import { actionError, actionSuccess, type ActionResult } from "@/types/actions";
 
 function isAllowedImagePublicId(publicId: string) {
-  return publicId.startsWith("meeed/articles/");
+  return publicId.startsWith("meeed/articles/") || publicId.startsWith("meeed/projects/");
 }
 
 export async function deleteUploadedImageAction(

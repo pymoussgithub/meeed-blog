@@ -11,6 +11,13 @@ type ProjectShowcaseCardProps = {
 };
 
 function getProjectCoverUrl(project: ActiveProject) {
+  if (project.coverImagePublicId) {
+    return getCoverProjectUrl(project.coverImagePublicId);
+  }
+  if (project.coverImageUrl) {
+    return project.coverImageUrl;
+  }
+
   const article = project.category.articles[0]?.article;
   if (!article) {
     return null;

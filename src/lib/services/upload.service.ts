@@ -2,7 +2,8 @@ export type ImageMetadata = {
   publicId: string;
   url: string;
   articleId?: string;
-  purpose: "cover" | "inline";
+  projectId?: string;
+  purpose: "cover" | "inline" | "project-cover";
 };
 
 export type DocumentMetadata = {
@@ -16,12 +17,17 @@ export type DocumentMetadata = {
 export function saveImageMetadata(
   publicId: string,
   url: string,
-  options?: { articleId?: string; purpose?: "cover" | "inline" },
+  options?: {
+    articleId?: string;
+    projectId?: string;
+    purpose?: "cover" | "inline" | "project-cover";
+  },
 ): ImageMetadata {
   return {
     publicId,
     url,
     articleId: options?.articleId,
+    projectId: options?.projectId,
     purpose: options?.purpose ?? "cover",
   };
 }
