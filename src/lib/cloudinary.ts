@@ -104,7 +104,7 @@ export function getOgImageUrl(publicId: string) {
 }
 
 export function getCoverCardUrl(publicId: string) {
-  return getCloudinaryUrl(publicId, { width: 400, height: 225 });
+  return getCloudinaryUrl(publicId, { width: 480, height: 300, crop: "fit" });
 }
 
 export function getCoverHeroUrl(publicId: string) {

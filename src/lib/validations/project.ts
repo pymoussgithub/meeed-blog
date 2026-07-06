@@ -34,5 +34,26 @@ export const createProjectSchema = z.object({
 
 export const updateProjectSchema = createProjectSchema.partial();
 
+export const projectFormSchema = createProjectSchema;
+
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
+export type ProjectFormInput = z.infer<typeof projectFormSchema>;
+
+export function normalizeProjectFormInput(
+  input: Partial<ProjectFormInput> & Record<string, unknown>,
+): ProjectFormInput {
+  return {
+    title: typeof input.title === "string" ? input.title : "",
+    slug: typeof input.slug === "string" ? input.slug : "",
+    summary: typeof input.summary === "string" ? input.summary : "",
+    description: typeof input.description === "string" ? input.description : null,
+    donationUrl: typeof input.donationUrl === "string" ? input.donationUrl : null,
+    coverImageUrl: typeof input.coverImageUrl === "string" ? input.coverImageUrl : null,
+    coverImagePublicId:
+      typeof input.coverImagePublicId === "string" ? input.coverImagePublicId : null,
+    color: typeof input.color === "string" ? input.color : "#4ecdc4",
+    sortOrder: typeof input.sortOrder === "number" ? input.sortOrder : 0,
+    isActive: typeof input.isActive === "boolean" ? input.isActive : true,
+  };
+}

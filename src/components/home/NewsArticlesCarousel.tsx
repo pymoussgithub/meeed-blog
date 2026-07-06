@@ -133,13 +133,13 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
               return (
                 <article key={article.id} className="w-full shrink-0" aria-roledescription="slide">
                   <Link href={href} className="group flex gap-3.5 p-3.5 sm:gap-4 sm:p-4">
-                    <div className="relative h-[6.615rem] w-[6.615rem] shrink-0 overflow-hidden rounded-xl bg-bg-soft sm:h-[7.7175rem] sm:w-[7.7175rem]">
+                    <div className="relative h-[6.615rem] w-[6.615rem] shrink-0 overflow-hidden rounded-xl bg-bg-soft p-2 sm:h-[7.7175rem] sm:w-[7.7175rem] sm:p-2.5">
                       {article.coverUrl ? (
                         <Image
                           src={article.coverUrl}
                           alt=""
                           fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
                           sizes="7.72rem"
                           priority={article.id === articles[0]?.id}
                         />

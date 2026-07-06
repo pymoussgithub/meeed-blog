@@ -24,13 +24,13 @@ export function ArticleCard({ article }: ArticleCardProps) {
   return (
     <Card className="flex h-full flex-col overflow-hidden p-0">
       <Link href={`/a/${article.slug}`} className="block">
-        <div className="relative aspect-video w-full bg-bg-soft">
+        <div className="relative aspect-video w-full bg-bg-soft p-4 sm:p-5">
           {coverUrl ? (
             <Image
               src={coverUrl}
               alt={article.title}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 768px) 100vw, 33vw"
             />
           ) : (

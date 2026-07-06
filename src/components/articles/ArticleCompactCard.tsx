@@ -55,13 +55,16 @@ export function ArticleCompactCard({ article }: ArticleCompactCardProps) {
         isNews ? "border-accent/25 ring-1 ring-accent/10" : "border-gray-200",
       )}
     >
-      <Link href={href} className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-bg-soft">
+      <Link
+        href={href}
+        className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-bg-soft p-3 sm:p-4"
+      >
         {coverUrl ? (
           <Image
             src={coverUrl}
             alt=""
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           />
         ) : (
