@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/article/ArticleCard";
+import { DocumentList } from "@/components/document/DocumentList";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Pagination } from "@/components/ui/Pagination";
 import {
@@ -8,6 +9,7 @@ import {
   getArticlesByCategorySlug,
 } from "@/lib/services/article.service";
 import { getCategoryBySlug } from "@/lib/services/category.service";
+import { getDocumentsByProject } from "@/lib/services/document.service";
 import { buildBreadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
 
 const PAGE_SIZE = 9;
@@ -48,9 +50,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     notFound();
   }
 
-  const [articles, total] = await Promise.all([
+  const [articles, total, projectDocuments] = await Promise.all([
     getArticlesByCategorySlug(slug, PAGE_SIZE, offset),
     countArticlesByCategorySlug(slug),
+    category.project?.isActive
+      ? getDocumentsByProject(category.project.id)
+      : Promise.resolve([]),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -68,6 +73,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{category.name}</h1>
       {category.description ? (
         <p className="mt-4 max-w-2xl text-primary/70">{category.description}</p>
+      ) : null}
+
+      {projectDocuments.length > 0 ? (
+        <div className="mt-10">
+          <DocumentList documents={projectDocuments} title="Documents du projet" />
+        </div>
       ) : null}
 
       {articles.length === 0 ? (

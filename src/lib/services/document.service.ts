@@ -10,7 +10,7 @@ export type PublicDocumentFilters = {
   uploaderId?: string | null;
   dateFrom?: string | null;
   dateTo?: string | null;
-  linked?: "yes" | "no" | null;
+  linked?: "article" | "project" | "no" | null;
 };
 
 const publicDocumentInclude = {
@@ -35,8 +35,21 @@ const publicDocumentInclude = {
       },
     },
   },
+  project: { select: { id: true, title: true, slug: true } },
   uploadedBy: { select: { id: true, name: true } },
 } as const;
+
+function appendAnd(
+  where: Prisma.DocumentWhereInput,
+  condition: Prisma.DocumentWhereInput,
+) {
+  const existing = where.AND;
+  where.AND = Array.isArray(existing)
+    ? [...existing, condition]
+    : existing
+      ? [existing, condition]
+      : [condition];
+}
 
 function buildPublicDocumentWhere(filters: PublicDocumentFilters): Prisma.DocumentWhereInput {
   const where: Prisma.DocumentWhereInput = {
@@ -50,10 +63,13 @@ function buildPublicDocumentWhere(filters: PublicDocumentFilters): Prisma.Docume
     ];
   }
 
-  if (filters.linked === "yes") {
+  if (filters.linked === "article") {
     where.articleId = { not: null };
+  } else if (filters.linked === "project") {
+    where.projectId = { not: null };
   } else if (filters.linked === "no") {
     where.articleId = null;
+    where.projectId = null;
   }
 
   if (filters.uploaderId) {
@@ -73,32 +89,35 @@ function buildPublicDocumentWhere(filters: PublicDocumentFilters): Prisma.Docume
     where.createdAt = createdAt;
   }
 
-  if (filters.projectSlug || filters.categorySlug) {
-    const articleConditions: Prisma.ArticleWhereInput[] = [];
-
-    if (filters.projectSlug) {
-      articleConditions.push({
-        categories: {
-          some: {
-            category: {
-              project: { slug: filters.projectSlug },
+  if (filters.projectSlug) {
+    appendAnd(where, {
+      OR: [
+        { project: { slug: filters.projectSlug, isActive: true } },
+        {
+          article: {
+            categories: {
+              some: {
+                category: {
+                  project: { slug: filters.projectSlug, isActive: true },
+                },
+              },
             },
           },
         },
-      });
-    }
+      ],
+    });
+  }
 
-    if (filters.categorySlug) {
-      articleConditions.push({
+  if (filters.categorySlug) {
+    appendAnd(where, {
+      article: {
         categories: {
           some: {
-            category: { slug: filters.categorySlug },
+            category: { slug: filters.categorySlug, project: null },
           },
         },
-      });
-    }
-
-    where.article = { AND: articleConditions };
+      },
+    });
   }
 
   return where;
@@ -149,15 +168,20 @@ export async function getPublicDocumentProjects() {
   return prisma.project.findMany({
     where: {
       isActive: true,
-      category: {
-        articles: {
-          some: {
-            article: {
-              documents: { some: { isPublic: true } },
+      OR: [
+        { documents: { some: { isPublic: true } } },
+        {
+          category: {
+            articles: {
+              some: {
+                article: {
+                  documents: { some: { isPublic: true } },
+                },
+              },
             },
           },
         },
-      },
+      ],
     },
     orderBy: { sortOrder: "asc" },
     select: { id: true, title: true, slug: true },
@@ -167,6 +191,13 @@ export async function getPublicDocumentProjects() {
 export async function getDocumentsByArticle(articleId: string) {
   return prisma.document.findMany({
     where: { articleId, isPublic: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function getDocumentsByProject(projectId: string) {
+  return prisma.document.findMany({
+    where: { projectId, isPublic: true },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -188,6 +219,7 @@ export async function getAllDocuments(userId?: string, isAdmin = true) {
     orderBy: { createdAt: "desc" },
     include: {
       article: { select: { id: true, title: true, slug: true } },
+      project: { select: { id: true, title: true, slug: true } },
       uploadedBy: { select: { id: true, name: true } },
     },
   });

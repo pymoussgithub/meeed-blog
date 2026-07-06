@@ -15,6 +15,20 @@ export async function getAllCategories() {
   });
 }
 
+export async function getCategoriesForAdmin() {
+  return prisma.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: {
+      project: { select: { id: true, title: true } },
+      articles: {
+        where: { article: publishedArticleWhere() },
+        select: { articleId: true },
+      },
+      _count: { select: { articles: true } },
+    },
+  });
+}
+
 export async function getPublishedCategories() {
   return prisma.category.findMany({
     where: {
@@ -57,6 +71,9 @@ export async function getCategoriesForArticleForm(selectedCategoryIds: string[] 
 export async function getCategoryBySlug(slug: string) {
   return prisma.category.findUnique({
     where: { slug },
+    include: {
+      project: { select: { id: true, title: true, slug: true, isActive: true } },
+    },
   });
 }
 
@@ -75,4 +92,31 @@ export async function updateCategory(id: string, data: UpdateCategoryInput) {
     where: { id },
     data,
   });
+}
+
+export async function deleteCategory(id: string) {
+  const category = await prisma.category.findUnique({
+    where: { id },
+    include: {
+      project: { select: { id: true } },
+      articles: {
+        where: { article: publishedArticleWhere() },
+        select: { articleId: true },
+      },
+    },
+  });
+
+  if (!category) {
+    throw new Error("Catégorie introuvable");
+  }
+
+  if (category.project) {
+    throw new Error("Supprimez d'abord le projet associé à cette catégorie");
+  }
+
+  if (category.articles.length > 0) {
+    throw new Error("Impossible de supprimer une catégorie contenant des articles publiés");
+  }
+
+  return prisma.category.delete({ where: { id } });
 }

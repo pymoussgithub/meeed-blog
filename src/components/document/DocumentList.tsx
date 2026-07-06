@@ -1,7 +1,9 @@
 import Link from "next/link";
 import {
+  getDocumentLinkLabel,
   getDocumentNewsCategories,
   getDocumentProject,
+  isDocumentLinked,
   type DocumentWithArticleRelations,
 } from "@/lib/documents-listing";
 import { cn, formatDate } from "@/lib/utils";
@@ -14,6 +16,7 @@ type DocumentItem = {
   fileSize: number;
   createdAt?: Date | string;
   uploadedBy?: { id: string; name: string } | null;
+  project?: DocumentWithArticleRelations["project"];
   article?: DocumentWithArticleRelations["article"];
 };
 
@@ -96,8 +99,10 @@ export function DocumentList({
       <ul className="space-y-4">
         {documents.map((document) => {
           const project = getDocumentProject(document);
+          const directProject = document.project;
           const categories = getDocumentNewsCategories(document);
-          const isLinked = Boolean(document.article);
+          const isLinked = isDocumentLinked(document);
+          const linkLabel = getDocumentLinkLabel(document);
 
           return (
             <li
@@ -116,7 +121,7 @@ export function DocumentList({
                           : "bg-gray-100 text-primary/60",
                       )}
                     >
-                      {isLinked ? "Lié à un article" : "Document autonome"}
+                      {linkLabel}
                     </span>
                   </div>
 
@@ -143,7 +148,21 @@ export function DocumentList({
                       </div>
                     ) : null}
 
-                    {project ? (
+                    {directProject ? (
+                      <div>
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-primary/45">
+                          Projet
+                        </dt>
+                        <dd className="mt-0.5">
+                          <Link
+                            href={`/c/${directProject.slug}`}
+                            className="font-medium text-accent-dark hover:text-accent hover:underline"
+                          >
+                            {directProject.title}
+                          </Link>
+                        </dd>
+                      </div>
+                    ) : project && !directProject ? (
                       <div>
                         <dt className="text-xs font-semibold uppercase tracking-wide text-primary/45">
                           Projet

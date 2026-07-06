@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-helpers";
 import {
   createCategory,
+  deleteCategory,
   getCategoryById,
   updateCategory,
 } from "@/lib/services/category.service";
@@ -58,5 +59,27 @@ export async function updateCategoryAction(
     return actionSuccess(undefined);
   } catch (error) {
     return actionError(error instanceof Error ? error.message : "Erreur");
+  }
+}
+
+export async function deleteCategoryAction(id: string): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const existing = await getCategoryById(id);
+
+    if (!existing) {
+      return actionError("Catégorie introuvable");
+    }
+
+    await deleteCategory(id);
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/");
+    revalidatePath("/actualites");
+    revalidatePath(`/c/${existing.slug}`);
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(error instanceof Error ? error.message : "Erreur lors de la suppression");
   }
 }

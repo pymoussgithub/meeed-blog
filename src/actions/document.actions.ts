@@ -19,6 +19,7 @@ export async function createDocumentAction(input: {
   fileSize: number;
   cloudinaryPublicId: string;
   articleId?: string | null;
+  projectId?: string | null;
   isPublic?: boolean;
 }): Promise<ActionResult<{ id: string }>> {
   try {
@@ -92,6 +93,34 @@ export async function linkDocumentToArticleAction(
     await updateDocument(id, { articleId });
 
     revalidatePath("/admin/documents");
+    revalidatePath("/documents");
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(error instanceof Error ? error.message : "Erreur");
+  }
+}
+
+export async function linkDocumentToProjectAction(
+  id: string,
+  projectId: string | null,
+): Promise<ActionResult> {
+  try {
+    const user = await requireAuth();
+    const document = await getDocumentById(id);
+
+    if (!document) {
+      return actionError("Document introuvable");
+    }
+
+    if (user.role !== "ADMIN" && document.uploadedById !== user.id) {
+      return actionError("Non autorisé");
+    }
+
+    await updateDocument(id, { projectId });
+
+    revalidatePath("/admin/documents");
+    revalidatePath("/documents");
 
     return actionSuccess(undefined);
   } catch (error) {

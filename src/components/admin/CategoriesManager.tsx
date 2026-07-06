@@ -2,8 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createCategoryAction, updateCategoryAction } from "@/actions/category.actions";
+import {
+  createCategoryAction,
+  deleteCategoryAction,
+  updateCategoryAction,
+} from "@/actions/category.actions";
 import { Button } from "@/components/ui/Button";
+import { useDialog } from "@/components/ui/DialogProvider";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Toast } from "@/components/ui/Toast";
@@ -16,10 +21,14 @@ type CategoryRow = {
   description: string | null;
   color: string | null;
   sortOrder: number;
+  project: { id: string; title: string } | null;
+  articles: { articleId: string }[];
+  _count: { articles: number };
 };
 
 export function CategoriesManager({ categories }: { categories: CategoryRow[] }) {
   const router = useRouter();
+  const { confirm, alert } = useDialog();
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
@@ -78,10 +87,15 @@ export function CategoriesManager({ categories }: { categories: CategoryRow[] })
       </form>
 
       <div className="space-y-4">
-        {categories.map((category) => (
+        {categories.map((category) => {
+          const publishedCount = category.articles.length;
+          const draftCount = category._count.articles - publishedCount;
+          const canDelete = !category.project && publishedCount === 0;
+
+          return (
           <div
             key={category.id}
-            className="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 md:grid-cols-5"
+            className="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 md:grid-cols-[1fr_1fr_auto_auto_1fr_auto]"
           >
             <Input
               defaultValue={category.name}
@@ -115,9 +129,67 @@ export function CategoriesManager({ categories }: { categories: CategoryRow[] })
                 router.refresh();
               }}
             />
-            <span className="self-center text-sm text-primary/60">/c/{category.slug}</span>
+            <div className="self-center space-y-1 text-sm text-primary/60">
+              <div>/c/{category.slug}</div>
+              {category.project ? (
+                <div>Projet : {category.project.title}</div>
+              ) : null}
+              {category._count.articles > 0 ? (
+                <div>
+                  {publishedCount} publié{publishedCount > 1 ? "s" : ""}
+                  {draftCount > 0 ? `, ${draftCount} brouillon${draftCount > 1 ? "s" : ""}` : ""}
+                </div>
+              ) : null}
+            </div>
+            <div className="self-center">
+              <button
+                type="button"
+                className={
+                  canDelete
+                    ? "text-red-600 hover:underline"
+                    : "cursor-not-allowed text-primary/30"
+                }
+                disabled={!canDelete}
+                title={
+                  category.project
+                    ? "Supprimez d'abord le projet associé"
+                    : publishedCount > 0
+                      ? "Des articles publiés utilisent cette catégorie"
+                      : undefined
+                }
+                onClick={async () => {
+                  if (!canDelete) return;
+
+                  const draftWarning =
+                    draftCount > 0
+                      ? `\n\n${draftCount} brouillon${draftCount > 1 ? "s" : ""} ne ser${draftCount > 1 ? "ont" : "a"} plus catégorisé${draftCount > 1 ? "s" : ""}.`
+                      : "";
+
+                  if (
+                    !(await confirm(
+                      `Supprimer la catégorie « ${category.name} » ? Cette action est irréversible.${draftWarning}`,
+                      { variant: "danger", confirmLabel: "Supprimer" },
+                    ))
+                  ) {
+                    return;
+                  }
+
+                  const result = await deleteCategoryAction(category.id);
+                  if (!result.success) {
+                    await alert(result.error, { variant: "error" });
+                    return;
+                  }
+
+                  setToast({ message: "Catégorie supprimée.", variant: "success" });
+                  router.refresh();
+                }}
+              >
+                Supprimer
+              </button>
+            </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       <Toast

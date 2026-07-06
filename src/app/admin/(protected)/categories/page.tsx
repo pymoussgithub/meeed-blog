@@ -1,8 +1,8 @@
 import { CategoriesManager } from "@/components/admin/CategoriesManager";
-import { getAllCategories } from "@/lib/services/category.service";
+import { getCategoriesForAdmin } from "@/lib/services/category.service";
 
 export default async function AdminCategoriesPage() {
-  const categories = await getAllCategories();
+  const categories = await getCategoriesForAdmin();
 
   return (
     <div className="container-meeed py-10">

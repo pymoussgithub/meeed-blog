@@ -8,7 +8,9 @@ export function parseDocumentsListingParams(
   params: Record<string, string | undefined>,
 ): DocumentsListingParams {
   const linked =
-    params.linked === "yes" || params.linked === "no" ? params.linked : null;
+    params.linked === "article" || params.linked === "project" || params.linked === "no"
+      ? params.linked
+      : null;
 
   return {
     q: params.q?.trim() || null,
@@ -67,6 +69,7 @@ export function listingParamsToDocumentFilters(
 }
 
 export type DocumentWithArticleRelations = {
+  project?: { id: string; title: string; slug: string } | null;
   article?: {
     id: string;
     title: string;
@@ -83,6 +86,10 @@ export type DocumentWithArticleRelations = {
 };
 
 export function getDocumentProject(document: DocumentWithArticleRelations) {
+  if (document.project) {
+    return document.project;
+  }
+
   if (!document.article) return null;
 
   for (const { category } of document.article.categories) {
@@ -100,4 +107,24 @@ export function getDocumentNewsCategories(document: DocumentWithArticleRelations
   return document.article.categories
     .map(({ category }) => category)
     .filter((category) => !category.project);
+}
+
+export function getDocumentLinkLabel(document: DocumentWithArticleRelations) {
+  const linkedToArticle = Boolean(document.article);
+  const linkedToProject = Boolean(document.project);
+
+  if (linkedToArticle && linkedToProject) {
+    return "Lié à un article et un projet";
+  }
+  if (linkedToArticle) {
+    return "Lié à un article";
+  }
+  if (linkedToProject) {
+    return "Lié à un projet";
+  }
+  return "Document autonome";
+}
+
+export function isDocumentLinked(document: DocumentWithArticleRelations) {
+  return Boolean(document.article || document.project);
 }

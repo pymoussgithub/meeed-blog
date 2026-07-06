@@ -78,6 +78,7 @@ model Project {
   isActive           Boolean  @default(true)
   categoryId         String   @unique
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  documents   Document[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -105,10 +106,13 @@ model Document {
   isPublic           Boolean  @default(true)
   articleId          String?
   article            Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  projectId          String?
+  project            Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   uploadedById       String
   uploadedBy         User     @relation(fields: [uploadedById], references: [id])
   createdAt          DateTime @default(now())
 
   @@index([articleId])
+  @@index([projectId])
   @@index([isPublic])
 }

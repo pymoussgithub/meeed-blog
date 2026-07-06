@@ -112,7 +112,7 @@ export function getCoverHeroUrl(publicId: string) {
 }
 
 export function getCoverProjectUrl(publicId: string) {
-  return getCloudinaryUrl(publicId, { width: 960, height: 600 });
+  return getCloudinaryUrl(publicId, { width: 960, height: 600, crop: "fit" });
 }
 
 /** URL de téléchargement signée (contourne la restriction livraison PDF Cloudinary). */

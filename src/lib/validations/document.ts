@@ -10,6 +10,7 @@ export const createDocumentSchema = z.object({
   cloudinaryPublicId: z.string().min(1),
   isPublic: z.boolean().default(true),
   articleId: z.string().cuid().optional().nullable(),
+  projectId: z.string().cuid().optional().nullable(),
   uploadedById: z.string().cuid(),
 });
 

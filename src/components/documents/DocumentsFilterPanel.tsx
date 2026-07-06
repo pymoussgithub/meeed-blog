@@ -19,7 +19,8 @@ type DocumentsFilterPanelProps = {
 
 const LINKED_OPTIONS = [
   { value: null, label: "Tous" },
-  { value: "yes" as const, label: "Liés à un article" },
+  { value: "article" as const, label: "Liés à un article" },
+  { value: "project" as const, label: "Liés à un projet" },
   { value: "no" as const, label: "Autonomes" },
 ];
 
@@ -141,7 +142,7 @@ export function DocumentsFilterPanel({
       </form>
 
       <div className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_11rem_9.5rem_9.5rem_auto] lg:items-end">
-        <FilterGroup label="Liaison article" className="sm:col-span-2 lg:col-start-1 lg:row-start-1">
+        <FilterGroup label="Liaison" className="sm:col-span-2 lg:col-start-1 lg:row-start-1">
           <div className="flex flex-wrap gap-1.5">
             {LINKED_OPTIONS.map((option) => (
               <FilterChip
@@ -281,10 +282,16 @@ export function DocumentsFilterPanel({
               label={`« ${params.q} »`}
             />
           ) : null}
-          {params.linked === "yes" ? (
+          {params.linked === "article" ? (
             <ActiveFilterTag
               href={buildDocumentsUrl(params, { linked: null })}
               label="Liés à un article"
+            />
+          ) : null}
+          {params.linked === "project" ? (
+            <ActiveFilterTag
+              href={buildDocumentsUrl(params, { linked: null })}
+              label="Liés à un projet"
             />
           ) : null}
           {params.linked === "no" ? (

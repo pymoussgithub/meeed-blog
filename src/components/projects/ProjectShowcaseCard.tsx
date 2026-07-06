@@ -50,13 +50,13 @@ export function ProjectShowcaseCard({
           imageOnRight && "lg:flex-row-reverse",
         )}
       >
-        <div className="relative aspect-[16/10] w-full overflow-hidden lg:aspect-auto lg:w-1/2 lg:min-h-[26rem] xl:min-h-[30rem]">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-bg-soft p-6 sm:p-8 lg:aspect-auto lg:w-1/2 lg:min-h-[26rem] lg:p-10 xl:min-h-[30rem] xl:p-12">
           {coverUrl ? (
             <Image
               src={coverUrl}
               alt={project.title}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority={!imageOnRight}
             />

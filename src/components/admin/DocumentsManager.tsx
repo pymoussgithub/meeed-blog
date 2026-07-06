@@ -6,6 +6,7 @@ import {
   createDocumentAction,
   deleteDocumentAction,
   linkDocumentToArticleAction,
+  linkDocumentToProjectAction,
   toggleDocumentPublicAction,
 } from "@/actions/document.actions";
 import { DocumentUpload } from "@/components/admin/DocumentUpload";
@@ -19,16 +20,19 @@ type DocumentRow = {
   fileSize: number;
   isPublic: boolean;
   article: { id: string; title: string } | null;
+  project: { id: string; title: string } | null;
 };
 
 type ArticleOption = { id: string; title: string };
+type ProjectOption = { id: string; title: string };
 
 type DocumentsManagerProps = {
   documents: DocumentRow[];
   articles: ArticleOption[];
+  projects: ProjectOption[];
 };
 
-export function DocumentsManager({ documents, articles }: DocumentsManagerProps) {
+export function DocumentsManager({ documents, articles, projects }: DocumentsManagerProps) {
   const router = useRouter();
   const { confirm } = useDialog();
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
@@ -72,6 +76,7 @@ export function DocumentsManager({ documents, articles }: DocumentsManagerProps)
                   <th className="px-4 py-3">Titre</th>
                   <th className="px-4 py-3">Taille</th>
                   <th className="px-4 py-3">Article</th>
+                  <th className="px-4 py-3">Projet</th>
                   <th className="px-4 py-3">Public</th>
                   <th className="px-4 py-3">Lien</th>
                   <th className="px-4 py-3">Actions</th>
@@ -87,7 +92,7 @@ export function DocumentsManager({ documents, articles }: DocumentsManagerProps)
                     <td className="px-4 py-3">
                       <select
                         defaultValue={document.article?.id ?? ""}
-                        className="rounded border border-gray-300 px-2 py-1 text-xs"
+                        className="max-w-[12rem] rounded border border-gray-300 px-2 py-1 text-xs"
                         onChange={async (event) => {
                           const result = await linkDocumentToArticleAction(
                             document.id,
@@ -104,6 +109,30 @@ export function DocumentsManager({ documents, articles }: DocumentsManagerProps)
                         {articles.map((article) => (
                           <option key={article.id} value={article.id}>
                             {article.title}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        defaultValue={document.project?.id ?? ""}
+                        className="max-w-[12rem] rounded border border-gray-300 px-2 py-1 text-xs"
+                        onChange={async (event) => {
+                          const result = await linkDocumentToProjectAction(
+                            document.id,
+                            event.target.value || null,
+                          );
+                          if (!result.success) {
+                            setToast({ message: result.error, variant: "error" });
+                            return;
+                          }
+                          router.refresh();
+                        }}
+                      >
+                        <option value="">Aucun</option>
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>
+                            {project.title}
                           </option>
                         ))}
                       </select>

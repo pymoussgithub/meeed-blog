@@ -189,6 +189,9 @@ export async function deleteProject(id: string) {
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
+      documents: {
+        select: { id: true, cloudinaryPublicId: true },
+      },
       category: {
         include: {
           articles: {
@@ -217,6 +220,10 @@ export async function deleteProject(id: string) {
     await removeCloudinaryAsset(project.coverImagePublicId, "image");
   }
 
+  for (const document of project.documents) {
+    await removeCloudinaryAsset(document.cloudinaryPublicId, "raw");
+  }
+
   const articles = project.category.articles.map((link) => link.article);
   const articleIds = articles.map((article) => article.id);
 
@@ -231,6 +238,10 @@ export async function deleteProject(id: string) {
   }
 
   await prisma.$transaction(async (tx) => {
+    if (project.documents.length > 0) {
+      await tx.document.deleteMany({ where: { projectId: id } });
+    }
+
     if (articleIds.length > 0) {
       await tx.document.deleteMany({ where: { articleId: { in: articleIds } } });
       await tx.article.deleteMany({ where: { id: { in: articleIds } } });

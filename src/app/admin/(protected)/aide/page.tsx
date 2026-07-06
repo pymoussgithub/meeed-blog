@@ -30,7 +30,7 @@ const STEPS = [
   },
   {
     title: "6. Associer des documents (optionnel)",
-    body: "Dans Documents, uploadez un PDF et associez-le à l'article. Cochez « Public » pour le rendre téléchargeable sur le site.",
+    body: "Dans Documents, uploadez un PDF et associez-le à un article ou à un projet. Cochez « Public » pour le rendre téléchargeable sur le site.",
   },
   {
     title: "7. Enregistrer ou publier",
