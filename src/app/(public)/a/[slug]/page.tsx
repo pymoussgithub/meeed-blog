@@ -84,14 +84,16 @@ export default async function ArticlePage({ params }: PageProps) {
         ]}
       />
 
-      <ArticleHero article={article} />
-
-      <header className="mx-auto mt-8 max-w-3xl">
+      <header className="mx-auto max-w-3xl">
         <h1 className="text-3xl font-bold leading-tight sm:text-4xl">{article.title}</h1>
         <div className="mt-4">
           <ArticleMeta article={article} />
         </div>
       </header>
+
+      <div className="mx-auto mt-6 max-w-3xl">
+        <ArticleHero article={article} />
+      </div>
 
       <div className="mx-auto mt-8 max-w-3xl">
         <ArticleContent html={article.content} />
