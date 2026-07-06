@@ -19,12 +19,12 @@ export function HomeHero({ articles }: HomeHeroProps) {
       />
 
       <div className="container-meeed relative py-6 sm:py-8 lg:py-12">
-        <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-10">
-          <div>
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-2 lg:gap-10">
+          <div className="min-w-0">
             <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent-dark">
               Association loi 1901 d&apos;intérêt général
             </span>
-            <h1 className="mt-3 text-2xl leading-snug sm:mt-4 sm:text-3xl sm:leading-tight lg:text-4xl lg:leading-[1.15]">
+            <h1 className="mt-3 text-2xl leading-snug break-words sm:mt-4 sm:text-3xl sm:leading-tight lg:text-4xl lg:leading-[1.15]">
               Maraichage Efficient en Eau et en Energie Décarbonée
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-primary/70 sm:mt-4 sm:text-base lg:text-lg">

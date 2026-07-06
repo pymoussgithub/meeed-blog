@@ -17,10 +17,12 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
     @apply bg-white text-primary antialiased;
+    overflow-x: clip;
     font-family: var(--font-body);
   }
 

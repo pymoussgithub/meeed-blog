@@ -69,7 +69,7 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
 
   if (count === 0) {
     return (
-      <div className="relative mx-auto w-full max-w-[26.46rem] sm:max-w-[30.87rem] lg:ml-auto lg:max-w-[26.46rem]">
+      <div className="relative mx-auto w-full min-w-0 max-w-[26.46rem] sm:max-w-[30.87rem] lg:ml-auto lg:max-w-[26.46rem]">
         <div
           className="absolute -inset-2 rounded-3xl bg-linear-to-tr from-accent/25 to-accent-blue/15 sm:-inset-3"
           aria-hidden
@@ -89,7 +89,7 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[26.46rem] sm:max-w-[30.87rem] lg:ml-auto lg:max-w-[26.46rem]"
+      className="relative mx-auto w-full min-w-0 max-w-[26.46rem] sm:max-w-[30.87rem] lg:ml-auto lg:max-w-[26.46rem]"
       role="region"
       aria-label="Actualités récentes"
       aria-roledescription="carousel"
@@ -120,9 +120,9 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
           </Link>
         </div>
 
-        <div className="overflow-hidden">
+        <div className="w-full min-w-0 overflow-hidden">
           <div
-            className="flex transition-transform duration-500 ease-out"
+            className="flex w-full transition-transform duration-500 ease-out"
             style={{ transform: `translateX(-${index * 100}%)` }}
             aria-live="polite"
           >
@@ -131,7 +131,11 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
               const publishedAt = article.publishedAt ? new Date(article.publishedAt) : null;
 
               return (
-                <article key={article.id} className="w-full shrink-0" aria-roledescription="slide">
+                <article
+                  key={article.id}
+                  className="min-w-0 shrink-0 grow-0 basis-full"
+                  aria-roledescription="slide"
+                >
                   <Link href={href} className="group flex gap-3.5 p-3.5 sm:gap-4 sm:p-4">
                     <div className="relative h-[6.615rem] w-[6.615rem] shrink-0 overflow-hidden rounded-xl bg-bg-soft p-2 sm:h-[7.7175rem] sm:w-[7.7175rem] sm:p-2.5">
                       {article.coverUrl ? (
