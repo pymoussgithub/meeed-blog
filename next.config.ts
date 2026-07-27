@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Limite les workers: Infomaniak (et hebergements partages) tombe en EAGAIN sinon.
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   images: {
     remotePatterns: [
       {
