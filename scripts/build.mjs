@@ -11,5 +11,5 @@ try {
   // Ignore cleanup errors and let Next.js handle them.
 }
 
-execSync("npx prisma generate", { stdio: "inherit", shell: true });
+execSync("npx --no-install prisma generate", { stdio: "inherit", shell: true });
 execSync("npx next build", { stdio: "inherit", shell: true, env: process.env });
