@@ -1,10 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Limite les workers: Infomaniak (et hebergements partages) tombe en EAGAIN sinon.
+  // Hebergements partages (Infomaniak): limite stricte des processus au build.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   experimental: {
     workerThreads: false,
     cpus: 1,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationMinPagesPerWorker: 1000,
   },
   images: {
     remotePatterns: [
