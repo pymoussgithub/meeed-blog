@@ -7,7 +7,11 @@ import { ArticleStatusBadge } from "@/components/admin/ArticleStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import { getCurrentUser } from "@/lib/auth-helpers";
-import { getAdminArticleStats, getAdminArticles } from "@/lib/services/article.service";
+import {
+  getAdminArticleAuthors,
+  getAdminArticleStats,
+  getAdminArticles,
+} from "@/lib/services/article.service";
 import { getAllProjectsForAdmin } from "@/lib/services/project.service";
 import { formatDate } from "@/lib/utils";
 
@@ -15,6 +19,7 @@ type PageProps = {
   searchParams: Promise<{
     status?: string;
     project?: string;
+    author?: string;
     q?: string;
     page?: string;
   }>;
@@ -29,9 +34,10 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
   const status = Object.values(ArticleStatus).includes(params.status as ArticleStatus)
     ? (params.status as ArticleStatus)
     : undefined;
-  const authorId = user.role === "ADMIN" ? undefined : user.id;
+  const isAdmin = user.role === "ADMIN";
+  const authorId = isAdmin ? params.author || undefined : user.id;
 
-  const [result, projects, stats] = await Promise.all([
+  const [result, projects, stats, authors] = await Promise.all([
     getAdminArticles({
       status,
       projectId: params.project,
@@ -41,11 +47,18 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
     }),
     getAllProjectsForAdmin(),
     getAdminArticleStats(authorId),
+    isAdmin ? getAdminArticleAuthors() : Promise.resolve([]),
   ]);
+
+  const authorsWithSelf =
+    isAdmin && !authors.some((author) => author.id === user.id)
+      ? [{ id: user.id, name: user.name ?? "Moi" }, ...authors]
+      : authors;
 
   const paginationQuery = {
     status: params.status,
     project: params.project,
+    author: params.author,
     q: params.q,
   };
   const tableActionClassName =
@@ -73,8 +86,10 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
               id: project.id,
               title: project.title,
             }))}
+            authors={authorsWithSelf}
+            currentUserId={user.id}
             stats={stats}
-            isAdmin={user.role === "ADMIN"}
+            isAdmin={isAdmin}
           />
         </Suspense>
       </div>
@@ -83,12 +98,12 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
         <div className="mt-8 rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
           <p className="text-lg font-medium text-primary-dark">Aucun article trouvé</p>
           <p className="mt-2 text-sm text-primary/60">
-            {params.q || params.status || params.project
+            {params.q || params.status || params.project || params.author
               ? "Essayez d’élargir vos filtres ou de réinitialiser la recherche."
               : "Commencez par rédiger votre premier article."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {(params.q || params.status || params.project) && (
+            {(params.q || params.status || params.project || params.author) && (
               <Button href="/admin/articles" variant="outline">
                 Réinitialiser les filtres
               </Button>
@@ -106,7 +121,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                 <tr>
                   <th className="px-4 py-3 font-medium">Article</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
-                  {user.role === "ADMIN" ? (
+                  {isAdmin ? (
                     <th className="px-4 py-3 font-medium">Auteur</th>
                   ) : null}
                   <th className="hidden px-4 py-3 font-medium md:table-cell">Projet</th>
@@ -151,7 +166,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                     <td className="px-4 py-3">
                       <ArticleStatusBadge status={article.status} />
                     </td>
-                    {user.role === "ADMIN" ? (
+                    {isAdmin ? (
                       <td className="px-4 py-3 text-primary/70">{article.author.name}</td>
                     ) : null}
                     <td className="hidden max-w-[180px] truncate px-4 py-3 text-primary/70 md:table-cell">

@@ -269,6 +269,14 @@ export async function getPublishedArticleAuthors() {
   });
 }
 
+export async function getAdminArticleAuthors() {
+  return prisma.user.findMany({
+    where: { articles: { some: {} } },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 export async function searchArticles(query: string, limit = 20, offset = 0) {
   return prisma.article.findMany({
     where: {

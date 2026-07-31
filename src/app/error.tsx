@@ -21,6 +21,9 @@ export default function Error({
       <p className="mt-4 max-w-md text-primary/70">
         Le chargement de la page a échoué. Vous pouvez réessayer.
       </p>
+      {error.digest ? (
+        <p className="mt-2 font-mono text-xs text-primary/40">digest: {error.digest}</p>
+      ) : null}
       <div className="mt-8 flex gap-3">
         <Button type="button" variant="accent" onClick={reset}>
           Réessayer

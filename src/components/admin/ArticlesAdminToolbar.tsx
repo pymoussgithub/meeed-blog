@@ -11,8 +11,15 @@ type ProjectOption = {
   title: string;
 };
 
+type AuthorOption = {
+  id: string;
+  name: string;
+};
+
 type ArticlesAdminToolbarProps = {
   projects: ProjectOption[];
+  authors?: AuthorOption[];
+  currentUserId?: string;
   stats: {
     total: number;
     published: number;
@@ -29,12 +36,19 @@ const STATUS_TABS = [
   { value: "ARCHIVED", label: "Archivés", countKey: "archived" as const },
 ];
 
-export function ArticlesAdminToolbar({ projects, stats, isAdmin }: ArticlesAdminToolbarProps) {
+export function ArticlesAdminToolbar({
+  projects,
+  authors = [],
+  currentUserId,
+  stats,
+  isAdmin,
+}: ArticlesAdminToolbarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentStatus = searchParams.get("status") ?? "";
   const currentProject = searchParams.get("project") ?? "";
+  const currentAuthor = searchParams.get("author") ?? "";
   const currentQuery = searchParams.get("q") ?? "";
 
   const buildUrl = useCallback(
@@ -54,7 +68,17 @@ export function ArticlesAdminToolbar({ projects, stats, isAdmin }: ArticlesAdmin
     [searchParams],
   );
 
-  const hasActiveFilters = Boolean(currentStatus || currentProject || currentQuery);
+  const hasActiveFilters = Boolean(
+    currentStatus || currentProject || currentAuthor || currentQuery,
+  );
+
+  const sortedAuthors = [...authors].sort((a, b) => {
+    if (currentUserId && a.id === currentUserId) return -1;
+    if (currentUserId && b.id === currentUserId) return 1;
+    return a.name.localeCompare(b.name, "fr");
+  });
+
+  const selectedAuthor = authors.find((author) => author.id === currentAuthor);
 
   return (
     <div className="space-y-4">
@@ -92,6 +116,7 @@ export function ArticlesAdminToolbar({ projects, stats, isAdmin }: ArticlesAdmin
               q: (formData.get("q") as string) || null,
               status: (formData.get("status") as string) || null,
               project: (formData.get("project") as string) || null,
+              author: (formData.get("author") as string) || null,
             }),
           );
         }}
@@ -147,6 +172,27 @@ export function ArticlesAdminToolbar({ projects, stats, isAdmin }: ArticlesAdmin
             </select>
           </div>
 
+          {isAdmin ? (
+            <div className="w-full lg:w-52">
+              <label htmlFor="article-author" className="mb-1.5 block text-xs font-medium text-primary/70">
+                Auteur
+              </label>
+              <select
+                id="article-author"
+                name="author"
+                defaultValue={currentAuthor}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              >
+                <option value="">Tous les auteurs</option>
+                {sortedAuthors.map((author) => (
+                  <option key={author.id} value={author.id}>
+                    {author.id === currentUserId ? `Moi (${author.name})` : author.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
           <div className="flex gap-2">
             <Button type="submit" variant="accent">
               Filtrer
@@ -176,6 +222,16 @@ export function ArticlesAdminToolbar({ projects, stats, isAdmin }: ArticlesAdmin
             <FilterChip
               label={projects.find((p) => p.id === currentProject)?.title ?? "Projet"}
               href={buildUrl({ project: null })}
+            />
+          ) : null}
+          {currentAuthor ? (
+            <FilterChip
+              label={
+                currentAuthor === currentUserId
+                  ? `Moi (${selectedAuthor?.name ?? "moi"})`
+                  : (selectedAuthor?.name ?? "Auteur")
+              }
+              href={buildUrl({ author: null })}
             />
           ) : null}
         </div>

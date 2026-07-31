@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { DemoTourProvider } from "@/components/tour/DemoTourProvider";
 import { DevAccountSwitcher } from "@/components/dev/DevAccountSwitcher";
@@ -72,7 +73,9 @@ export default async function RootLayout({
           <DemoTourProvider sessionRole={sessionRole}>
             {children}
             {devModeEnabled ? (
-              <DevAccountSwitcher currentUserId={user?.id ?? null} accounts={accounts} />
+              <Suspense fallback={null}>
+                <DevAccountSwitcher currentUserId={user?.id ?? null} accounts={accounts} />
+              </Suspense>
             ) : null}
           </DemoTourProvider>
         </DialogProvider>

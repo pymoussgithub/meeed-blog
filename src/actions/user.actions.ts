@@ -82,9 +82,9 @@ export async function updateUserAction(id: string, input: unknown): Promise<Acti
 export async function resetUserPasswordAction(
   id: string,
   input: unknown,
-): Promise<ActionResult> {
+): Promise<ActionResult<{ requiresReauth: boolean }>> {
   try {
-    await requireAdmin();
+    const currentUser = await requireAdmin();
     const parsed = resetPasswordSchema.safeParse(input);
 
     if (!parsed.success) {
@@ -99,9 +99,14 @@ export async function resetUserPasswordAction(
     const passwordHash = await hash(parsed.data.password, 12);
     await updateUserPassword(id, passwordHash);
 
-    revalidatePath("/admin/utilisateurs");
+    // Changer son propre MDP invalide credentialsVersion : un revalidatePath
+    // ferait alors redirect() dans le layout admin → erreur RSC côté client.
+    if (currentUser.id === id) {
+      await signOut({ redirect: false });
+      return actionSuccess({ requiresReauth: true });
+    }
 
-    return actionSuccess(undefined);
+    return actionSuccess({ requiresReauth: false });
   } catch (error) {
     return actionError(error instanceof Error ? error.message : "Erreur");
   }

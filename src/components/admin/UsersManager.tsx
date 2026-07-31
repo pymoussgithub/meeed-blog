@@ -140,6 +140,12 @@ export function UsersManager({ users, stats, currentUserId }: UsersManagerProps)
 
     setResetUserId(null);
     setResetPassword("");
+
+    if (result.data.requiresReauth) {
+      router.push("/admin/login?reset=success");
+      return;
+    }
+
     setToast({ message: "Mot de passe réinitialisé.", variant: "success" });
   };
 
