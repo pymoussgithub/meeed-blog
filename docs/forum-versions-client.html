@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choix de version du forum</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --text: #1f2937;
+        --muted: #4b5563;
+        --border: #d1d5db;
+        --soft: #f8fafc;
+        --soft-2: #f3f4f6;
+        --accent: #1d4ed8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--text);
+        background: white;
+        line-height: 1.45;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 36px 56px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      h3 {
+        font-size: 15px;
+        margin-bottom: 8px;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .intro {
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+
+      .callout {
+        border: 1px solid var(--border);
+        background: var(--soft);
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+      }
+
+      .card-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--soft);
+      }
+
+      .subtitle {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 4px 8px;
+        font-size: 12px;
+        color: var(--accent);
+        border: 1px solid #bfdbfe;
+        background: #eff6ff;
+        border-radius: 999px;
+      }
+
+      .card-body {
+        padding: 16px;
+      }
+
+      .positioning {
+        color: var(--muted);
+        margin-top: 10px;
+      }
+
+      .group {
+        margin-top: 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 12px 10px;
+        background: var(--soft-2);
+      }
+
+      ul {
+        margin: 8px 0 0 18px;
+        padding: 0;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      .section {
+        margin-top: 16px;
+      }
+
+      .chooser,
+      .warning {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        background: white;
+        margin-top: 18px;
+      }
+
+      .choice {
+        margin-top: 12px;
+      }
+
+      .choice strong {
+        display: inline-block;
+        margin-bottom: 4px;
+      }
+
+      @media print {
+        .page {
+          padding: 18px 20px 28px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .card,
+        .chooser,
+        .warning,
+        .callout,
+        .group {
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <h1>Choix de version du forum</h1>
+      <p class="intro">
+        Comparatif client entre deux niveaux de prestation : un forum minimum viable
+        pour lancer rapidement les echanges, ou un forum complet pour construire un
+        espace communautaire plus ambitieux.
+      </p>
+
+      <section class="callout">
+        <strong>Comment lire ce document</strong>
+        Chaque offre decrit ce qui sera effectivement developpe, ce que le client
+        pourra utiliser au quotidien, et ce qui reste hors perimetre. Le but est
+        de faciliter un choix clair avant chiffrage final.
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h2>Forum minimum viable</h2>
+            <div class="subtitle">Une premiere version simple, utile et rapide a mettre en service.</div>
+          </div>
+          <div class="card-body">
+            <p>
+              L'objectif est d'ouvrir un espace de discussion clair autour des
+              articles du site, sans chercher a recreer un reseau social complet.
+            </p>
+            <p class="positioning">
+              <strong>Positionnement :</strong> Cette version convient si le client
+              veut valider l'usage, lancer une dynamique communautaire et garder un
+              budget cadre.
+            </p>
+
+            <div class="group">
+              <h3>Fonctionnalites visibles pour les utilisateurs</h3>
+              <ul>
+                <li>Page d'accueil du forum avec les rubriques disponibles.</li>
+                <li>Pages de rubriques listant les sujets de discussion.</li>
+                <li>Page detail d'un sujet avec les reponses en ordre chronologique.</li>
+                <li>Creation d'un sujet avec un titre et un message.</li>
+                <li>Publication de reponses sur un sujet existant.</li>
+                <li>Affichage du nombre de reponses et de la derniere activite.</li>
+                <li>Pagination simple si le volume de contenu devient important.</li>
+                <li>URLs propres pour les rubriques et les sujets.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Lien entre forum et articles</h3>
+              <ul>
+                <li>Possibilite d'associer un sujet a un article du magazine.</li>
+                <li>Affichage sur l'article d'un lien vers la discussion associee.</li>
+                <li>Affichage dans le sujet forum d'un rappel de l'article concerne.</li>
+                <li>Association geree simplement par l'administration.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Administration et moderation</h3>
+              <ul>
+                <li>Creation et gestion des rubriques du forum par l'admin.</li>
+                <li>Vue admin des sujets et messages recents.</li>
+                <li>Actions de base : masquer un message, supprimer logiquement, fermer ou rouvrir un sujet.</li>
+                <li>Definition des roles autorises a publier si besoin.</li>
+                <li>Validation des champs obligatoires et controles d'acces coherents.</li>
+                <li>Nettoyage de contenu si editeur enrichi retenu.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Perimetre technique livre</h3>
+              <ul>
+                <li>Ajout des modeles de donnees pour les rubriques, sujets, messages et liens avec les articles.</li>
+                <li>Creation des pages publiques du forum.</li>
+                <li>Creation des pages d'administration necessaires.</li>
+                <li>Integration propre avec l'architecture actuelle du site.</li>
+              </ul>
+            </div>
+
+            <div class="section">
+              <h3>Livrables attendus</h3>
+              <ul>
+                <li>Un forum public simple mais propre, pleinement coherent avec le site existant.</li>
+                <li>Un lien clair entre certains articles et leur discussion associee.</li>
+                <li>Une administration suffisante pour lancer et encadrer les premiers echanges.</li>
+              </ul>
+            </div>
+
+            <div class="section">
+              <h3>Hors perimetre par defaut</h3>
+              <ul>
+                <li>Pas de profils publics avances.</li>
+                <li>Pas de notifications email.</li>
+                <li>Pas de likes, votes, badges ou systeme de reputation.</li>
+                <li>Pas de recherche full-text avancee sur tout le forum.</li>
+                <li>Pas de pieces jointes dans les messages.</li>
+                <li>Pas de reponses imbriquees complexes.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h2>Forum complet</h2>
+            <div class="subtitle">Une version plus riche, plus structurante et plus proche d'un vrai produit communautaire.</div>
+          </div>
+          <div class="card-body">
+            <p>
+              L'objectif est de faire du forum un espace de reference pour les
+              echanges, la capitalisation et la vie de la communaute autour des
+              contenus publies.
+            </p>
+            <p class="positioning">
+              <strong>Positionnement :</strong> Cette version convient si le client
+              veut un forum qui joue un vrai role central dans l'ecosysteme du site,
+              avec davantage d'outils d'animation et de moderation.
+            </p>
+
+            <div class="group">
+              <h3>Fonctionnalites visibles pour les utilisateurs</h3>
+              <ul>
+                <li>Page d'accueil du forum plus riche avec rubriques, sujets recents et navigation amelioree.</li>
+                <li>Rubriques multiples avec ordre d'affichage configurable.</li>
+                <li>Creation de sujets et reponses avec un niveau de confort superieur.</li>
+                <li>Possibilite d'epingler certains sujets importants.</li>
+                <li>Possibilite de verrouiller ou archiver certains sujets.</li>
+                <li>Vues complementaires possibles : sujets recents, sujets lies a un article, discussions importantes.</li>
+                <li>Recherche et filtres selon le perimetre retenu.</li>
+                <li>Navigation plus structuree avec fil d'Ariane et tris plus complets.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Lien avance entre forum et articles</h3>
+              <ul>
+                <li>Un article peut etre relie a plusieurs discussions selon la regle definie.</li>
+                <li>Un sujet peut afficher clairement son article de reference.</li>
+                <li>Une page article peut lister plusieurs discussions associees.</li>
+                <li>L'admin peut associer une discussion existante ou en creer une depuis l'espace editorial.</li>
+                <li>Le forum devient ainsi un prolongement naturel du contenu editorial.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Administration et moderation</h3>
+              <ul>
+                <li>Tableau de moderation plus complet pour les admins et moderateurs.</li>
+                <li>Actions de moderation etendues : masquer, supprimer logiquement, verrouiller, deverrouiller, mettre en avant, deplacer un sujet.</li>
+                <li>Gestion plus fine des permissions selon les roles.</li>
+                <li>Signalement de contenus si cette option est retenue.</li>
+                <li>Journal minimal des actions de moderation si cette option est retenue.</li>
+                <li>Edition des sujets et messages avec regles plus riches.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Fonctionnalites communautaires envisageables dans cette version</h3>
+              <ul>
+                <li>Suivi ou abonnement a une discussion, si retenu dans le devis.</li>
+                <li>Notifications internes ou email, si retenu dans le devis.</li>
+                <li>Profils publics legers avec historique des contributions, si retenu dans le devis.</li>
+                <li>Reactions, likes ou badges, si retenu dans le devis.</li>
+                <li>Reponses plus structurees, si retenu dans le devis.</li>
+              </ul>
+            </div>
+
+            <div class="group">
+              <h3>Perimetre technique livre</h3>
+              <ul>
+                <li>Architecture de donnees plus evolutive et plus riche.</li>
+                <li>Pages publiques et outils de moderation plus nombreux.</li>
+                <li>Recherche, filtres et navigation plus pousses selon l'option retenue.</li>
+                <li>Composants dedies au forum, concus comme un vrai sous-produit du site.</li>
+              </ul>
+            </div>
+
+            <div class="section">
+              <h3>Livrables attendus</h3>
+              <ul>
+                <li>Un forum qui peut devenir un espace central d'echanges pour la communaute.</li>
+                <li>Une moderation plus solide et plus confortable dans le temps.</li>
+                <li>Un systeme plus evolutif pour accueillir ensuite d'autres fonctions communautaires.</li>
+              </ul>
+            </div>
+
+            <div class="section">
+              <h3>Hors perimetre par defaut</h3>
+              <ul>
+                <li>La messagerie privee n'est pas incluse sauf demande explicite.</li>
+                <li>Un reseau social complet n'est pas inclus par defaut.</li>
+                <li>Une moderation algorithmique ou IA n'est pas incluse par defaut.</li>
+                <li>Les integrations externes type Slack, Discord, newsletter automatique ou CRM ne sont pas incluses par defaut.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="chooser">
+        <h2>Comment choisir entre les deux versions</h2>
+        <div class="choice">
+          <strong>Choisir le minimum viable</strong>
+          <p>
+            Si l'objectif est de proposer un espace de discussion utile, maitrise
+            et rapide a deployer, sans alourdir excessivement le budget ni la
+            maintenance future.
+          </p>
+        </div>
+        <div class="choice">
+          <strong>Choisir le forum complet</strong>
+          <p>
+            Si le forum doit devenir un vrai outil communautaire, avec une
+            moderation plus confortable, une navigation plus riche et un potentiel
+            d'evolution plus important.
+          </p>
+        </div>
+      </section>
+
+      <section class="warning">
+        <h2>Point d'attention</h2>
+        <p>
+          Le terme "forum complet" peut couvrir des niveaux tres differents selon
+          les attentes. Pour le devis final, il faudra verrouiller noir sur blanc
+          les points suivants : qui peut publier, quel niveau de moderation est
+          attendu, si la recherche est incluse, si des notifications sont prevues
+          et si certaines fonctions communautaires avancees sont retenues ou non.
+        </p>
+      </section>
+    </main>
+  </body>
+  </html>

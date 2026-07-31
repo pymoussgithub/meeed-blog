@@ -7,33 +7,26 @@ const projectWithCategory = {
   category: true,
 } as const;
 
+const publishedArticleCoverWhere: Prisma.ArticleWhereInput = {
+  status: ArticleStatus.PUBLISHED,
+  OR: [{ coverImagePublicId: { not: null } }, { coverImageUrl: { not: null } }],
+};
+
 const projectWithCategoryAndCover = {
-  category: {
-    include: {
+  category: true,
+  articles: {
+    where: publishedArticleCoverWhere,
+    orderBy: { publishedAt: Prisma.SortOrder.desc },
+    take: 1,
+    select: {
+      coverImagePublicId: true,
+      coverImageUrl: true,
+    },
+  },
+  _count: {
+    select: {
       articles: {
-        where: {
-          article: {
-            status: ArticleStatus.PUBLISHED,
-            OR: [{ coverImagePublicId: { not: null } }, { coverImageUrl: { not: null } }],
-          },
-        },
-        orderBy: { article: { publishedAt: Prisma.SortOrder.desc } },
-        take: 1,
-        select: {
-          article: {
-            select: {
-              coverImagePublicId: true,
-              coverImageUrl: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          articles: {
-            where: { article: { status: ArticleStatus.PUBLISHED } },
-          },
-        },
+        where: { status: ArticleStatus.PUBLISHED },
       },
     },
   },
@@ -53,11 +46,17 @@ export async function getActiveProjects() {
 export async function getAllProjectsForAdmin() {
   return prisma.project.findMany({
     include: {
-      category: {
-        include: {
-          _count: { select: { articles: true } },
+      category: true,
+      articles: {
+        where: publishedArticleCoverWhere,
+        orderBy: { publishedAt: Prisma.SortOrder.desc },
+        take: 1,
+        select: {
+          coverImagePublicId: true,
+          coverImageUrl: true,
         },
       },
+      _count: { select: { articles: true } },
     },
     orderBy: { sortOrder: "asc" },
   });
@@ -78,58 +77,48 @@ export async function getProjectBySlug(slug: string) {
 }
 
 export async function isProjectSlugTaken(slug: string, excludeProjectId?: string) {
-  const [project, category] = await Promise.all([
-    prisma.project.findUnique({ where: { slug } }),
-    prisma.category.findUnique({ where: { slug } }),
-  ]);
+  const project = await prisma.project.findUnique({ where: { slug } });
+  return Boolean(project && project.id !== excludeProjectId);
+}
 
-  if (project && project.id !== excludeProjectId) {
-    return true;
+export async function getCategoriesAvailableForProject() {
+  return prisma.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, name: true, slug: true },
+  });
+}
+
+async function assertCategoryExists(categoryId: string) {
+  const category = await prisma.category.findUnique({
+    where: { id: categoryId },
+    select: { id: true },
+  });
+
+  if (!category) {
+    throw new Error("Catégorie introuvable");
   }
 
-  if (category) {
-    const linkedProject = await prisma.project.findUnique({
-      where: { categoryId: category.id },
-    });
-    if (linkedProject && linkedProject.id !== excludeProjectId) {
-      return true;
-    }
-    if (!linkedProject) {
-      return true;
-    }
-  }
-
-  return false;
+  return category;
 }
 
 export async function createProject(data: CreateProjectInput) {
-  return prisma.$transaction(async (tx) => {
-    const category = await tx.category.create({
-      data: {
-        name: data.title,
-        slug: data.slug,
-        description: data.summary,
-        color: data.color ?? "#4ecdc4",
-        sortOrder: data.sortOrder,
-      },
-    });
+  await assertCategoryExists(data.categoryId);
 
-    return tx.project.create({
-      data: {
-        title: data.title,
-        slug: data.slug,
-        summary: data.summary,
-        description: data.description ?? null,
-        donationUrl: data.donationUrl || null,
-        coverImageUrl: data.coverImageUrl ?? null,
-        coverImagePublicId: data.coverImagePublicId ?? null,
-        color: data.color ?? "#4ecdc4",
-        sortOrder: data.sortOrder,
-        isActive: data.isActive,
-        categoryId: category.id,
-      },
-      include: projectWithCategory,
-    });
+  return prisma.project.create({
+    data: {
+      title: data.title,
+      slug: data.slug,
+      summary: data.summary,
+      description: data.description ?? null,
+      donationUrl: data.donationUrl || null,
+      coverImageUrl: data.coverImageUrl ?? null,
+      coverImagePublicId: data.coverImagePublicId ?? null,
+      color: data.color ?? "#4ecdc4",
+      sortOrder: data.sortOrder,
+      isActive: data.isActive,
+      categoryId: data.categoryId,
+    },
+    include: projectWithCategory,
   });
 }
 
@@ -139,50 +128,62 @@ export async function updateProject(id: string, data: UpdateProjectInput) {
     throw new Error("Projet introuvable");
   }
 
-  return prisma.$transaction(async (tx) => {
-    await tx.category.update({
-      where: { id: existing.categoryId },
-      data: {
-        ...(data.title !== undefined ? { name: data.title } : {}),
-        ...(data.slug !== undefined ? { slug: data.slug } : {}),
-        ...(data.summary !== undefined ? { description: data.summary } : {}),
-        ...(data.color !== undefined ? { color: data.color } : {}),
-        ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
-      },
-    });
+  if (data.categoryId !== undefined) {
+    await assertCategoryExists(data.categoryId);
+  }
 
-    return tx.project.update({
-      where: { id },
-      data: {
-        ...(data.title !== undefined ? { title: data.title } : {}),
-        ...(data.slug !== undefined ? { slug: data.slug } : {}),
-        ...(data.summary !== undefined ? { summary: data.summary } : {}),
-        ...(data.description !== undefined ? { description: data.description } : {}),
-        ...(data.donationUrl !== undefined ? { donationUrl: data.donationUrl || null } : {}),
-        ...(data.coverImageUrl !== undefined ? { coverImageUrl: data.coverImageUrl } : {}),
-        ...(data.coverImagePublicId !== undefined
-          ? { coverImagePublicId: data.coverImagePublicId }
-          : {}),
-        ...(data.color !== undefined ? { color: data.color } : {}),
-        ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
-        ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
-      },
-      include: projectWithCategory,
-    });
+  return prisma.project.update({
+    where: { id },
+    data: {
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.slug !== undefined ? { slug: data.slug } : {}),
+      ...(data.summary !== undefined ? { summary: data.summary } : {}),
+      ...(data.description !== undefined ? { description: data.description } : {}),
+      ...(data.donationUrl !== undefined ? { donationUrl: data.donationUrl || null } : {}),
+      ...(data.coverImageUrl !== undefined ? { coverImageUrl: data.coverImageUrl } : {}),
+      ...(data.coverImagePublicId !== undefined
+        ? { coverImagePublicId: data.coverImagePublicId }
+        : {}),
+      ...(data.color !== undefined ? { color: data.color } : {}),
+      ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
+      ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+      ...(data.categoryId !== undefined ? { categoryId: data.categoryId } : {}),
+    },
+    include: projectWithCategory,
   });
 }
 
+export async function reorderProjects(orderedIds: string[]) {
+  const existing = await prisma.project.findMany({
+    select: { id: true },
+    orderBy: { sortOrder: "asc" },
+  });
+  const existingIds = new Set(existing.map((project) => project.id));
+
+  if (
+    orderedIds.length !== existing.length ||
+    orderedIds.some((id) => !existingIds.has(id))
+  ) {
+    throw new Error("Liste de projets invalide pour le réordonnancement");
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.project.update({
+        where: { id },
+        data: { sortOrder: index },
+      }),
+    ),
+  );
+}
+
 export async function countProjectArticles(projectId: string) {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    select: {
-      category: {
-        select: { _count: { select: { articles: true } } },
-      },
+  return prisma.article.count({
+    where: {
+      projectId,
+      status: ArticleStatus.PUBLISHED,
     },
   });
-
-  return project?.category._count.articles ?? 0;
 }
 
 export async function deleteProject(id: string) {
@@ -191,23 +192,6 @@ export async function deleteProject(id: string) {
     include: {
       documents: {
         select: { id: true, cloudinaryPublicId: true },
-      },
-      category: {
-        include: {
-          articles: {
-            include: {
-              article: {
-                select: {
-                  id: true,
-                  coverImagePublicId: true,
-                  documents: {
-                    select: { id: true, cloudinaryPublicId: true },
-                  },
-                },
-              },
-            },
-          },
-        },
       },
     },
   });
@@ -224,30 +208,11 @@ export async function deleteProject(id: string) {
     await removeCloudinaryAsset(document.cloudinaryPublicId, "raw");
   }
 
-  const articles = project.category.articles.map((link) => link.article);
-  const articleIds = articles.map((article) => article.id);
-
-  for (const article of articles) {
-    if (article.coverImagePublicId) {
-      await removeCloudinaryAsset(article.coverImagePublicId, "image");
-    }
-
-    for (const document of article.documents) {
-      await removeCloudinaryAsset(document.cloudinaryPublicId, "raw");
-    }
-  }
-
   await prisma.$transaction(async (tx) => {
     if (project.documents.length > 0) {
       await tx.document.deleteMany({ where: { projectId: id } });
     }
 
-    if (articleIds.length > 0) {
-      await tx.document.deleteMany({ where: { articleId: { in: articleIds } } });
-      await tx.article.deleteMany({ where: { id: { in: articleIds } } });
-    }
-
     await tx.project.delete({ where: { id } });
-    await tx.category.delete({ where: { id: project.categoryId } });
   });
 }

@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   createUserAction,
+  deleteUserAction,
   resetUserPasswordAction,
   updateUserAction,
 } from "@/actions/user.actions";
 import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { UserRoleBadge } from "@/components/admin/UserRoleBadge";
 import { Button } from "@/components/ui/Button";
+import { useDialog } from "@/components/ui/DialogProvider";
 import { Input } from "@/components/ui/Input";
 import { Toast } from "@/components/ui/Toast";
 import { USER_ROLE_LABELS } from "@/lib/admin-labels";
@@ -53,6 +55,7 @@ function getInitials(name: string) {
 
 export function UsersManager({ users, stats, currentUserId }: UsersManagerProps) {
   const router = useRouter();
+  const { confirm } = useDialog();
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
@@ -103,7 +106,7 @@ export function UsersManager({ users, stats, currentUserId }: UsersManagerProps)
     setPassword("");
     setRole("CONTRIBUTEUR");
     setShowCreateForm(false);
-    setToast({ message: "Compte créé avec succès.", variant: "success" });
+    setToast({ message: "Compte créé. Un e-mail de confirmation a été envoyé.", variant: "success" });
     router.refresh();
   };
 
@@ -138,6 +141,30 @@ export function UsersManager({ users, stats, currentUserId }: UsersManagerProps)
     setResetUserId(null);
     setResetPassword("");
     setToast({ message: "Mot de passe réinitialisé.", variant: "success" });
+  };
+
+  const handleDeleteUser = async (user: UserRow) => {
+    const confirmed = await confirm(
+      `Vous allez supprimer définitivement le compte de ${user.name} (${user.email}).\n\nSes articles, documents et messages du forum seront réattribués à votre compte. Cette action est irréversible.`,
+      {
+        title: "Supprimer cet utilisateur ?",
+        variant: "danger",
+        confirmLabel: "Supprimer définitivement",
+        cancelLabel: "Annuler",
+      },
+    );
+
+    if (!confirmed) return;
+
+    const result = await deleteUserAction(user.id);
+
+    if (!result.success) {
+      setToast({ message: result.error, variant: "error" });
+      return;
+    }
+
+    setToast({ message: "Utilisateur supprimé définitivement.", variant: "success" });
+    router.refresh();
   };
 
   const resetTarget = users.find((user) => user.id === resetUserId);
@@ -464,6 +491,15 @@ export function UsersManager({ users, stats, currentUserId }: UsersManagerProps)
                           >
                             Mot de passe
                           </button>
+                          {!isSelf ? (
+                            <button
+                              type="button"
+                              className="text-red-600 hover:underline"
+                              onClick={() => handleDeleteUser(user)}
+                            >
+                              Supprimer
+                            </button>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

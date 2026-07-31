@@ -7,15 +7,15 @@ import { useDialog } from "@/components/ui/DialogProvider";
 type ProjectListActionsProps = {
   projectId: string;
   projectTitle: string;
-  articleCount: number;
   isActive: boolean;
+  className?: string;
 };
 
 export function ProjectListActions({
   projectId,
   projectTitle,
-  articleCount,
   isActive,
+  className = "",
 }: ProjectListActionsProps) {
   const router = useRouter();
   const { confirm, alert } = useDialog();
@@ -24,7 +24,7 @@ export function ProjectListActions({
     <>
       <button
         type="button"
-        className="text-primary/60 hover:text-accent-dark hover:underline"
+        className={`${className} border-primary/15 bg-gray-50 text-primary/70 hover:border-accent/30 hover:bg-accent/10 hover:text-accent-dark`}
         onClick={async () => {
           const result = await updateProjectAction(projectId, { isActive: !isActive });
           if (!result.success) {
@@ -38,16 +38,11 @@ export function ProjectListActions({
       </button>
       <button
         type="button"
-        className="text-red-600 hover:underline"
+        className={`${className} border-red-200 bg-red-50 text-red-700 hover:bg-red-100`}
         onClick={async () => {
-          const articleWarning =
-            articleCount > 0
-              ? `\n\nAttention : ${articleCount} article${articleCount > 1 ? "s" : ""} associé${articleCount > 1 ? "s" : ""} à ce projet seront également supprimé${articleCount > 1 ? "s" : ""} définitivement.`
-              : "";
-
           if (
             !(await confirm(
-              `Supprimer définitivement le projet « ${projectTitle} » ? Cette action est irréversible.${articleWarning}`,
+              `Supprimer définitivement le projet « ${projectTitle} » ? La catégorie associée et ses articles seront conservés.`,
               { variant: "danger", confirmLabel: "Supprimer" },
             ))
           ) {

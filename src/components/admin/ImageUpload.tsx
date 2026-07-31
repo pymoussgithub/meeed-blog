@@ -6,6 +6,10 @@ import {
   FileUpload,
   type CloudinaryUploadResult,
 } from "@/components/admin/FileUpload";
+import {
+  useImageTransform,
+  type ImageTransformConfig,
+} from "@/components/admin/ImageTransformModal";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import { deleteUploadedImageAction } from "@/actions/upload.actions";
@@ -22,6 +26,32 @@ type ImageUploadProps = {
   onRemoved?: () => void;
   className?: string;
   hint?: string;
+};
+
+const TRANSFORM_CONFIGS: Record<NonNullable<ImageUploadProps["purpose"]>, ImageTransformConfig> = {
+  cover: {
+    aspectRatio: 16 / 9,
+    targetWidth: 1600,
+    targetHeight: 900,
+    title: "Ajuster l'image de couverture",
+    description:
+      "Cadrez l'image telle qu'elle apparaîtra sur la couverture de l'article, puis envoyez la version préparée.",
+  },
+  "project-cover": {
+    aspectRatio: 16 / 10,
+    targetWidth: 1600,
+    targetHeight: 1000,
+    title: "Ajuster l'image du projet",
+    description:
+      "Positionnez l'image dans le format d'affichage du projet pour obtenir un rendu propre sur les cartes et la page Projets.",
+  },
+  inline: {
+    aspectRatio: 16 / 9,
+    targetWidth: 1600,
+    targetHeight: 900,
+    title: "Ajuster l'image",
+    description: "Préparez l'image avec un cadrage simple avant son envoi.",
+  },
 };
 
 export function ImageUpload({
@@ -42,6 +72,7 @@ export function ImageUpload({
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
+  const { openEditor, modal } = useImageTransform();
 
   const deleteSessionUpload = async (targetPublicId: string) => {
     const result = await deleteUploadedImageAction(targetPublicId);
@@ -102,6 +133,7 @@ export function ImageUpload({
         allowedMimeTypes={UPLOAD_LIMITS.imageMimeTypes}
         signatureEndpoint="/api/upload/image"
         getSignatureBody={() => ({ purpose, articleId, projectId })}
+        prepareFile={(file) => openEditor(file, TRANSFORM_CONFIGS[purpose])}
         resourceLabel="image"
         onUploaded={handleUploaded}
         onError={(message) => setToast({ message, variant: "error" })}
@@ -119,6 +151,7 @@ export function ImageUpload({
               src={previewUrl}
               alt="Aperçu upload"
               fill
+              unoptimized
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 600px"
             />
@@ -148,6 +181,7 @@ export function ImageUpload({
         variant={toast?.variant ?? "success"}
         onClose={() => setToast(null)}
       />
+      {modal}
     </div>
   );
 }

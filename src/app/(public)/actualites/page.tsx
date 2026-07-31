@@ -1,25 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArticlesFilterBar } from "@/components/articles/ArticlesFilterBar";
-import { ArticlesSections } from "@/components/articles/ArticlesSections";
-import { Pagination } from "@/components/ui/Pagination";
+import { ArticlesToolbar } from "@/components/article/ArticlesToolbar";
+import {
+  ArticlesSections,
+  type ArticlesCategorySection,
+} from "@/components/articles/ArticlesSections";
 import {
   hasActiveListingFilters,
   listingParamsToPaginationQuery,
   listingParamsToPublicFilters,
   parseArticlesListingParams,
 } from "@/lib/articles-listing";
+import { toCarouselArticle } from "@/lib/article-carousel";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import {
   countFilteredPublishedArticles,
   getFilteredPublishedArticles,
   getPublishedArticleAuthors,
 } from "@/lib/services/article.service";
-import { getPublishedCategories } from "@/lib/services/category.service";
+import { getAllCategories } from "@/lib/services/category.service";
 import { getActiveProjects } from "@/lib/services/project.service";
 import { buildPageMetadata } from "@/lib/seo";
 
-const PAGE_SIZE = 24;
+const ARTICLES_FETCH_LIMIT = 200;
 
 type PageProps = {
   searchParams: Promise<{
@@ -43,50 +47,79 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default async function ActualitesPage({ searchParams }: PageProps) {
   const rawParams = await searchParams;
+  const user = await getCurrentUser();
   const params = parseArticlesListingParams(rawParams);
   const filters = listingParamsToPublicFilters(params);
   const isFiltered = hasActiveListingFilters(params);
-  const showSections = !isFiltered && params.page === 1;
-  const newsFirst = !params.contentType;
 
-  let articles: Awaited<ReturnType<typeof getFilteredPublishedArticles>> = [];
-  let categories: Awaited<ReturnType<typeof getPublishedCategories>> = [];
+  let sections: ArticlesCategorySection[] = [];
+  let categories: Awaited<ReturnType<typeof getAllCategories>> = [];
   let projects: Awaited<ReturnType<typeof getActiveProjects>> = [];
   let authors: Awaited<ReturnType<typeof getPublishedArticleAuthors>> = [];
   let total = 0;
   let dbError = false;
 
   try {
-    const offset = (params.page! - 1) * PAGE_SIZE;
-
     const [categoryList, projectList, authorList, articleCount, articleList] = await Promise.all([
-      getPublishedCategories(),
+      getAllCategories(),
       getActiveProjects(),
       getPublishedArticleAuthors(),
       countFilteredPublishedArticles(filters),
-      getFilteredPublishedArticles(filters, PAGE_SIZE, offset, { newsFirst }),
+      getFilteredPublishedArticles(filters, ARTICLES_FETCH_LIMIT, 0),
     ]);
 
-    articles = articleList;
     categories = categoryList;
     projects = projectList;
     authors = authorList;
     total = articleCount;
+
+    const filteredCategories = params.categorySlug
+      ? categoryList.filter((category) => category.slug === params.categorySlug)
+      : categoryList;
+
+    sections = filteredCategories
+      .map((category) => {
+        const categoryArticles = articleList.filter((article) => {
+          if (article.project?.category?.id === category.id) {
+            return true;
+          }
+          return article.categories.some(({ category: linked }) => linked.id === category.id);
+        });
+
+        return {
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          color: category.color,
+          count: categoryArticles.length,
+          articles: categoryArticles.map((article) =>
+            toCarouselArticle(article, category.name),
+          ),
+        };
+      })
+      .filter((section) => section.count > 0)
+      .sort((a, b) => {
+        const aIsNews = a.slug === "actualites";
+        const bIsNews = b.slug === "actualites";
+        if (aIsNews && !bIsNews) return -1;
+        if (!aIsNews && bIsNews) return 1;
+        return 0;
+      });
   } catch {
     dbError = true;
   }
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const returnQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(listingParamsToPaginationQuery(params))) {
+    if (value) returnQuery.set(key, value);
+  }
+  const returnTo = returnQuery.toString()
+    ? `/actualites?${returnQuery.toString()}`
+    : "/actualites";
 
   return (
-    <div className="container-meeed py-8 sm:py-12">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold sm:text-4xl">Nos articles</h1>
-        <p className="mt-2 max-w-2xl text-primary/65">
-          Toutes nos publications — actualités de l&apos;association en premier, puis articles
-          par thématique.
-        </p>
-      </header>
+    <div className="container-meeed py-4 sm:py-5">
+      <h1 className="sr-only">Nos articles</h1>
 
       {dbError ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
@@ -96,21 +129,17 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
       ) : (
         <>
           <Suspense fallback={<div className="mb-8 h-14 animate-pulse rounded-xl bg-gray-100" />}>
-            <ArticlesFilterBar
-              params={params}
-              categories={categories.map(({ id, name, slug }) => ({ id, label: name, slug }))}
-              projects={projects.map(({ id, title, slug }) => ({
-                id,
-                label: title,
-                slug,
-              }))}
-              authors={authors.map(({ id, name }) => ({ id, label: name }))}
+            <ArticlesToolbar
+              categories={categories.map(({ id, name, slug }) => ({ id, name, slug }))}
+              projects={projects.map(({ id, title, slug }) => ({ id, title, slug }))}
+              authors={authors.map(({ id, name }) => ({ id, name }))}
               total={total}
+              newArticleHref={user ? "/admin/articles/nouveau" : null}
             />
           </Suspense>
 
-          <div className="mt-8">
-            {total === 0 ? (
+          <div className="mt-6">
+            {total === 0 || sections.length === 0 ? (
               <div className="rounded-xl border border-dashed border-gray-200 py-16 text-center">
                 <p className="text-lg font-medium text-primary/80">
                   {isFiltered
@@ -127,16 +156,9 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
                 ) : null}
               </div>
             ) : (
-              <ArticlesSections articles={articles} showSections={showSections} />
+              <ArticlesSections sections={sections} returnTo={returnTo} />
             )}
           </div>
-
-          <Pagination
-            currentPage={params.page!}
-            totalPages={totalPages}
-            basePath="/actualites"
-            query={listingParamsToPaginationQuery(params)}
-          />
         </>
       )}
     </div>

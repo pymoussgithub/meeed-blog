@@ -103,6 +103,39 @@ heroku config:set NEXTAUTH_URL=https://meeed.fr -a votre-app
 
 ---
 
+## Assistant de démonstration interactive
+
+Panneau flottant + spotlight pour guider une démo live (parcours Visiteur / Contributeur / Admin).
+
+### Activation
+
+Dans `.env` (local) ou config Heroku :
+
+```bash
+NEXT_PUBLIC_DEMO_TOUR=1
+```
+
+Toute autre valeur (ou variable absente) **désactive** l’assistant : aucun lanceur, aucun overlay.
+
+Redémarrer le serveur Next après modification (`npm run dev` / redeploy).
+
+### Usage
+
+1. Ouvrir le site → bouton **Démo guidée** (bas-gauche).
+2. Choisir un profil (Visiteur / Contributeur / Admin) ou **Démo complète (présentation)**.
+3. Suivre les étapes ; **Quitter** / **Échap** ferme l’assistant.
+4. Compte connecté : les sujets admin sont grisés pour un contributeur.
+
+Complémentaire de `ENABLE_DEV_ACCOUNT_SWITCHER` (switch de comptes) — les deux peuvent coexister.
+
+### Contenu démo
+
+Réutiliser les comptes seed / DevAccountSwitcher. Mode **Remplir pour moi** sur les étapes de saisie (titre « Article tutoriel », etc.). Ne pas committer de mots de passe réels.
+
+Conception des parcours : `docs/tutoriel-interactif-demo.md`. Playbook agent : `docs/agent-assistant-demo-etapes.md`.
+
+---
+
 ## Contenu à compléter manuellement
 
 Ces éléments ne peuvent pas être entièrement automatisés :

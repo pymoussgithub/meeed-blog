@@ -1,8 +1,17 @@
 import { notFound, redirect } from "next/navigation";
 import { ArticleForm } from "@/components/admin/ArticleForm";
+import { ArticleForumLinksPanel } from "@/components/admin/ArticleForumLinksPanel";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import {
+  getArticleForumLinksForAdmin,
+  listForumTopicsForLinking,
+} from "@/lib/services/article-forum.service";
 import { getArticleById } from "@/lib/services/article.service";
-import { getCategoriesForArticleForm } from "@/lib/services/category.service";
+import {
+  getCategoriesForArticleForm,
+  getProjectsForArticleForm,
+} from "@/lib/services/category.service";
+import { getActiveForumCategories } from "@/lib/services/forum-category.service";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -21,9 +30,21 @@ export default async function AdminEditArticlePage({ params }: PageProps) {
     redirect("/admin/articles");
   }
 
-  const categories = await getCategoriesForArticleForm(
-    article.categories.map((item) => item.categoryId),
-  );
+  const [categories, projects] = await Promise.all([
+    getCategoriesForArticleForm(article.categories.map((item) => item.categoryId)),
+    getProjectsForArticleForm(article.projectId),
+  ]);
+
+  const canManageForumLinks =
+    user?.role === "ADMIN" || article.authorId === user?.id;
+
+  const [forumLinks, forumCategories, browsableTopics] = canManageForumLinks
+    ? await Promise.all([
+        getArticleForumLinksForAdmin(article.id),
+        getActiveForumCategories(),
+        listForumTopicsForLinking(),
+      ])
+    : [[], [], []];
 
   return (
     <div className="container-meeed py-6">
@@ -35,6 +56,13 @@ export default async function AdminEditArticlePage({ params }: PageProps) {
       <ArticleForm
         articleId={article.id}
         categories={categories}
+        projects={projects.map((project) => ({
+          id: project.id,
+          title: project.title,
+          slug: project.slug,
+          color: project.color,
+          categoryName: project.category.name,
+        }))}
         initialData={{
           title: article.title,
           slug: article.slug,
@@ -43,8 +71,30 @@ export default async function AdminEditArticlePage({ params }: PageProps) {
           coverImageUrl: article.coverImageUrl,
           coverImagePublicId: article.coverImagePublicId,
           status: article.status,
+          projectId: article.projectId,
           categoryIds: article.categories.map((item) => item.categoryId),
         }}
+        forumLinksPanel={
+          canManageForumLinks ? (
+            <ArticleForumLinksPanel
+              articleId={article.id}
+              links={forumLinks}
+              categories={forumCategories.map((category) => ({
+                id: category.id,
+                name: category.name,
+              }))}
+              browsableTopics={browsableTopics.map((topic) => ({
+                id: topic.id,
+                title: topic.title,
+                slug: topic.slug,
+                status: topic.status,
+                lastPostAt: topic.lastPostAt?.toISOString() ?? null,
+                categoryName: topic.category.name,
+                authorName: topic.author.name,
+              }))}
+            />
+          ) : null
+        }
       />
     </div>
   );

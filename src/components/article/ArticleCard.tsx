@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { getLinkedProject } from "@/lib/articles-listing";
 import { getCoverCardUrl } from "@/lib/cloudinary";
 import type { ArticleWithRelations } from "@/lib/services/article.service";
 import { formatDate } from "@/lib/utils";
@@ -19,18 +20,19 @@ function getCoverUrl(article: ArticleWithRelations) {
 
 export function ArticleCard({ article }: ArticleCardProps) {
   const primaryCategory = article.categories[0]?.category;
+  const project = getLinkedProject(article);
   const coverUrl = getCoverUrl(article);
 
   return (
     <Card className="flex h-full flex-col overflow-hidden p-0">
       <Link href={`/a/${article.slug}`} className="block">
-        <div className="relative aspect-video w-full bg-bg-soft p-4 sm:p-5">
+        <div className="relative aspect-video w-full overflow-hidden bg-bg-soft">
           {coverUrl ? (
             <Image
               src={coverUrl}
               alt={article.title}
               fill
-              className="object-contain"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 33vw"
             />
           ) : (
@@ -38,6 +40,16 @@ export function ArticleCard({ article }: ArticleCardProps) {
               MEEED
             </div>
           )}
+          {project ? (
+            <div className="absolute left-2 top-2 z-10 max-w-[calc(100%-1rem)]">
+              <span
+                className="inline-flex max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
+                style={{ backgroundColor: project.color ?? "var(--color-accent-dark)" }}
+              >
+                {project.title}
+              </span>
+            </div>
+          ) : null}
         </div>
       </Link>
 

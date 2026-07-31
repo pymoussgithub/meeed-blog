@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { DemoTourProvider } from "@/components/tour/DemoTourProvider";
+import { DevAccountSwitcher } from "@/components/dev/DevAccountSwitcher";
+import { DialogProvider } from "@/components/ui/DialogProvider";
+import { getCurrentUser } from "@/lib/auth-helpers";
+import { isDemoTourEnabled } from "@/lib/tour/flag";
+import { isDevAccountSwitcherEnabled } from "@/lib/dev-mode";
+import { getAllUsers } from "@/lib/services/user.service";
 import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
 // Evite le pool de workers SSG (EAGAIN sur Infomaniak / hebergements limites).
@@ -28,11 +35,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const devModeEnabled = isDevAccountSwitcherEnabled();
+  const demoTourEnabled = isDemoTourEnabled();
+  const user = devModeEnabled || demoTourEnabled ? await getCurrentUser() : null;
+  const accounts = devModeEnabled
+    ? await getAllUsers().then((users) =>
+        users
+          .filter((account) => account.isActive)
+          .map((account) => ({
+            id: account.id,
+            name: account.name,
+            email: account.email,
+            role: account.role,
+          })),
+      )
+    : [];
+  const sessionRole =
+    user?.role === "ADMIN" || user?.role === "CONTRIBUTEUR" ? user.role : null;
+
   return (
     <html lang="fr">
       <head>
@@ -42,7 +67,16 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <DialogProvider>
+          <DemoTourProvider sessionRole={sessionRole}>
+            {children}
+            {devModeEnabled ? (
+              <DevAccountSwitcher currentUserId={user?.id ?? null} accounts={accounts} />
+            ) : null}
+          </DemoTourProvider>
+        </DialogProvider>
+      </body>
     </html>
   );
 }

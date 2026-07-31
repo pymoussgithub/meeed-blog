@@ -7,7 +7,7 @@ import { buildOrganizationJsonLd } from "@/lib/seo";
 
 export default async function HomePage() {
   const newsArticles = await getFilteredPublishedArticles({ contentType: "news" }, 5, 0);
-  const carouselArticles = newsArticles.map(toCarouselArticle);
+  const carouselArticles = newsArticles.map((article) => toCarouselArticle(article));
 
   return (
     <>

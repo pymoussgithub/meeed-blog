@@ -25,18 +25,32 @@ export function Footer() {
               <p className="mb-3 font-semibold">Navigation</p>
               <ul className="space-y-2 text-white/70">
                 <li>
-                  <Link href="/actualites" className="hover:text-white">
+                  <Link href="/actualites" className="hover:text-white" data-tour-id="nav.header.articles">
                     Actualités
                   </Link>
                 </li>
                 <li>
-                  <Link href="/projets" className="hover:text-white">
+                  <Link href="/forum" className="hover:text-white" data-tour-id="nav.header.forum">
+                    Forum
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/projets" className="hover:text-white" data-tour-id="nav.header.projets">
                     Projets
                   </Link>
                 </li>
                 <li>
-                  <Link href="/documents" className="hover:text-white">
+                  <Link href="/documents" className="hover:text-white" data-tour-id="nav.header.documents">
                     Documents
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/categories"
+                    className="hover:text-white"
+                    data-tour-id="articles.categories.link"
+                  >
+                    Catégories
                   </Link>
                 </li>
                 <li>
@@ -50,7 +64,7 @@ export function Footer() {
               <p className="mb-3 font-semibold">Contact</p>
               <ul className="space-y-2 text-white/70">
                 <li>
-                  <Link href="/contact" className="hover:text-white">
+                  <Link href="/contact" className="hover:text-white" data-tour-id="nav.header.contact">
                     Nous écrire
                   </Link>
                 </li>

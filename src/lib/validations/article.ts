@@ -9,7 +9,8 @@ const FIELD_LABELS: Record<string, string> = {
   excerpt: "L'extrait",
   content: "Le contenu",
   coverImageUrl: "L'image de couverture",
-  categoryIds: "Les catégories",
+  projectId: "Le projet",
+  categoryIds: "Les thématiques",
 };
 
 function requiredText(message: string) {
@@ -37,9 +38,24 @@ export function getFirstZodErrorMessage(error: z.ZodError): string {
   return issue.message;
 }
 
-export const articleFormSchema = z.object({
-  title: requiredText("Le titre est requis")
-    .pipe(z.string().min(3, "Le titre doit contenir au moins 3 caractères").max(200)),
+function withClassificationRefine<T extends z.ZodTypeAny>(schema: T) {
+  return schema.superRefine((data: z.infer<T>, ctx) => {
+    const projectId = (data as { projectId?: string | null }).projectId;
+    const categoryIds = (data as { categoryIds?: string[] }).categoryIds ?? [];
+    if (!projectId && categoryIds.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Sélectionnez un projet ou au moins une thématique",
+        path: ["projectId"],
+      });
+    }
+  });
+}
+
+const articleFields = {
+  title: requiredText("Le titre est requis").pipe(
+    z.string().min(3, "Le titre doit contenir au moins 3 caractères").max(200),
+  ),
   slug: requiredText("Le slug est requis").pipe(
     z
       .string()
@@ -57,41 +73,59 @@ export const articleFormSchema = z.object({
   coverImageUrl: z.string().url().nullish(),
   coverImagePublicId: z.string().nullish(),
   status: articleStatusSchema.default("DRAFT"),
+  projectId: z.preprocess(
+    (value) => (value === "" || value == null ? null : value),
+    z.string().cuid().nullable(),
+  ),
   categoryIds: z.preprocess(
     (value) => (value == null ? [] : value),
-    z.array(z.string().cuid()).min(1, "Sélectionnez au moins une catégorie"),
+    z.array(z.string().cuid()),
   ),
-});
+};
 
-export const publishArticleSchema = articleFormSchema.extend({
-  coverImageUrl: z.preprocess(
-    (value) => value ?? "",
-    z
-      .string()
-      .min(1, "L'image de couverture est obligatoire pour publier")
-      .url("L'URL de l'image de couverture est invalide"),
-  ),
-  excerpt: requiredText("L'extrait est requis").pipe(
-    z
-      .string()
-      .min(10, "L'extrait doit contenir au moins 10 caractères")
-      .max(160, "Max 160 caractères pour le partage social"),
-  ),
-});
+const articleFormObjectSchema = z.object(articleFields);
 
-export const createArticleSchema = articleFormSchema.extend({
-  authorId: z.string().cuid(),
+export const articleFormSchema = withClassificationRefine(articleFormObjectSchema);
+
+export const publishArticleSchema = withClassificationRefine(
+  z.object({
+    ...articleFields,
+    coverImageUrl: z.preprocess(
+      (value) => value ?? "",
+      z
+        .string()
+        .min(1, "L'image de couverture est obligatoire pour publier")
+        .url("L'URL de l'image de couverture est invalide"),
+    ),
+    excerpt: requiredText("L'extrait est requis").pipe(
+      z
+        .string()
+        .min(10, "L'extrait doit contenir au moins 10 caractères")
+        .max(160, "Max 160 caractères pour le partage social"),
+    ),
+  }),
+);
+
+export const createArticleSchema = withClassificationRefine(
+  z.object({
+    ...articleFields,
+    authorId: z.string().cuid(),
+    publishedAt: z.coerce.date().optional().nullable(),
+  }),
+);
+
+export const updateArticleSchema = articleFormObjectSchema.partial().extend({
   publishedAt: z.coerce.date().optional().nullable(),
 });
 
-export const updateArticleSchema = articleFormSchema.partial().extend({
-  categoryIds: z.array(z.string().cuid()).min(1).optional(),
-  publishedAt: z.coerce.date().optional().nullable(),
-});
-
-export type ArticleFormInput = z.infer<typeof articleFormSchema>;
-export type CreateArticleInput = z.infer<typeof createArticleSchema>;
-export type UpdateArticleInput = z.infer<typeof updateArticleSchema>;
+export type ArticleFormInput = z.infer<typeof articleFormObjectSchema>;
+export type CreateArticleInput = z.infer<typeof articleFormObjectSchema> & {
+  authorId: string;
+  publishedAt?: Date | null;
+};
+export type UpdateArticleInput = Partial<ArticleFormInput> & {
+  publishedAt?: Date | null;
+};
 
 export function normalizeArticleFormInput(
   input: Partial<ArticleFormInput> & Record<string, unknown>,
@@ -107,6 +141,7 @@ export function normalizeArticleFormInput(
     status: input.status === "DRAFT" || input.status === "PUBLISHED" || input.status === "ARCHIVED"
       ? input.status
       : "DRAFT",
+    projectId: typeof input.projectId === "string" && input.projectId ? input.projectId : null,
     categoryIds: Array.isArray(input.categoryIds)
       ? input.categoryIds.filter((id): id is string => typeof id === "string")
       : [],

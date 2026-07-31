@@ -1,8 +1,14 @@
 import { ProjectForm } from "@/components/admin/ProjectForm";
-import { getAllProjectsForAdmin } from "@/lib/services/project.service";
+import {
+  getAllProjectsForAdmin,
+  getCategoriesAvailableForProject,
+} from "@/lib/services/project.service";
 
 export default async function AdminNewProjectPage() {
-  const projects = await getAllProjectsForAdmin();
+  const [projects, categories] = await Promise.all([
+    getAllProjectsForAdmin(),
+    getCategoriesAvailableForProject(),
+  ]);
 
   return (
     <div className="container-meeed py-6">
@@ -10,7 +16,7 @@ export default async function AdminNewProjectPage() {
         <p className="text-xs font-medium text-accent-dark">Gestion</p>
         <h1 className="mt-0.5 text-xl font-bold text-primary-dark">Nouveau projet</h1>
       </div>
-      <ProjectForm isNew defaultSortOrder={projects.length} />
+      <ProjectForm isNew defaultSortOrder={projects.length} categories={categories} />
     </div>
   );
 }

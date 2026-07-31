@@ -65,6 +65,17 @@ Voir [`.env.example`](.env.example). Les variables deviennent nécessaires phase
 | 2 | `DATABASE_URL` |
 | 3 | `CLOUDINARY_*` |
 | 4 | `NEXTAUTH_URL`, `NEXTAUTH_SECRET` |
+| Forum (FB-16) | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` |
+
+## Forum
+
+Le module Forum (`/forum`) permet aux contributeurs et administrateurs connectés de créer des sujets et des réponses. Les anonymes consultent uniquement.
+
+- Rubriques : `/forum/r/{slug}`
+- Sujet : `/forum/s/{slug}`
+- Recherche full-text : `/forum/recherche?q=`
+- Admin : `/admin/forum` (modération) et `/admin/forum/rubriques`
+- Notifications e-mail aux participants lors d'une nouvelle réponse (SMTP optionnel — la publication reste OK si SMTP est absent ou en erreur)
 
 ## Documentation
 

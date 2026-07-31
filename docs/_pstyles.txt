@@ -1,0 +1,50 @@
+3	Heading 1	1. Objet du présent document
+7	Heading 1	2. Vue d'ensemble de la plateforme
+10	Heading 1	3. Partie A — Le Magazine (Blog) — rappel du périmètre déjà livré
+12	Heading 3	3.1 Rôles utilisateurs
+13	List Paragraph	Lecteur (public / anonyme) — consultation du front-office uniquement
+14	List Paragraph	Contributeur (compte créé) — seul rôle autorisé, avec l'Administrateur
+15	List Paragraph	Administrateur — gestion complète (utilisateurs, catégories, projets, 
+17	Heading 3	3.2 Stack technique et prestataires
+19	Heading 3	3.3 Grandes fonctions livrées
+21	Heading 3	3.4 Hors périmètre du Magazine (rappel)
+24	Heading 1	4. Partie B — Le Forum — Version retenue : Forum complet
+26	Heading 3	4.1 Décisions validées par le client
+33	Heading 3	4.2 Positionnement
+35	Heading 3	4.3 Fonctionnalités retenues
+37	Heading 3	4.4 Fonctionnalités optionnelles du Forum complet — statut
+40	Heading 3	4.5 Décision validée — Qui peut écrire des articles et publier sur le 
+45	Heading 3	4.6 Décision validée — Modération assurée par les Administrateurs
+48	Heading 3	4.7 Périmètre technique livré
+49	List Paragraph	Architecture de données du forum (rubriques, sujets, messages, liens a
+50	List Paragraph	Pages publiques et outils de modération (réservés aux Administrateurs)
+51	List Paragraph	Moteur de recherche full-text sur les sujets et messages
+52	List Paragraph	Envoi d'e-mails transactionnels pour les notifications
+53	List Paragraph	Composants dédiés au forum, intégrés à l'architecture actuelle du Maga
+54	Heading 3	4.8 Hors périmètre du Forum (même en version complète)
+55	List Paragraph	La messagerie privée entre utilisateurs, sauf demande explicite
+56	List Paragraph	Un réseau social complet
+57	List Paragraph	Une modération algorithmique ou par intelligence artificielle
+58	List Paragraph	Les intégrations externes (Slack, Discord, newsletter automatique, CRM
+60	Heading 1	5. Matrice des droits consolidée (Magazine + Forum)
+62	Heading 1	6. Périmètre exclu — commun à la plateforme
+64	List Paragraph	Paiement ou don intégré (seul le lien externe HelloAsso est prévu)
+65	List Paragraph	Newsletter / emailing marketing intégré
+66	List Paragraph	Version multilingue
+67	List Paragraph	Application mobile native ou fonctionnement hors-ligne
+68	List Paragraph	Analytics avancés (Google Analytics, etc.)
+69	List Paragraph	Export PDF d'un article ou d'une discussion
+70	Heading 1	7. Critères de réception
+71	Heading 3	7.1 Magazine (rappel — déjà validé)
+72	List Paragraph	Un Contributeur ayant créé un compte peut publier un article avec imag
+73	List Paragraph	Les documents PDF publics sont listés et téléchargeables ; Neon et Clo
+74	Heading 3	7.2 Forum (nouveau périmètre)
+75	List Paragraph	Un Contributeur ou Administrateur connecté peut créer un sujet et publ
+76	List Paragraph	Un e-mail de notification est envoyé à l'auteur d'un sujet ou d'une ré
+77	List Paragraph	La recherche full-text retourne les sujets et messages pertinents du f
+78	List Paragraph	Les Administrateurs peuvent modérer le forum conformément à la matrice
+79	List Paragraph	Le forum est utilisable sur smartphone, dans la continuité du Magazine
+80	Heading 1	8. Montant et devis
+82	List Paragraph	Les options communautaires du §4.4 marquées « non retenues par défaut 
+83	List Paragraph	9. Validation
+84	List Paragraph	Le présent document, une fois signé, constitue la référence fonctionne

@@ -1,0 +1,19 @@
+Le Magazine MEEED est un site éditorial (actualités, projets, documents PDF) déjà livré et en produc
+Document unique — Cahier des charges consolidé Plateforme MEEED (Magazine + Forum) — Version 1.2 — 2
+Annexe A — Catalogue détaillé des fonctionnalités Magazine (F-01 à F-49)
+A.1 Navigation et structure
+A.2 Contenu éditorial
+A.3 Partage, SEO et migration
+A.4 Authentification et profil
+A.5 Back-office — articles
+A.6 Documents et médias (Cloudinary)
+A.7 Administration et exploitation
+Annexe B — Catalogue détaillé des fonctionnalités Forum (FB-01 à FB-18)
+B.1 Navigation et structure
+B.2 Sujets et réponses
+B.3 Lien avec les articles du Magazine
+B.4 Administration et modération
+B.5 Notifications et recherche (retenues)
+TABLES=20
+CODES=F-01,F-02,F-03,F-04,F-05,F-06,F-07,F-08,F-09,F-10,F-11,F-12,F-13,F-14,F-15,F-16,F-17,F-18,F-19,F-20,F-21,F-22,F-23,F-24,F-25,F-26,F-27,F-28,F-29,F-30,F-31,F-32,F-33,F-34,F-35,F-36,F-37,F-38,F-39,F-40,F-41,F-42,F-43,F-44,F-45,F-46,F-47,F-48,F-49,FB-01,FB-02,FB-07,FB-08,FB-03,FB-04,FB-05,FB-06,FB-09,FB-10,FB-11,FB-12,FB-13,FB-14,FB-15,FB-18,FB-16,FB-17
+N_CODES=67

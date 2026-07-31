@@ -7,7 +7,7 @@ import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LinkInsertModal, type LinkInsertValues } from "@/components/admin/LinkInsertModal";
-import { useDialog } from "@/components/ui/DialogProvider";
+import { useOptionalDialog } from "@/components/ui/DialogProvider";
 import { countEditorWords } from "@/lib/editor-utils";
 import { cn } from "@/lib/utils";
 import { UPLOAD_LIMITS } from "@/lib/upload-constants";
@@ -60,6 +60,60 @@ async function uploadInlineImage(file: File, articleId?: string) {
   return result.secure_url as string;
 }
 
+async function uploadInlineDocument(file: File, articleId?: string) {
+  if (
+    UPLOAD_LIMITS.documentMimeTypes.length > 0 &&
+    !(UPLOAD_LIMITS.documentMimeTypes as readonly string[]).includes(file.type)
+  ) {
+    throw new Error("Format de document non supporté");
+  }
+
+  if (file.size > UPLOAD_LIMITS.documentMaxBytes) {
+    throw new Error("Document trop volumineux");
+  }
+
+  const signatureResponse = await fetch("/api/upload/document", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      articleId,
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+    }),
+  });
+
+  if (!signatureResponse.ok) {
+    throw new Error("Impossible d'obtenir la signature d'upload du document");
+  }
+
+  const signatureData = await signatureResponse.json();
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", signatureData.apiKey);
+  formData.append("timestamp", String(signatureData.timestamp));
+  formData.append("signature", signatureData.signature);
+  formData.append("folder", signatureData.folder);
+  if (signatureData.publicId) {
+    formData.append("public_id", signatureData.publicId);
+  }
+
+  const uploadResponse = await fetch(signatureData.uploadUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error("Echec de l'upload du document");
+  }
+
+  const result = await uploadResponse.json();
+  return {
+    fileName: file.name,
+    url: result.secure_url as string,
+  };
+}
+
 function ToolbarDivider() {
   return <span className="mx-0.5 hidden h-6 w-px bg-gray-200 sm:block" aria-hidden />;
 }
@@ -70,12 +124,14 @@ function ToolbarButton({
   disabled,
   title,
   children,
+  "data-tour-id": dataTourId,
 }: {
   onClick: () => void;
   active?: boolean;
   disabled?: boolean;
   title: string;
   children: React.ReactNode;
+  "data-tour-id"?: string;
 }) {
   return (
     <button
@@ -83,6 +139,7 @@ function ToolbarButton({
       title={title}
       disabled={disabled}
       onClick={onClick}
+      data-tour-id={dataTourId}
       className={cn(
         "inline-flex h-7 w-7 items-center justify-center rounded-md text-xs transition-colors disabled:opacity-40",
         active
@@ -124,10 +181,12 @@ function applyLinkValues(editor: Editor, { text, url }: LinkInsertValues) {
 function EditorToolbar({
   editor,
   onAddImage,
+  onAddDocument,
   isUploading,
 }: {
   editor: Editor;
   onAddImage: () => void;
+  onAddDocument: () => void;
   isUploading: boolean;
 }) {
   const [linkModalOpen, setLinkModalOpen] = useState(false);
@@ -179,6 +238,7 @@ function EditorToolbar({
         title="Titre section (H2)"
         active={editor.isActive("heading", { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        data-tour-id="article.form.editor-h2"
       >
         <span className="text-xs font-bold">H2</span>
       </ToolbarButton>
@@ -196,6 +256,7 @@ function EditorToolbar({
         title="Gras (Ctrl+B)"
         active={editor.isActive("bold")}
         onClick={() => editor.chain().focus().toggleBold().run()}
+        data-tour-id="article.form.editor-bold"
       >
         <IconBold />
       </ToolbarButton>
@@ -220,6 +281,7 @@ function EditorToolbar({
         title="Liste à puces"
         active={editor.isActive("bulletList")}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
+        data-tour-id="article.form.editor-list"
       >
         <IconBulletList />
       </ToolbarButton>
@@ -246,11 +308,24 @@ function EditorToolbar({
 
       <ToolbarDivider />
 
-      <ToolbarButton title="Insérer un lien" active={editor.isActive("link")} onClick={openLinkModal}>
+      <ToolbarButton
+        title="Insérer un lien"
+        active={editor.isActive("link")}
+        onClick={openLinkModal}
+        data-tour-id="article.form.editor-link"
+      >
         <IconLink />
       </ToolbarButton>
-      <ToolbarButton title="Insérer une image" disabled={isUploading} onClick={onAddImage}>
+      <ToolbarButton
+        title="Insérer une image"
+        disabled={isUploading}
+        onClick={onAddImage}
+        data-tour-id="article.form.editor-image"
+      >
         {isUploading ? <IconSpinner /> : <IconImage />}
+      </ToolbarButton>
+      <ToolbarButton title="Uploader un PDF de référence" disabled={isUploading} onClick={onAddDocument}>
+        {isUploading ? <IconSpinner /> : <IconDocument />}
       </ToolbarButton>
 
       <LinkInsertModal
@@ -271,28 +346,76 @@ export function TipTapEditor({
   className,
   placeholder = "Commencez à rédiger votre article… Utilisez H2/H3 pour structurer, ou glissez-déposez une image.",
 }: TipTapEditorProps) {
-  const { alert } = useDialog();
+  const dialog = useOptionalDialog();
   const lastHtmlRef = useRef(content);
   const editorRef = useRef<Editor | null>(null);
   const [wordCount, setWordCount] = useState(() => countEditorWords(content));
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
 
   const insertImageFile = useCallback(
     async (editorInstance: Editor, file: File) => {
       setIsUploading(true);
+      setUploadFeedback(null);
       try {
         const url = await uploadInlineImage(file, articleId);
         editorInstance.chain().focus().setImage({ src: url, alt: file.name }).run();
       } catch (error) {
-        await alert(error instanceof Error ? error.message : "Impossible d'ajouter l'image.", {
-          variant: "error",
-        });
+        const message =
+          error instanceof Error ? error.message : "Impossible d'ajouter l'image.";
+        if (dialog) {
+          await dialog.alert(message, { variant: "error" });
+        } else {
+          window.alert(message);
+        }
       } finally {
         setIsUploading(false);
       }
     },
-    [alert, articleId],
+    [articleId, dialog],
+  );
+
+  const insertDocumentFile = useCallback(
+    async (editorInstance: Editor, file: File) => {
+      setIsUploading(true);
+      setUploadFeedback(null);
+      try {
+        const { fileName, url } = await uploadInlineDocument(file, articleId);
+        const { from, to } = editorInstance.state.selection;
+        const selectedText = from !== to ? editorInstance.state.doc.textBetween(from, to, "") : "";
+
+        editorInstance
+          .chain()
+          .focus()
+          .extendMarkRange("link")
+          .deleteSelection()
+          .insertContent({
+            type: "text",
+            text: selectedText || fileName,
+            marks: [{ type: "link", attrs: { href: url } }],
+          })
+          .run();
+
+        try {
+          await navigator.clipboard.writeText(url);
+          setUploadFeedback("Lien du PDF copie dans le presse-papiers.");
+        } catch {
+          setUploadFeedback("PDF insere en lien dans le texte.");
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Impossible d'ajouter le document.";
+        if (dialog) {
+          await dialog.alert(message, { variant: "error" });
+        } else {
+          window.alert(message);
+        }
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [articleId, dialog],
   );
 
   const editor = useEditor({
@@ -381,6 +504,19 @@ export function TipTapEditor({
     input.click();
   }, [editor, insertImageFile]);
 
+  const addDocument = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept =
+      UPLOAD_LIMITS.documentMimeTypes.length > 0 ? UPLOAD_LIMITS.documentMimeTypes.join(",") : "*/*";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file || !editor) return;
+      void insertDocumentFile(editor, file);
+    };
+    input.click();
+  }, [editor, insertDocumentFile]);
+
   if (!editor) {
     return (
       <div className="min-h-[18rem] animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
@@ -402,7 +538,12 @@ export function TipTapEditor({
       onDragOver={(event) => event.preventDefault()}
       onDrop={() => setIsDragging(false)}
     >
-      <EditorToolbar editor={editor} onAddImage={addImage} isUploading={isUploading} />
+      <EditorToolbar
+        editor={editor}
+        onAddImage={addImage}
+        onAddDocument={addDocument}
+        isUploading={isUploading}
+      />
 
       <div className="article-editor-surface relative min-h-0 flex-1 overflow-y-auto bg-white">
         {isDragging ? (
@@ -417,8 +558,9 @@ export function TipTapEditor({
 
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-gray-100 bg-gray-50/60 px-3 py-1.5 text-[11px] text-primary/50">
         <span>{wordCount} mot{wordCount > 1 ? "s" : ""}</span>
+        <span className="text-accent-dark">{uploadFeedback ?? ""}</span>
         <span className="hidden sm:inline">
-          Ctrl+B gras · Ctrl+I italique · Glisser-déposer ou coller une image
+          Ctrl+B gras · Ctrl+I italique · Glisser-déposer, coller une image ou joindre un PDF
         </span>
       </div>
     </div>
@@ -493,6 +635,14 @@ function IconImage() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
       <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+    </svg>
+  );
+}
+
+function IconDocument() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+      <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zm0 2.5L16.5 7H14zM8 13h8v1.5H8zm0 3h8v1.5H8zm0-6h4v1.5H8z" />
     </svg>
   );
 }

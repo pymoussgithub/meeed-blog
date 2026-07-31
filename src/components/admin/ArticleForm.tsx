@@ -9,15 +9,24 @@ import {
   publishArticleAction,
   saveDraftAction,
 } from "@/actions/article.actions";
+import {
+  createLinkedForumTopicAction,
+  linkArticleForumTopicAction,
+} from "@/actions/article-forum.actions";
+import {
+  AssociateForumTopicPicker,
+  type AssociableForumTopic,
+} from "@/components/admin/AssociateForumTopicPicker";
 import { ArticleStatusBadge } from "@/components/admin/ArticleStatusBadge";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { TipTapEditor } from "@/components/admin/TipTapEditor";
+import { ComposerPanel } from "@/components/editor/ComposerPanel";
 import { Button } from "@/components/ui/Button";
 import { useDialog } from "@/components/ui/DialogProvider";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Toast } from "@/components/ui/Toast";
-import { isHtmlContentEmpty } from "@/lib/editor-utils";
+import { countEditorWords, isHtmlContentEmpty } from "@/lib/editor-utils";
 import {
   getFirstZodErrorMessage,
   normalizeArticleFormInput,
@@ -25,19 +34,46 @@ import {
   type ArticleFormInput,
 } from "@/lib/validations/article";
 import { cn, slugify } from "@/lib/utils";
+import { emitTourSuccess } from "@/lib/tour/validation";
 
 type CategoryOption = {
   id: string;
   name: string;
   slug: string;
-  isProject?: boolean;
+};
+
+type ProjectOption = {
+  id: string;
+  title: string;
+  slug: string;
+  color: string | null;
+  categoryName: string;
+};
+
+type ForumCategoryOption = {
+  id: string;
+  name: string;
+};
+
+type PendingLinkedTopicDraft = {
+  localId: string;
+  title: string;
+  categoryId: string;
+  body: string;
 };
 
 type ArticleFormProps = {
   categories: CategoryOption[];
+  projects: ProjectOption[];
   articleId?: string;
   initialData?: Partial<ArticleFormInput>;
   isNew?: boolean;
+  forumLinkOptions?: {
+    categories: ForumCategoryOption[];
+    browsableTopics: AssociableForumTopic[];
+  };
+  /** Panneau forum (édition) — rendu dans la colonne principale, au-dessus de « Avant de publier ». */
+  forumLinksPanel?: React.ReactNode;
 };
 
 const defaultForm: ArticleFormInput = {
@@ -48,6 +84,7 @@ const defaultForm: ArticleFormInput = {
   coverImageUrl: null,
   coverImagePublicId: null,
   status: "DRAFT",
+  projectId: null,
   categoryIds: [],
 };
 
@@ -55,13 +92,15 @@ function FormSection({
   title,
   description,
   children,
+  "data-tour-id": dataTourId,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
+  "data-tour-id"?: string;
 }) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-white p-4">
+    <section className="rounded-lg border border-gray-200 bg-white p-4" data-tour-id={dataTourId}>
       <div className="mb-3">
         <h3 className="text-sm font-semibold text-primary-dark">{title}</h3>
         {description ? <p className="mt-0.5 text-xs text-primary/60">{description}</p> : null}
@@ -73,9 +112,12 @@ function FormSection({
 
 export function ArticleForm({
   categories,
+  projects,
   articleId,
   initialData,
   isNew = false,
+  forumLinkOptions,
+  forumLinksPanel,
 }: ArticleFormProps) {
   const router = useRouter();
   const { confirm } = useDialog();
@@ -87,6 +129,13 @@ export function ArticleForm({
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
+  const [pendingLinkedTopicIds, setPendingLinkedTopicIds] = useState<string[]>([]);
+  const [linkedTopicDraftTitle, setLinkedTopicDraftTitle] = useState("");
+  const [linkedTopicDraftCategoryId, setLinkedTopicDraftCategoryId] = useState(
+    forumLinkOptions?.categories[0]?.id ?? "",
+  );
+  const [linkedTopicDraftBody, setLinkedTopicDraftBody] = useState("<p></p>");
+  const [pendingCreatedTopics, setPendingCreatedTopics] = useState<PendingLinkedTopicDraft[]>([]);
 
   useEffect(() => {
     if (!slugLocked && isNew && form.title) {
@@ -94,8 +143,75 @@ export function ArticleForm({
     }
   }, [form.title, isNew, slugLocked]);
 
+  useEffect(() => {
+    if (!linkedTopicDraftCategoryId && forumLinkOptions?.categories[0]?.id) {
+      setLinkedTopicDraftCategoryId(forumLinkOptions.categories[0].id);
+    }
+  }, [forumLinkOptions, linkedTopicDraftCategoryId]);
+
   const updateField = <K extends keyof ArticleFormInput>(key: K, value: ArticleFormInput[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const resetLinkedTopicDraft = () => {
+    setLinkedTopicDraftTitle("");
+    setLinkedTopicDraftBody("<p></p>");
+    setLinkedTopicDraftCategoryId(forumLinkOptions?.categories[0]?.id ?? "");
+  };
+
+  const queueLinkedTopicDraft = () => {
+    if (!linkedTopicDraftTitle.trim()) {
+      setToast({ message: "Le titre de la discussion est requis.", variant: "error" });
+      return;
+    }
+
+    if (!linkedTopicDraftCategoryId) {
+      setToast({ message: "Choisissez une rubrique forum.", variant: "error" });
+      return;
+    }
+
+    if (isHtmlContentEmpty(linkedTopicDraftBody)) {
+      setToast({ message: "Le message initial de la discussion est vide.", variant: "error" });
+      return;
+    }
+
+    setPendingCreatedTopics((current) => [
+      ...current,
+      {
+        localId: crypto.randomUUID(),
+        title: linkedTopicDraftTitle.trim(),
+        categoryId: linkedTopicDraftCategoryId,
+        body: linkedTopicDraftBody,
+      },
+    ]);
+    resetLinkedTopicDraft();
+    setToast({ message: "Discussion préparée pour la création du brouillon.", variant: "success" });
+  };
+
+  const removePendingCreatedTopic = (localId: string) => {
+    setPendingCreatedTopics((current) => current.filter((topic) => topic.localId !== localId));
+  };
+
+  const attachDeferredForumLinks = async (nextArticleId: string) => {
+    for (const topicId of pendingLinkedTopicIds) {
+      const result = await linkArticleForumTopicAction({ articleId: nextArticleId, topicId });
+      if (!result.success) {
+        return result.error;
+      }
+    }
+
+    for (const topic of pendingCreatedTopics) {
+      const result = await createLinkedForumTopicAction(nextArticleId, {
+        title: topic.title,
+        categoryId: topic.categoryId,
+        body: topic.body,
+      });
+      if (!result.success) {
+        return result.error;
+      }
+    }
+
+    return null;
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -104,6 +220,13 @@ export function ArticleForm({
       categoryIds: current.categoryIds.includes(categoryId)
         ? current.categoryIds.filter((id) => id !== categoryId)
         : [...current.categoryIds, categoryId],
+    }));
+  };
+
+  const selectProject = (projectId: string) => {
+    setForm((current) => ({
+      ...current,
+      projectId: current.projectId === projectId ? null : projectId,
     }));
   };
 
@@ -135,6 +258,10 @@ export function ArticleForm({
 
     setToast({ message: "Brouillon enregistré.", variant: "success" });
     if (!articleId) {
+      const linkError = await attachDeferredForumLinks(result.data.id);
+      if (linkError) {
+        setToast({ message: linkError, variant: "error" });
+      }
       router.push(`/admin/articles/${result.data.id}`);
     } else {
       router.refresh();
@@ -164,7 +291,14 @@ export function ArticleForm({
       return;
     }
 
+    emitTourSuccess({ target: "article.form.publish" });
     setToast({ message: "Article publié !", variant: "success" });
+    if (!articleId) {
+      const linkError = await attachDeferredForumLinks(result.data.id);
+      if (linkError) {
+        setToast({ message: linkError, variant: "error" });
+      }
+    }
     router.push(`/admin/articles/${result.data.id}`);
     router.refresh();
   };
@@ -249,94 +383,169 @@ export function ArticleForm({
   };
 
   const excerptLength = form.excerpt.length;
+  const contentWordCount = countEditorWords(form.content);
+  const selectedBrowsableTopics = forumLinkOptions
+    ? pendingLinkedTopicIds
+        .map((topicId) => forumLinkOptions.browsableTopics.find((topic) => topic.id === topicId))
+        .filter((topic): topic is AssociableForumTopic => Boolean(topic))
+    : [];
   const excerptTone =
     excerptLength === 0
       ? "text-primary/50"
       : excerptLength <= 160
         ? "text-accent-dark"
         : "text-amber-600";
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
-        <Link
-          href="/admin/articles"
-          className="text-xs text-primary/60 transition-colors hover:text-accent-dark"
-        >
-          ← Retour aux articles
-        </Link>
-        <div className="flex flex-wrap items-center gap-2">
-          <ArticleStatusBadge status={form.status} />
-          {form.status !== "ARCHIVED" ? (
-            <>
+  const actionBar = (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
+      <Link
+        href="/admin/articles"
+        className="text-xs text-primary/60 transition-colors hover:text-accent-dark"
+      >
+        ← Retour aux articles
+      </Link>
+      <div className="flex flex-wrap items-center gap-2">
+        <ArticleStatusBadge status={form.status} />
+        {form.status !== "ARCHIVED" ? (
+          <>
+            {form.status !== "PUBLISHED" ? (
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSaving}
                 onClick={handleSaveDraft}
                 className="!px-4 !py-2 text-xs"
+                data-tour-id="article.form.save-draft"
               >
                 {isSaving ? "Enregistrement…" : "Enregistrer brouillon"}
               </Button>
-              <Button
-                type="button"
-                variant="accent"
-                disabled={isSaving}
-                onClick={handlePublish}
-                className="!px-4 !py-2 text-xs"
-              >
-                {form.status === "PUBLISHED" ? "Mettre à jour" : "Publier"}
-              </Button>
-              {articleId ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isSaving}
-                  onClick={handleArchive}
-                  className="!px-4 !py-2 text-xs"
-                >
-                  Archiver
-                </Button>
-              ) : null}
-              {articleId && form.status === "PUBLISHED" && form.slug ? (
-                <Button
-                  href={`/a/${form.slug}`}
-                  external
-                  variant="outline"
-                  className="!px-4 !py-2 text-xs"
-                >
-                  Aperçu public
-                </Button>
-              ) : null}
-            </>
-          ) : null}
-          {articleId && form.status === "ARCHIVED" ? (
-            <>
-              <Button
-                type="button"
-                variant="accent"
-                disabled={isSaving}
-                onClick={handleRepublish}
-                className="!px-4 !py-2 text-xs"
-              >
-                Republier
-              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="accent"
+              disabled={isSaving}
+              onClick={handlePublish}
+              className="!px-4 !py-2 text-xs"
+              data-tour-id="article.form.publish"
+            >
+              {form.status === "PUBLISHED" ? "Mettre à jour" : "Publier"}
+            </Button>
+            {articleId ? (
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSaving}
-                onClick={handleDelete}
-                className="!border-red-200 !px-4 !py-2 text-xs !text-red-600 hover:!bg-red-50"
+                onClick={handleArchive}
+                className="!px-4 !py-2 text-xs"
+                data-tour-id="admin.articles.archive"
               >
-                Supprimer
+                Archiver
               </Button>
-            </>
-          ) : null}
-        </div>
+            ) : null}
+            {articleId && form.status === "PUBLISHED" && form.slug ? (
+              <Button
+                href={`/a/${form.slug}`}
+                external
+                variant="outline"
+                className="!px-4 !py-2 text-xs"
+                data-tour-id="article.public-preview"
+              >
+                Aperçu public
+              </Button>
+            ) : null}
+          </>
+        ) : null}
+        {articleId && form.status === "ARCHIVED" ? (
+          <>
+            <Button
+              type="button"
+              variant="accent"
+              disabled={isSaving}
+              onClick={handleRepublish}
+              className="!px-4 !py-2 text-xs"
+              data-tour-id="admin.articles.republish"
+            >
+              Republier
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSaving}
+              onClick={handleDelete}
+              className="!border-red-200 !px-4 !py-2 text-xs !text-red-600 hover:!bg-red-50"
+            >
+              Supprimer
+            </Button>
+          </>
+        ) : null}
       </div>
+    </div>
+  );
 
-      <div className="min-w-0 space-y-4">
-          {/* 1. Titre — cadre dédié */}
+  return (
+    <div className="space-y-4">
+      {actionBar}
+
+      <ComposerPanel
+        eyebrow="Publication"
+        title={isNew ? "Nouvel article" : "Édition de l'article"}
+        description="Un panneau de rédaction plus guidé pour structurer plus vite le contenu, vérifier la publication et garder les informations importantes sous la main."
+        stats={[
+          {
+            label: "Mots",
+            value: `${contentWordCount}`,
+            tone: contentWordCount > 0 ? "accent" : "muted",
+          },
+          {
+            label: "Résumé",
+            value: `${excerptLength}/160`,
+            tone: excerptLength > 0 && excerptLength <= 160 ? "accent" : "default",
+          },
+          {
+            label: "Projet",
+            value: form.projectId ? "Oui" : "—",
+            tone: form.projectId ? "accent" : "muted",
+          },
+          {
+            label: "Visuel",
+            value: form.coverImageUrl ? "Ajouté" : "Manquant",
+            tone: form.coverImageUrl ? "accent" : "muted",
+          },
+        ]}
+        checklistDescription="Les points ci-dessous reprennent les pré-requis les plus utiles avant publication."
+        checklistItems={[
+          {
+            label: "Titre renseigné",
+            done: Boolean(form.title.trim()),
+            helper: "Il doit permettre de comprendre le sujet de l'article en un coup d'œil.",
+          },
+          {
+            label: "Contenu principal rédigé",
+            done: !isHtmlContentEmpty(form.content),
+            helper: "L'article doit contenir un vrai corps de texte, pas seulement un titre ou une image.",
+          },
+          {
+            label: "Résumé de partage prêt",
+            done: excerptLength > 0 && excerptLength <= 160,
+            helper: "Idéalement entre 120 et 160 caractères pour l'aperçu social.",
+          },
+          {
+            label: "Publication complète",
+            done: (Boolean(form.projectId) || form.categoryIds.length > 0) && Boolean(form.coverImageUrl),
+            helper: "Un projet ou une thématique, et une image de couverture.",
+          },
+        ]}
+        sidebar={
+          <div className="rounded-2xl border border-primary/10 bg-bg-soft/35 p-4">
+            <h3 className="text-sm font-semibold text-primary-dark">Aide à la rédaction</h3>
+            <ul className="mt-3 space-y-2 text-xs leading-relaxed text-primary/60">
+              <li>Commencez par une promesse claire dans le titre et le résumé.</li>
+              <li>Structurez le corps avec des intertitres H2/H3 pour faciliter la lecture.</li>
+              <li>Associez un projet (ou une thématique) et l&apos;image avant publication.</li>
+            </ul>
+          </div>
+        }
+      >
+        <div className="min-w-0 space-y-4">
           <section className="rounded-lg border-2 border-accent/25 bg-bg-soft/50 p-4 shadow-sm">
             <label
               htmlFor="article-title"
@@ -351,56 +560,53 @@ export function ArticleForm({
               placeholder="Saisissez le titre ici…"
               className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-lg font-bold text-primary-dark placeholder:text-primary/35 shadow-sm transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 sm:text-xl"
               style={{ fontFamily: "var(--font-heading)" }}
+              data-tour-id="article.form.title"
             />
             <p className="mt-2 text-xs text-primary/55">
               Affiché en une sur le site, les listes et le partage social.
             </p>
           </section>
 
-          {/* 2. Catégories + couverture (avant la rédaction) */}
           <div className="grid gap-4 md:grid-cols-2">
             <FormSection
-              title="Catégories"
-              description="Au moins une requise pour publier"
+              title="Association"
+              description="Projet et/ou thématique — au moins un requis pour publier"
+              data-tour-id="article.form.categories"
             >
-              {categories.some((category) => category.isProject) ? (
+              {projects.length > 0 ? (
                 <div className="mb-3">
                   <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-primary/45">
-                    Projets
+                    Projet
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {categories
-                      .filter((category) => category.isProject)
-                      .map((category) => (
-                        <CategoryChip
-                          key={category.id}
-                          label={category.name}
-                          selected={form.categoryIds.includes(category.id)}
-                          onClick={() => toggleCategory(category.id)}
-                        />
-                      ))}
+                    {projects.map((project) => (
+                      <CategoryChip
+                        key={project.id}
+                        label={project.title}
+                        selected={form.projectId === project.id}
+                        onClick={() => selectProject(project.id)}
+                      />
+                    ))}
                   </div>
                 </div>
               ) : null}
 
-              {categories.some((category) => !category.isProject) ? (
+              {categories.length > 0 ? (
                 <div>
-                  {categories.some((category) => category.isProject) ? (
+                  {projects.length > 0 ? (
                     <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-primary/45">
                       Thématiques
                     </p>
                   ) : null}
                   <div className="flex flex-wrap gap-1.5">
-                    {categories
-                      .filter((category) => !category.isProject)
-                      .map((category) => (
-                        <CategoryChip
-                          key={category.id}
-                          label={category.name}
-                          selected={form.categoryIds.includes(category.id)}
-                          onClick={() => toggleCategory(category.id)}
-                        />
-                      ))}
+                    {categories.map((category) => (
+                      <CategoryChip
+                        key={category.id}
+                        label={category.name}
+                        selected={form.categoryIds.includes(category.id)}
+                        onClick={() => toggleCategory(category.id)}
+                      />
+                    ))}
                   </div>
                 </div>
               ) : null}
@@ -409,6 +615,7 @@ export function ArticleForm({
             <FormSection
               title="Image de couverture"
               description="Obligatoire pour publier · format 16:9"
+              data-tour-id="article.form.cover"
             >
               <ImageUpload
                 purpose="cover"
@@ -433,7 +640,6 @@ export function ArticleForm({
             </FormSection>
           </div>
 
-          {/* 3. Extrait */}
           <FormSection
             title="Résumé & partage"
             description="120–160 caractères pour WhatsApp et les réseaux"
@@ -445,6 +651,7 @@ export function ArticleForm({
               maxLength={300}
               placeholder="Un court résumé accrocheur…"
               className="min-h-20 text-sm"
+              data-tour-id="article.form.excerpt"
             />
             <p className={cn("mt-1 text-xs", excerptTone)}>
               {excerptLength} / 160 recommandé
@@ -452,8 +659,10 @@ export function ArticleForm({
             </p>
           </FormSection>
 
-          {/* 4. Corps de l'article */}
-          <section className="rounded-lg border border-gray-200 bg-white p-4">
+          <section
+            className="rounded-lg border border-gray-200 bg-white p-4"
+            data-tour-id="article.form.body"
+          >
             <div className="mb-3">
               <h3 className="text-sm font-semibold text-primary-dark">Corps de l&apos;article</h3>
               <p className="mt-0.5 text-xs text-primary/60">Rédigez le contenu principal ici</p>
@@ -465,7 +674,6 @@ export function ArticleForm({
             />
           </section>
 
-          {/* 5. URL — en dernier */}
           <FormSection
             title="URL & référencement"
             description="Adresse personnalisée de l'article"
@@ -493,7 +701,153 @@ export function ArticleForm({
               </button>
             ) : null}
           </FormSection>
-      </div>
+
+          {isNew && forumLinkOptions ? (
+            <FormSection
+              title="Discussions forum liées"
+              description="Pendant la création, vous pouvez déjà préparer les liaisons. Elles seront appliquées automatiquement au premier enregistrement du brouillon."
+              data-tour-id="article.form.forum-links"
+            >
+              <div className="space-y-4">
+                <div className="rounded-xl border border-primary/10 bg-bg-soft/35 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-primary-dark">
+                        Associer des sujets existants
+                      </p>
+                      <p className="mt-1 text-xs text-primary/55">
+                        Sélectionnez les discussions déjà publiées à rattacher à cet article.
+                      </p>
+                    </div>
+                    <AssociateForumTopicPicker
+                      topics={forumLinkOptions.browsableTopics}
+                      selectedIds={pendingLinkedTopicIds}
+                      onConfirm={setPendingLinkedTopicIds}
+                      triggerClassName="h-10 whitespace-nowrap rounded-lg border border-accent/50 px-3.5 py-0 text-sm font-medium"
+                    />
+                  </div>
+                  <p className="mt-3 text-xs text-primary/55">
+                    {pendingLinkedTopicIds.length} sujet{pendingLinkedTopicIds.length > 1 ? "s" : ""} en attente de liaison.
+                  </p>
+                  {selectedBrowsableTopics.length > 0 ? (
+                    <ul className="mt-4 space-y-2">
+                      {selectedBrowsableTopics.map((topic) => (
+                        <li
+                          key={topic.id}
+                          className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium text-primary-dark">{topic.title}</p>
+                            <p className="text-xs text-primary/50">
+                              {topic.categoryName}
+                              {topic.authorName ? ` · ${topic.authorName}` : ""}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="shrink-0 !rounded-lg !border-red-200 !px-3.5 !py-1.5 text-xs !text-red-600 hover:!bg-red-50 hover:!border-red-300"
+                            onClick={() =>
+                              setPendingLinkedTopicIds((current) =>
+                                current.filter((currentTopicId) => currentTopicId !== topic.id),
+                              )
+                            }
+                          >
+                            Retirer
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+
+                <div className="rounded-xl border border-primary/10 bg-white p-4">
+                  <p className="text-sm font-medium text-primary-dark">Créer une discussion pré-liée</p>
+                  <p className="mt-1 text-xs text-primary/55">
+                    Pratique si l&apos;article doit sortir avec un fil de discussion dédié.
+                  </p>
+
+                  {forumLinkOptions.categories.length === 0 ? (
+                    <p className="mt-3 text-sm text-primary/55">
+                      Créez d&apos;abord une rubrique forum.
+                    </p>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      <Input
+                        label="Titre de la discussion"
+                        value={linkedTopicDraftTitle}
+                        onChange={(event) => setLinkedTopicDraftTitle(event.target.value)}
+                        placeholder="Ex. Réactions et questions autour de cet article"
+                      />
+                      <div>
+                        <label className="mb-1.5 block text-sm font-medium" htmlFor="linked-topic-category">
+                          Rubrique forum
+                        </label>
+                        <select
+                          id="linked-topic-category"
+                          value={linkedTopicDraftCategoryId}
+                          onChange={(event) => setLinkedTopicDraftCategoryId(event.target.value)}
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
+                        >
+                          {forumLinkOptions.categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="overflow-hidden rounded-lg border border-gray-200">
+                        <TipTapEditor
+                          content={linkedTopicDraftBody}
+                          onChange={setLinkedTopicDraftBody}
+                          placeholder="Message initial de la discussion..."
+                        />
+                      </div>
+                      <Button type="button" variant="outline" onClick={queueLinkedTopicDraft}>
+                        Ajouter à la file d&apos;attente
+                      </Button>
+                    </div>
+                  )}
+
+                  {pendingCreatedTopics.length > 0 ? (
+                    <ul className="mt-4 space-y-2">
+                      {pendingCreatedTopics.map((topic) => {
+                        const categoryName =
+                          forumLinkOptions.categories.find((category) => category.id === topic.categoryId)
+                            ?.name ?? "Rubrique inconnue";
+
+                        return (
+                          <li
+                            key={topic.localId}
+                            className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50/50 px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-medium text-primary-dark">{topic.title}</p>
+                              <p className="text-xs text-primary/50">{categoryName}</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="shrink-0 !rounded-lg !border-red-200 !px-3.5 !py-1.5 text-xs !text-red-600 hover:!bg-red-50 hover:!border-red-300"
+                              onClick={() => removePendingCreatedTopic(topic.localId)}
+                            >
+                              Retirer
+                            </Button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
+                </div>
+              </div>
+            </FormSection>
+          ) : null}
+
+          {forumLinksPanel}
+        </div>
+      </ComposerPanel>
+
+      {actionBar}
 
       <Toast
         message={toast?.message ?? ""}

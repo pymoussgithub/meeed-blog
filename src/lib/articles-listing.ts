@@ -10,7 +10,9 @@ export function parseArticlesListingParams(
   params: Record<string, string | undefined>,
 ): ArticlesListingParams {
   const contentType =
-    params.type === "project" || params.type === "news" ? params.type : null;
+    params.type === "project" || params.type === "news" || params.type === "formation"
+      ? params.type
+      : null;
 
   return {
     q: params.q?.trim() || null,
@@ -39,6 +41,21 @@ export function buildArticlesUrl(
   if (next.dateFrom) search.set("from", next.dateFrom);
   if (next.dateTo) search.set("to", next.dateTo);
   if (next.page && next.page > 1) search.set("page", String(next.page));
+
+  const query = search.toString();
+  return query ? `/actualites?${query}` : "/actualites";
+}
+
+export function buildArticlesCurrentUrl(params: ArticlesListingParams): string {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.contentType) search.set("type", params.contentType);
+  if (params.projectSlug) search.set("project", params.projectSlug);
+  if (params.categorySlug) search.set("category", params.categorySlug);
+  if (params.authorId) search.set("author", params.authorId);
+  if (params.dateFrom) search.set("from", params.dateFrom);
+  if (params.dateTo) search.set("to", params.dateTo);
+  if (params.page && params.page > 1) search.set("page", String(params.page));
 
   const query = search.toString();
   return query ? `/actualites?${query}` : "/actualites";
@@ -85,17 +102,17 @@ export function listingParamsToPaginationQuery(params: ArticlesListingParams) {
 export type ArticleKind = "news" | "project" | "mixed";
 
 export function getLinkedProject(article: ArticleWithRelations) {
-  for (const { category } of article.categories) {
-    if (category.project) {
-      return category.project;
-    }
+  if (article.project) {
+    return article.project;
   }
   return null;
 }
 
 export function getArticleKind(article: ArticleWithRelations): ArticleKind {
-  const hasProject = article.categories.some(({ category }) => Boolean(category.project));
-  const hasNews = article.categories.some(({ category }) => !category.project);
+  const hasProject = Boolean(article.projectId);
+  const hasNews = article.categories.some(
+    ({ category }) => category.projects.length === 0,
+  );
 
   if (hasProject && hasNews) return "mixed";
   if (hasProject) return "project";
@@ -105,5 +122,5 @@ export function getArticleKind(article: ArticleWithRelations): ArticleKind {
 export function getNewsCategories(article: ArticleWithRelations) {
   return article.categories
     .map(({ category }) => category)
-    .filter((category) => !category.project);
+    .filter((category) => category.projects.length === 0);
 }

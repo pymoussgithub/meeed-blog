@@ -1,7 +1,13 @@
-import type { Prisma } from "@prisma/client";
+import type { DocumentVisibility, Prisma } from "@prisma/client";
+import { getDocumentVisibilityLabel } from "@/lib/document-visibility";
 import { prisma } from "@/lib/prisma";
 import { removeCloudinaryAsset } from "@/lib/services/upload.server";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/lib/validations/document";
+
+export type DocumentAccessUser = {
+  id: string;
+  role: "ADMIN" | "CONTRIBUTEUR";
+};
 
 export type PublicDocumentFilters = {
   search?: string | null;
@@ -13,12 +19,21 @@ export type PublicDocumentFilters = {
   linked?: "article" | "project" | "no" | null;
 };
 
-const publicDocumentInclude = {
+export const publicDocumentInclude = {
   article: {
     select: {
       id: true,
       title: true,
       slug: true,
+      project: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          isActive: true,
+          category: { select: { slug: true } },
+        },
+      },
       categories: {
         select: {
           category: {
@@ -26,8 +41,8 @@ const publicDocumentInclude = {
               id: true,
               name: true,
               slug: true,
-              project: {
-                select: { id: true, title: true, slug: true },
+              projects: {
+                select: { id: true },
               },
             },
           },
@@ -35,9 +50,35 @@ const publicDocumentInclude = {
       },
     },
   },
-  project: { select: { id: true, title: true, slug: true } },
+  project: {
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      category: { select: { slug: true } },
+    },
+  },
   uploadedBy: { select: { id: true, name: true } },
 } as const;
+
+export function buildDocumentAccessWhere(
+  user?: DocumentAccessUser | null,
+): Prisma.DocumentWhereInput {
+  if (user?.role === "ADMIN") {
+    return {};
+  }
+
+  if (user) {
+    return {
+      OR: [
+        { visibility: "PUBLIC" },
+        { visibility: "CONTRIBUTOR" },
+      ],
+    };
+  }
+
+  return { visibility: "PUBLIC" };
+}
 
 function appendAnd(
   where: Prisma.DocumentWhereInput,
@@ -51,16 +92,19 @@ function appendAnd(
       : [condition];
 }
 
-function buildPublicDocumentWhere(filters: PublicDocumentFilters): Prisma.DocumentWhereInput {
-  const where: Prisma.DocumentWhereInput = {
-    isPublic: true,
-  };
+function buildAccessibleDocumentWhere(
+  filters: PublicDocumentFilters,
+  user?: DocumentAccessUser | null,
+): Prisma.DocumentWhereInput {
+  const where: Prisma.DocumentWhereInput = buildDocumentAccessWhere(user);
 
   if (filters.search) {
-    where.OR = [
-      { title: { contains: filters.search, mode: "insensitive" } },
-      { description: { contains: filters.search, mode: "insensitive" } },
-    ];
+    appendAnd(where, {
+      OR: [
+        { title: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
+      ],
+    });
   }
 
   if (filters.linked === "article") {
@@ -95,13 +139,7 @@ function buildPublicDocumentWhere(filters: PublicDocumentFilters): Prisma.Docume
         { project: { slug: filters.projectSlug, isActive: true } },
         {
           article: {
-            categories: {
-              some: {
-                category: {
-                  project: { slug: filters.projectSlug, isActive: true },
-                },
-              },
-            },
+            project: { slug: filters.projectSlug, isActive: true },
           },
         },
       ],
@@ -110,51 +148,71 @@ function buildPublicDocumentWhere(filters: PublicDocumentFilters): Prisma.Docume
 
   if (filters.categorySlug) {
     appendAnd(where, {
-      article: {
-        categories: {
-          some: {
-            category: { slug: filters.categorySlug, project: null },
+      OR: [
+        {
+          article: {
+            categories: {
+              some: {
+                category: { slug: filters.categorySlug, projects: { none: {} } },
+              },
+            },
           },
         },
-      },
+        {
+          article: {
+            project: { category: { slug: filters.categorySlug } },
+          },
+        },
+        {
+          project: { category: { slug: filters.categorySlug } },
+        },
+      ],
     });
   }
 
   return where;
 }
 
-export async function getPublicDocuments(filters: PublicDocumentFilters = {}) {
+export async function getPublicDocuments(
+  filters: PublicDocumentFilters = {},
+  user?: DocumentAccessUser | null,
+) {
   return prisma.document.findMany({
-    where: buildPublicDocumentWhere(filters),
+    where: buildAccessibleDocumentWhere(filters, user),
     orderBy: { createdAt: "desc" },
     include: publicDocumentInclude,
   });
 }
 
-export async function countPublicDocuments(filters: PublicDocumentFilters = {}) {
+export async function countPublicDocuments(
+  filters: PublicDocumentFilters = {},
+  user?: DocumentAccessUser | null,
+) {
   return prisma.document.count({
-    where: buildPublicDocumentWhere(filters),
+    where: buildAccessibleDocumentWhere(filters, user),
   });
 }
 
-export async function getPublicDocumentUploaders() {
+export async function getPublicDocumentUploaders(user?: DocumentAccessUser | null) {
   return prisma.user.findMany({
     where: {
-      documents: { some: { isPublic: true } },
+      documents: { some: buildDocumentAccessWhere(user) },
     },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 }
 
-export async function getPublicDocumentNewsCategories() {
+export async function getPublicDocumentNewsCategories(user?: DocumentAccessUser | null) {
+  const accessibleDocumentsWhere = buildDocumentAccessWhere(user);
+
   return prisma.category.findMany({
     where: {
-      project: null,
+      projects: { none: {} },
       articles: {
         some: {
           article: {
-            documents: { some: { isPublic: true } },
+            documents: { some: accessibleDocumentsWhere },
           },
         },
       },
@@ -164,18 +222,20 @@ export async function getPublicDocumentNewsCategories() {
   });
 }
 
-export async function getPublicDocumentProjects() {
+export async function getPublicDocumentProjects(user?: DocumentAccessUser | null) {
+  const accessibleDocumentsWhere = buildDocumentAccessWhere(user);
+
   return prisma.project.findMany({
     where: {
       isActive: true,
       OR: [
-        { documents: { some: { isPublic: true } } },
+        { documents: { some: accessibleDocumentsWhere } },
         {
           category: {
             articles: {
               some: {
                 article: {
-                  documents: { some: { isPublic: true } },
+                  documents: { some: accessibleDocumentsWhere },
                 },
               },
             },
@@ -184,20 +244,27 @@ export async function getPublicDocumentProjects() {
       ],
     },
     orderBy: { sortOrder: "asc" },
-    select: { id: true, title: true, slug: true },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      category: { select: { slug: true } },
+    },
   });
 }
 
-export async function getDocumentsByArticle(articleId: string) {
+export async function getDocumentsByArticle(articleId: string, user?: DocumentAccessUser | null) {
   return prisma.document.findMany({
-    where: { articleId, isPublic: true },
+    where: { articleId, ...buildDocumentAccessWhere(user) },
+    include: publicDocumentInclude,
     orderBy: { createdAt: "desc" },
   });
 }
 
-export async function getDocumentsByProject(projectId: string) {
+export async function getDocumentsByProject(projectId: string, user?: DocumentAccessUser | null) {
   return prisma.document.findMany({
-    where: { projectId, isPublic: true },
+    where: { projectId, ...buildDocumentAccessWhere(user) },
+    include: publicDocumentInclude,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -218,8 +285,23 @@ export async function getAllDocuments(userId?: string, isAdmin = true) {
     where: isAdmin || !userId ? {} : { uploadedById: userId },
     orderBy: { createdAt: "desc" },
     include: {
-      article: { select: { id: true, title: true, slug: true } },
-      project: { select: { id: true, title: true, slug: true } },
+      article: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          projectId: true,
+          project: { select: { id: true, title: true } },
+        },
+      },
+      project: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: { select: { slug: true } },
+        },
+      },
       uploadedBy: { select: { id: true, name: true } },
     },
   });
@@ -239,7 +321,16 @@ export async function deleteDocument(id: string) {
     throw new Error("Document introuvable");
   }
 
-  await removeCloudinaryAsset(document.cloudinaryPublicId, "raw");
+  try {
+    await removeCloudinaryAsset(document.cloudinaryPublicId, "raw");
+  } catch (error) {
+    // Ne pas bloquer la suppression en base si Cloudinary est indisponible
+    // (TLS/proxy, fichier déjà absent, etc.).
+    console.error(
+      `[documents] Échec suppression Cloudinary (${document.cloudinaryPublicId}):`,
+      error,
+    );
+  }
 
   return prisma.document.delete({ where: { id } });
 }

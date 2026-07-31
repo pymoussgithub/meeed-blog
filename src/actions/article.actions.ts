@@ -47,6 +47,7 @@ function buildArticlePayload(input: ArticleFormInput, status: ArticleStatus) {
     coverImageUrl: input.coverImageUrl ?? null,
     coverImagePublicId: input.coverImagePublicId ?? null,
     status,
+    projectId: input.projectId ?? null,
     categoryIds: input.categoryIds,
     ...(status === ArticleStatus.PUBLISHED ? { publishedAt: new Date() } : {}),
   };
@@ -119,11 +120,31 @@ export async function saveDraftAction(
   id: string | null,
   input: ArticleFormInput,
 ): Promise<ActionResult<{ id: string }>> {
-  const draftInput = { ...input, status: "DRAFT" as const };
-  if (id) {
-    return updateArticleAction(id, draftInput);
+  try {
+    if (id) {
+      const { article } = await assertCanEdit(id);
+      if (article.status === ArticleStatus.PUBLISHED) {
+        return actionError(
+          "Un article publié ne peut pas être repassé en brouillon. Utilisez « Mettre à jour » ou archivez-le.",
+        );
+      }
+      if (article.status === ArticleStatus.ARCHIVED) {
+        return actionError(
+          "Un article archivé ne peut pas être enregistré en brouillon. Republiez-le d'abord.",
+        );
+      }
+    }
+
+    const draftInput = { ...input, status: "DRAFT" as const };
+    if (id) {
+      return updateArticleAction(id, draftInput);
+    }
+    return createArticleAction(draftInput);
+  } catch (error) {
+    return actionError(
+      error instanceof Error ? error.message : "Erreur lors de l'enregistrement du brouillon",
+    );
   }
-  return createArticleAction(draftInput);
 }
 
 export async function publishArticleAction(

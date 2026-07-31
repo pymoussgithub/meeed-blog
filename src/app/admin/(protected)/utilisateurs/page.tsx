@@ -1,15 +1,17 @@
+import { redirect } from "next/navigation";
 import { UsersManager } from "@/components/admin/UsersManager";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { requireAdmin } from "@/lib/auth-helpers";
 import { getAllUsers, getUserStats } from "@/lib/services/user.service";
 
 export default async function AdminUsersPage() {
-  const [users, stats, currentUser] = await Promise.all([
-    getAllUsers(),
-    getUserStats(),
-    getCurrentUser(),
-  ]);
+  let currentUser;
+  try {
+    currentUser = await requireAdmin();
+  } catch {
+    redirect("/admin");
+  }
 
-  if (!currentUser) return null;
+  const [users, stats] = await Promise.all([getAllUsers(), getUserStats()]);
 
   return (
     <div className="container-meeed py-10">

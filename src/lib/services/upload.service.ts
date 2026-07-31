@@ -11,6 +11,7 @@ export type DocumentMetadata = {
   url: string;
   fileName: string;
   fileSize: number;
+  mimeType: string;
   articleId?: string;
 };
 
@@ -37,6 +38,7 @@ export function saveDocumentMetadata(
   url: string,
   fileName: string,
   fileSize: number,
+  mimeType: string,
   articleId?: string,
 ): DocumentMetadata {
   return {
@@ -44,6 +46,7 @@ export function saveDocumentMetadata(
     url,
     fileName,
     fileSize,
+    mimeType,
     articleId,
   };
 }

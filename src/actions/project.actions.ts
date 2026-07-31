@@ -7,10 +7,22 @@ import {
   deleteProject,
   getProjectById,
   isProjectSlugTaken,
+  reorderProjects,
   updateProject,
 } from "@/lib/services/project.service";
-import { createProjectSchema, updateProjectSchema } from "@/lib/validations/project";
+import {
+  createProjectSchema,
+  reorderProjectsSchema,
+  updateProjectSchema,
+} from "@/lib/validations/project";
 import { actionError, actionSuccess, type ActionResult } from "@/types/actions";
+
+function revalidateProjectPaths(categorySlug: string) {
+  revalidatePath("/admin/projets");
+  revalidatePath("/projets");
+  revalidatePath("/");
+  revalidatePath(`/c/${categorySlug}`);
+}
 
 export async function createProjectAction(
   input: unknown,
@@ -29,10 +41,7 @@ export async function createProjectAction(
 
     const project = await createProject(parsed.data);
 
-    revalidatePath("/admin/projets");
-    revalidatePath("/projets");
-    revalidatePath("/");
-    revalidatePath(`/c/${project.slug}`);
+    revalidateProjectPaths(project.category.slug);
 
     return actionSuccess({ id: project.id });
   } catch (error) {
@@ -62,15 +71,35 @@ export async function updateProjectAction(
       return actionError("Ce slug est déjà utilisé");
     }
 
-    await updateProject(id, parsed.data);
+    const project = await updateProject(id, parsed.data);
+
+    revalidateProjectPaths(existing.category.slug);
+    if (project.category.slug !== existing.category.slug) {
+      revalidatePath(`/c/${project.category.slug}`);
+    }
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(error instanceof Error ? error.message : "Erreur");
+  }
+}
+
+export async function reorderProjectsAction(
+  input: unknown,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const parsed = reorderProjectsSchema.safeParse(input);
+
+    if (!parsed.success) {
+      return actionError(parsed.error.errors[0]?.message ?? "Données invalides");
+    }
+
+    await reorderProjects(parsed.data.orderedIds);
 
     revalidatePath("/admin/projets");
     revalidatePath("/projets");
     revalidatePath("/");
-    revalidatePath(`/c/${existing.slug}`);
-    if (parsed.data.slug && parsed.data.slug !== existing.slug) {
-      revalidatePath(`/c/${parsed.data.slug}`);
-    }
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -89,10 +118,7 @@ export async function deleteProjectAction(id: string): Promise<ActionResult<void
 
     await deleteProject(id);
 
-    revalidatePath("/admin/projets");
-    revalidatePath("/projets");
-    revalidatePath("/");
-    revalidatePath(`/c/${existing.slug}`);
+    revalidateProjectPaths(existing.category.slug);
 
     return actionSuccess(undefined);
   } catch (error) {

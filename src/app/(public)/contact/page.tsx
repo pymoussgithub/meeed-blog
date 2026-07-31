@@ -43,6 +43,7 @@ export default function ContactPage() {
               <a
                 href={`mailto:${SITE_CONTACT.email}`}
                 className="text-accent-dark hover:underline"
+                data-tour-id="contact.mailto"
               >
                 {SITE_CONTACT.email}
               </a>

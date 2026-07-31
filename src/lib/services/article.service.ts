@@ -1,15 +1,35 @@
 import { ArticleStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  buildDocumentAccessWhere,
+  publicDocumentInclude,
+  type DocumentAccessUser,
+} from "@/lib/services/document.service";
 import { removeCloudinaryAsset } from "@/lib/services/upload.server";
 import type { CreateArticleInput, UpdateArticleInput } from "@/lib/validations/article";
 
 const articleWithRelations = {
   author: { select: { id: true, name: true } },
+  project: {
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      color: true,
+      isActive: true,
+      category: {
+        select: { id: true, name: true, slug: true, color: true },
+      },
+    },
+  },
   categories: {
     include: {
       category: {
         include: {
-          project: { select: { id: true, title: true, slug: true, color: true } },
+          projects: {
+            select: { id: true, title: true, slug: true, color: true, isActive: true },
+            orderBy: { sortOrder: "asc" as const },
+          },
         },
       },
     },
@@ -43,10 +63,20 @@ export async function countPublishedArticles() {
 
 export async function getSimilarArticles(
   articleId: string,
-  categoryIds: string[],
+  options: { projectId?: string | null; categoryIds?: string[] } = {},
   limit = 3,
 ) {
-  if (categoryIds.length === 0) {
+  const { projectId, categoryIds = [] } = options;
+  const relatedFilter: Prisma.ArticleWhereInput[] = [];
+
+  if (projectId) {
+    relatedFilter.push({ projectId });
+  }
+  if (categoryIds.length > 0) {
+    relatedFilter.push({ categories: { some: { categoryId: { in: categoryIds } } } });
+  }
+
+  if (relatedFilter.length === 0) {
     return getPublishedArticles(limit, 0).then((articles) =>
       articles.filter((article) => article.id !== articleId).slice(0, limit),
     );
@@ -56,7 +86,7 @@ export async function getSimilarArticles(
     where: {
       ...publishedWhere(),
       id: { not: articleId },
-      categories: { some: { categoryId: { in: categoryIds } } },
+      OR: relatedFilter,
     },
     include: articleWithRelations,
     orderBy: { publishedAt: "desc" },
@@ -64,7 +94,7 @@ export async function getSimilarArticles(
   });
 }
 
-export async function getArticleBySlug(slug: string) {
+export async function getArticleBySlug(slug: string, user?: DocumentAccessUser | null) {
   return prisma.article.findFirst({
     where: {
       slug,
@@ -73,7 +103,8 @@ export async function getArticleBySlug(slug: string) {
     include: {
       ...articleWithRelations,
       documents: {
-        where: { isPublic: true },
+        where: buildDocumentAccessWhere(user),
+        include: publicDocumentInclude,
         orderBy: { createdAt: "desc" },
       },
     },
@@ -87,11 +118,20 @@ export async function getArticleById(id: string) {
   });
 }
 
+function categorySlugWhere(slug: string): Prisma.ArticleWhereInput {
+  return {
+    OR: [
+      { project: { category: { slug } } },
+      { categories: { some: { category: { slug } } } },
+    ],
+  };
+}
+
 export async function getArticlesByCategorySlug(slug: string, limit = 12, offset = 0) {
   return prisma.article.findMany({
     where: {
       ...publishedWhere(),
-      categories: { some: { category: { slug } } },
+      ...categorySlugWhere(slug),
     },
     include: articleWithRelations,
     orderBy: { publishedAt: "desc" },
@@ -104,7 +144,7 @@ export async function countArticlesByCategorySlug(slug: string) {
   return prisma.article.count({
     where: {
       ...publishedWhere(),
-      categories: { some: { category: { slug } } },
+      ...categorySlugWhere(slug),
     },
   });
 }
@@ -116,7 +156,7 @@ export type PublicArticleFilters = {
   authorId?: string | null;
   dateFrom?: string | null;
   dateTo?: string | null;
-  contentType?: "project" | "news" | null;
+  contentType?: "project" | "news" | "formation" | null;
   excludeArticleIds?: string[];
 };
 
@@ -126,15 +166,11 @@ export function buildPublicArticleWhere(
   const conditions: Prisma.ArticleWhereInput[] = [publishedWhere()];
 
   if (filters.categorySlug) {
-    conditions.push({
-      categories: { some: { category: { slug: filters.categorySlug } } },
-    });
+    conditions.push(categorySlugWhere(filters.categorySlug));
   }
 
   if (filters.projectSlug) {
-    conditions.push({
-      categories: { some: { category: { project: { slug: filters.projectSlug } } } },
-    });
+    conditions.push({ project: { slug: filters.projectSlug } });
   }
 
   if (filters.authorId) {
@@ -142,12 +178,14 @@ export function buildPublicArticleWhere(
   }
 
   if (filters.contentType === "project") {
-    conditions.push({
-      categories: { some: { category: { project: { isNot: null } } } },
-    });
+    conditions.push({ projectId: { not: null } });
   } else if (filters.contentType === "news") {
     conditions.push({
-      categories: { some: { category: { project: null } } },
+      categories: { some: { category: { slug: "actualites" } } },
+    });
+  } else if (filters.contentType === "formation") {
+    conditions.push({
+      categories: { some: { category: { slug: "formation" } } },
     });
   }
 
@@ -182,7 +220,7 @@ export function buildPublicArticleWhere(
 }
 
 function isNewsArticle(article: ArticleWithRelations) {
-  return article.categories.some(({ category }) => !category.project);
+  return !article.projectId;
 }
 
 function sortArticlesNewsFirst(articles: ArticleWithRelations[]) {
@@ -262,11 +300,12 @@ export async function countSearchResults(query: string) {
 }
 
 export async function createArticle(data: CreateArticleInput) {
-  const { categoryIds, ...articleData } = data;
+  const { categoryIds, projectId, ...articleData } = data;
 
   return prisma.article.create({
     data: {
       ...articleData,
+      projectId: projectId ?? null,
       categories: {
         create: categoryIds.map((categoryId) => ({ categoryId })),
       },
@@ -276,16 +315,17 @@ export async function createArticle(data: CreateArticleInput) {
 }
 
 export async function updateArticle(id: string, data: UpdateArticleInput) {
-  const { categoryIds, ...articleData } = data;
+  const { categoryIds, projectId, ...articleData } = data;
 
   if (categoryIds) {
     await prisma.articleCategory.deleteMany({ where: { articleId: id } });
   }
 
-  return prisma.article.update({
+  const article = await prisma.article.update({
     where: { id },
     data: {
       ...articleData,
+      ...(projectId !== undefined ? { projectId } : {}),
       ...(categoryIds
         ? {
             categories: {
@@ -296,6 +336,16 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     },
     include: articleWithRelations,
   });
+
+  // Documents liés à l'article héritent du projet de l'article.
+  if (projectId !== undefined) {
+    await prisma.document.updateMany({
+      where: { articleId: id },
+      data: { projectId: projectId ?? null },
+    });
+  }
+
+  return article;
 }
 
 export async function archiveArticle(id: string) {
@@ -331,7 +381,7 @@ export async function deleteArticle(id: string) {
 
 export type AdminArticleFilters = {
   status?: ArticleStatus;
-  categoryId?: string;
+  projectId?: string;
   search?: string;
   authorId?: string;
   page?: number;
@@ -346,9 +396,7 @@ export async function getAdminArticles(filters: AdminArticleFilters = {}) {
   const where: Prisma.ArticleWhereInput = {
     status: filters.status,
     ...(filters.authorId ? { authorId: filters.authorId } : {}),
-    ...(filters.categoryId
-      ? { categories: { some: { categoryId: filters.categoryId } } }
-      : {}),
+    ...(filters.projectId ? { projectId: filters.projectId } : {}),
     ...(filters.search
       ? {
           OR: [
@@ -388,30 +436,66 @@ export async function getAdminArticleStats(authorId?: string) {
 
 export async function getDashboardStats(userId: string, isAdmin: boolean) {
   const authorFilter = isAdmin ? {} : { authorId: userId };
+  const documentFilter = isAdmin ? {} : { uploadedById: userId };
+  const listTake = 20;
 
-  const [published, drafts, archived, documents, recentArticles, userDrafts] =
-    await Promise.all([
-      prisma.article.count({ where: { ...authorFilter, status: ArticleStatus.PUBLISHED } }),
-      prisma.article.count({ where: { ...authorFilter, status: ArticleStatus.DRAFT } }),
-      prisma.article.count({ where: { ...authorFilter, status: ArticleStatus.ARCHIVED } }),
-      prisma.document.count({
-        where: isAdmin ? {} : { uploadedById: userId },
-      }),
-      prisma.article.findMany({
-        where: authorFilter,
-        include: articleWithRelations,
-        orderBy: { updatedAt: "desc" },
-        take: 5,
-      }),
-      prisma.article.findMany({
-        where: { authorId: userId, status: ArticleStatus.DRAFT },
-        include: articleWithRelations,
-        orderBy: { updatedAt: "desc" },
-        take: 5,
-      }),
-    ]);
+  const articleList = (status?: ArticleStatus | ArticleStatus[]) =>
+    prisma.article.findMany({
+      where: {
+        ...authorFilter,
+        ...(status
+          ? { status: Array.isArray(status) ? { in: status } : status }
+          : {}),
+      },
+      include: articleWithRelations,
+      orderBy: { updatedAt: "desc" },
+      take: listTake,
+    });
 
-  return { published, drafts, archived, documents, recentArticles, userDrafts };
+  const [
+    published,
+    drafts,
+    archived,
+    documents,
+    recentArticles,
+    publishedArticles,
+    draftArticles,
+    archivedArticles,
+    recentDocuments,
+  ] = await Promise.all([
+    prisma.article.count({ where: { ...authorFilter, status: ArticleStatus.PUBLISHED } }),
+    prisma.article.count({ where: { ...authorFilter, status: ArticleStatus.DRAFT } }),
+    prisma.article.count({ where: { ...authorFilter, status: ArticleStatus.ARCHIVED } }),
+    prisma.document.count({ where: documentFilter }),
+    articleList(),
+    articleList(ArticleStatus.PUBLISHED),
+    articleList(ArticleStatus.DRAFT),
+    articleList(ArticleStatus.ARCHIVED),
+    prisma.document.findMany({
+      where: documentFilter,
+      orderBy: { createdAt: "desc" },
+      take: listTake,
+      include: {
+        article: { select: { id: true, title: true } },
+        project: { select: { id: true, title: true } },
+        uploadedBy: { select: { id: true, name: true } },
+      },
+    }),
+  ]);
+
+  return {
+    published,
+    drafts,
+    archived,
+    documents,
+    recentArticles,
+    publishedArticles,
+    draftArticles,
+    archivedArticles,
+    recentDocuments,
+    /** @deprecated use draftArticles — kept for profil page compat */
+    userDrafts: draftArticles,
+  };
 }
 
 export async function isSlugTaken(slug: string, excludeId?: string) {

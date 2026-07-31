@@ -58,7 +58,7 @@ export default async function ProjectsPage() {
           documents descriptifs et vidéos au fil du temps.
         </p>
         <div className="mt-6">
-          <Button href={HELLOASSO_URL} variant="accent" external>
+          <Button href={HELLOASSO_URL} variant="accent" external data-tour-id="projets.donate">
             Soutenir l&apos;association
           </Button>
         </div>

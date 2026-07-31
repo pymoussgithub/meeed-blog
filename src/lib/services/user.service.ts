@@ -21,6 +21,12 @@ export async function getUserById(id: string) {
   return prisma.user.findUnique({ where: { id } });
 }
 
+export async function getUserByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: { email: email.toLowerCase() },
+  });
+}
+
 export async function createUser(data: CreateUserInput & { passwordHash: string }) {
   return prisma.user.create({
     data: {
@@ -37,9 +43,38 @@ export async function updateUser(id: string, data: UpdateUserInput) {
 }
 
 export async function updateUserPassword(id: string, passwordHash: string) {
-  return prisma.user.update({
-    where: { id },
-    data: { passwordHash },
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.update({
+      where: { id },
+      data: { passwordHash },
+    });
+    // Invalide les liens de reset encore valides après un changement de MDP
+    await tx.passwordResetToken.deleteMany({ where: { userId: id } });
+    return user;
+  });
+}
+
+/** Supprime le compte et réattribue le contenu lié à un autre utilisateur (FK non nullables). */
+export async function deleteUser(id: string, reassignToId: string) {
+  return prisma.$transaction(async (tx) => {
+    await tx.article.updateMany({
+      where: { authorId: id },
+      data: { authorId: reassignToId },
+    });
+    await tx.document.updateMany({
+      where: { uploadedById: id },
+      data: { uploadedById: reassignToId },
+    });
+    await tx.forumTopic.updateMany({
+      where: { authorId: id },
+      data: { authorId: reassignToId },
+    });
+    await tx.forumPost.updateMany({
+      where: { authorId: id },
+      data: { authorId: reassignToId },
+    });
+
+    return tx.user.delete({ where: { id } });
   });
 }
 

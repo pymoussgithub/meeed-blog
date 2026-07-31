@@ -1,5 +1,6 @@
-import { execSync } from "node:child_process";
 import { join } from "node:path";
+import { execSync } from "node:child_process";
+import { ensurePrismaClient } from "./ensure-prisma-client.mjs";
 
 process.env.NEXT_IGNORE_INCORRECT_LOCKFILE ??= "1";
 process.env.NEXT_TELEMETRY_DISABLED ??= "1";
@@ -10,8 +11,7 @@ const env = {
   UV_THREADPOOL_SIZE: "2",
 };
 
-console.log("[build] prisma generate…");
-execSync("npx --no-install prisma generate", { stdio: "inherit", shell: true, env });
+ensurePrismaClient({ allowExistingClientFallback: true });
 
 const nextBin = join(process.cwd(), "node_modules", "next", "dist", "bin", "next");
 console.log("[build] next build…");

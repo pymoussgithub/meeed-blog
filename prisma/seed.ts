@@ -184,9 +184,11 @@ async function main() {
   const publishedAt = new Date();
 
   for (const article of INITIAL_ARTICLES) {
-    const categoryId = categoryMap.get(article.categorySlug);
-    if (!categoryId) {
-      throw new Error(`Catégorie introuvable : ${article.categorySlug}`);
+    const project = await prisma.project.findUnique({
+      where: { slug: article.categorySlug },
+    });
+    if (!project) {
+      throw new Error(`Projet introuvable pour l'article : ${article.categorySlug}`);
     }
 
     await prisma.article.upsert({
@@ -197,6 +199,7 @@ async function main() {
         content: article.content,
         status: ArticleStatus.PUBLISHED,
         publishedAt,
+        projectId: project.id,
       },
       create: {
         title: article.title,
@@ -206,9 +209,7 @@ async function main() {
         status: ArticleStatus.PUBLISHED,
         publishedAt,
         authorId: admin.id,
-        categories: {
-          create: [{ categoryId }],
-        },
+        projectId: project.id,
       },
     });
   }
@@ -218,12 +219,45 @@ async function main() {
     where: { slug: "tracteur-electrique-retrofit-demo" },
   });
 
+  const forumCategories = [
+    {
+      name: "Discussions générales",
+      slug: "discussions-generales",
+      description: "Échanges libres autour de MEEED et du maraîchage décarboné.",
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      name: "Projets",
+      slug: "projets",
+      description: "Discussions liées aux projets (tracteur, arrosage, chambre fraîche…).",
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      name: "Questions",
+      slug: "questions",
+      description: "Poser une question technique ou organisationnelle à la communauté.",
+      sortOrder: 3,
+      isActive: true,
+    },
+  ];
+
+  for (const category of forumCategories) {
+    await prisma.forumCategory.upsert({
+      where: { slug: category.slug },
+      update: category,
+      create: category,
+    });
+  }
+
   console.log("Seed terminé.");
   console.log("Admin : admin@meeed.fr");
   console.log(`Mot de passe temporaire : ${DEFAULT_ADMIN_PASSWORD}`);
   console.log("→ À changer dès la mise en production.");
   console.log(`${INITIAL_ARTICLES.length} articles publiés (tracteur, arrosage, énergie).`);
   console.log(`${INITIAL_PROJECTS.length} projets créés.`);
+  console.log(`${forumCategories.length} rubriques forum créées.`);
 }
 
 main()

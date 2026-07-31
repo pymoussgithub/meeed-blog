@@ -1,11 +1,17 @@
 import type { MetadataRoute } from "next";
 import { getPublishedArticleSlugs } from "@/lib/services/article.service";
 import { getAllCategories } from "@/lib/services/category.service";
+import { getActiveForumCategories } from "@/lib/services/forum-category.service";
+import { prisma } from "@/lib/prisma";
 import { getSiteUrl } from "@/lib/seo";
 
 const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: "/", changeFrequency: "daily", priority: 1 },
   { url: "/actualites", changeFrequency: "daily", priority: 0.9 },
+  { url: "/categories", changeFrequency: "weekly", priority: 0.75 },
+  { url: "/forum", changeFrequency: "daily", priority: 0.85 },
+  { url: "/forum/importants", changeFrequency: "daily", priority: 0.7 },
+  { url: "/forum/recherche", changeFrequency: "monthly", priority: 0.4 },
   { url: "/projets", changeFrequency: "monthly", priority: 0.8 },
   { url: "/documents", changeFrequency: "weekly", priority: 0.7 },
   { url: "/recherche", changeFrequency: "monthly", priority: 0.5 },
@@ -24,9 +30,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   try {
-    const [articles, categories] = await Promise.all([
+    const [articles, categories, forumCategories, forumTopics] = await Promise.all([
       getPublishedArticleSlugs(),
       getAllCategories(),
+      getActiveForumCategories(),
+      prisma.forumTopic.findMany({
+        where: {
+          deletedAt: null,
+          isHidden: false,
+          status: { not: "ARCHIVED" },
+        },
+        select: { slug: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+        take: 500,
+      }),
     ]);
 
     const articleEntries: MetadataRoute.Sitemap = articles.map((article) => ({
@@ -42,7 +59,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    return withBase([...STATIC_PAGES, ...categoryEntries, ...articleEntries]);
+    const forumCategoryEntries: MetadataRoute.Sitemap = forumCategories.map((category) => ({
+      url: `/forum/r/${category.slug}`,
+      changeFrequency: "daily",
+      priority: 0.7,
+    }));
+
+    const forumTopicEntries: MetadataRoute.Sitemap = forumTopics.map((topic) => ({
+      url: `/forum/s/${topic.slug}`,
+      lastModified: topic.updatedAt,
+      changeFrequency: "daily",
+      priority: 0.65,
+    }));
+
+    return withBase([
+      ...STATIC_PAGES,
+      ...categoryEntries,
+      ...articleEntries,
+      ...forumCategoryEntries,
+      ...forumTopicEntries,
+    ]);
   } catch {
     return withBase(STATIC_PAGES);
   }

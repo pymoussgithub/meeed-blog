@@ -11,6 +11,7 @@ import { cn, formatDate } from "@/lib/utils";
 
 type ArticleCompactCardProps = {
   article: ArticleWithRelations;
+  returnTo?: string;
 };
 
 function getCoverUrl(article: ArticleWithRelations) {
@@ -21,35 +22,37 @@ function getCoverUrl(article: ArticleWithRelations) {
 }
 
 function CategoryBadge({ article }: { article: ArticleWithRelations }) {
-  const kind = getArticleKind(article);
   const project = getLinkedProject(article);
   const newsCategory = getNewsCategories(article)[0];
 
-  if (kind !== "project" || !project) {
+  if (project) {
     return (
-      <span className="inline-flex max-w-full truncate rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-        {newsCategory?.name ?? "Actualité"}
+      <span
+        className="inline-flex max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
+        style={{ backgroundColor: project.color ?? "var(--color-accent-dark)" }}
+      >
+        {project.title}
       </span>
     );
   }
 
   return (
-    <span
-      className="inline-flex max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
-      style={{ backgroundColor: project.color ?? "var(--color-accent-dark)" }}
-    >
-      {project.title}
+    <span className="inline-flex max-w-full truncate rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+      {newsCategory?.name ?? "Actualité"}
     </span>
   );
 }
 
-export function ArticleCompactCard({ article }: ArticleCompactCardProps) {
+export function ArticleCompactCard({ article, returnTo }: ArticleCompactCardProps) {
   const coverUrl = getCoverUrl(article);
-  const href = `/a/${article.slug}`;
+  const href = returnTo
+    ? `/a/${article.slug}?returnTo=${encodeURIComponent(returnTo)}`
+    : `/a/${article.slug}`;
   const isNews = getArticleKind(article) !== "project";
 
   return (
     <article
+      data-tour-id="articles.list.card"
       className={cn(
         "group flex h-full flex-col overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md",
         isNews ? "border-accent/25 ring-1 ring-accent/10" : "border-gray-200",
@@ -57,14 +60,14 @@ export function ArticleCompactCard({ article }: ArticleCompactCardProps) {
     >
       <Link
         href={href}
-        className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-bg-soft p-3 sm:p-4"
+        className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-bg-soft"
       >
         {coverUrl ? (
           <Image
             src={coverUrl}
             alt=""
             fill
-            className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           />
         ) : (
@@ -72,7 +75,7 @@ export function ArticleCompactCard({ article }: ArticleCompactCardProps) {
             MEEED
           </div>
         )}
-        <div className="absolute left-2 top-2">
+        <div className="absolute left-2 top-2 z-10">
           <CategoryBadge article={article} />
         </div>
       </Link>

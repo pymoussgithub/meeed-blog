@@ -8,7 +8,10 @@ type HomeHeroProps = {
 
 export function HomeHero({ articles }: HomeHeroProps) {
   return (
-    <section className="relative overflow-hidden bg-linear-to-br from-bg-soft/80 via-white to-white">
+    <section
+      data-tour-id="home.hero"
+      className="relative overflow-hidden bg-linear-to-br from-bg-soft/80 via-white to-white"
+    >
       <div
         className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl"
         aria-hidden

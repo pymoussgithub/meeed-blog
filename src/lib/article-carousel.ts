@@ -1,6 +1,12 @@
-import { getNewsCategories } from "@/lib/articles-listing";
+import { getLinkedProject, getNewsCategories } from "@/lib/articles-listing";
 import { getCoverCardUrl } from "@/lib/cloudinary";
 import type { ArticleWithRelations } from "@/lib/services/article.service";
+
+export type CarouselArticleProject = {
+  title: string;
+  slug: string;
+  color: string | null;
+};
 
 export type CarouselArticle = {
   id: string;
@@ -10,13 +16,19 @@ export type CarouselArticle = {
   coverUrl: string | null;
   publishedAt: string | null;
   categoryLabel: string;
+  authorName: string | null;
+  project: CarouselArticleProject | null;
 };
 
-export function toCarouselArticle(article: ArticleWithRelations): CarouselArticle {
+export function toCarouselArticle(
+  article: ArticleWithRelations,
+  categoryLabel?: string,
+): CarouselArticle {
   const coverUrl = article.coverImagePublicId
     ? getCoverCardUrl(article.coverImagePublicId)
     : article.coverImageUrl;
   const newsCategories = getNewsCategories(article);
+  const linkedProject = getLinkedProject(article);
 
   return {
     id: article.id,
@@ -25,6 +37,14 @@ export function toCarouselArticle(article: ArticleWithRelations): CarouselArticl
     excerpt: article.excerpt,
     coverUrl,
     publishedAt: article.publishedAt?.toISOString() ?? null,
-    categoryLabel: newsCategories[0]?.name ?? "Actualité",
+    categoryLabel: categoryLabel ?? newsCategories[0]?.name ?? "Actualité",
+    authorName: article.author?.name ?? null,
+    project: linkedProject
+      ? {
+          title: linkedProject.title,
+          slug: linkedProject.slug,
+          color: linkedProject.color ?? null,
+        }
+      : null,
   };
 }

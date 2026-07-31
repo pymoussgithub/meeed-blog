@@ -15,10 +15,20 @@ const nextConfig: NextConfig = {
     staticGenerationMinPagesPerWorker: 1000,
   },
   images: {
+    // Les images distantes sont deja servies et optimisees par Cloudinary.
+    // On evite ainsi le proxy/optimizer Next.js qui peut echouer localement
+    // avec des erreurs TLS/certificat sous Windows (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`).
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        // Images de démo (seed) — Unsplash License
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],

@@ -1,7 +1,9 @@
 "use server";
 
+import type { DocumentVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/prisma";
 import {
   createDocument,
   deleteDocument,
@@ -17,19 +19,19 @@ export async function createDocumentAction(input: {
   fileUrl: string;
   fileName: string;
   fileSize: number;
+  mimeType: string;
   cloudinaryPublicId: string;
   articleId?: string | null;
   projectId?: string | null;
-  isPublic?: boolean;
+  visibility?: DocumentVisibility;
 }): Promise<ActionResult<{ id: string }>> {
   try {
     const user = await requireAuth();
 
     const parsed = createDocumentSchema.safeParse({
       ...input,
-      mimeType: "application/pdf",
       uploadedById: user.id,
-      isPublic: input.isPublic ?? true,
+      visibility: input.visibility ?? "PUBLIC",
     });
 
     if (!parsed.success) {
@@ -47,9 +49,9 @@ export async function createDocumentAction(input: {
   }
 }
 
-export async function toggleDocumentPublicAction(
+export async function setDocumentVisibilityAction(
   id: string,
-  isPublic: boolean,
+  visibility: DocumentVisibility,
 ): Promise<ActionResult> {
   try {
     const user = await requireAuth();
@@ -63,7 +65,7 @@ export async function toggleDocumentPublicAction(
       return actionError("Non autorisé");
     }
 
-    await updateDocument(id, { isPublic });
+    await updateDocument(id, { visibility });
 
     revalidatePath("/admin/documents");
     revalidatePath("/documents");
@@ -90,7 +92,24 @@ export async function linkDocumentToArticleAction(
       return actionError("Non autorisé");
     }
 
-    await updateDocument(id, { articleId });
+    if (!articleId) {
+      await updateDocument(id, { articleId: null });
+    } else {
+      const article = await prisma.article.findUnique({
+        where: { id: articleId },
+        select: { id: true, projectId: true },
+      });
+
+      if (!article) {
+        return actionError("Article introuvable");
+      }
+
+      // Le projet du document suit automatiquement celui de l'article lié.
+      await updateDocument(id, {
+        articleId: article.id,
+        projectId: article.projectId,
+      });
+    }
 
     revalidatePath("/admin/documents");
     revalidatePath("/documents");
@@ -115,6 +134,12 @@ export async function linkDocumentToProjectAction(
 
     if (user.role !== "ADMIN" && document.uploadedById !== user.id) {
       return actionError("Non autorisé");
+    }
+
+    if (document.articleId) {
+      return actionError(
+        "Le projet est défini par l’article lié. Dissociez l’article pour choisir un projet manuellement.",
+      );
     }
 
     await updateDocument(id, { projectId });
@@ -143,6 +168,23 @@ async function assertCanManageDocument(documentId: string) {
   return { user, document };
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "error" in error &&
+    (error as { error: unknown }).error instanceof Error
+  ) {
+    return ((error as { error: Error }).error).message || fallback;
+  }
+
+  return fallback;
+}
+
 export async function deleteDocumentAction(id: string): Promise<ActionResult<void>> {
   try {
     await assertCanManageDocument(id);
@@ -153,6 +195,6 @@ export async function deleteDocumentAction(id: string): Promise<ActionResult<voi
 
     return actionSuccess(undefined);
   } catch (error) {
-    return actionError(error instanceof Error ? error.message : "Erreur lors de la suppression");
+    return actionError(getErrorMessage(error, "Erreur lors de la suppression"));
   }
 }

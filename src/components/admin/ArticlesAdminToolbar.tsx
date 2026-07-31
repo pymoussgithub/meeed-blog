@@ -6,13 +6,13 @@ import { useCallback } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-type CategoryOption = {
+type ProjectOption = {
   id: string;
-  name: string;
+  title: string;
 };
 
 type ArticlesAdminToolbarProps = {
-  categories: CategoryOption[];
+  projects: ProjectOption[];
   stats: {
     total: number;
     published: number;
@@ -29,12 +29,12 @@ const STATUS_TABS = [
   { value: "ARCHIVED", label: "Archivés", countKey: "archived" as const },
 ];
 
-export function ArticlesAdminToolbar({ categories, stats, isAdmin }: ArticlesAdminToolbarProps) {
+export function ArticlesAdminToolbar({ projects, stats, isAdmin }: ArticlesAdminToolbarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentStatus = searchParams.get("status") ?? "";
-  const currentCategory = searchParams.get("category") ?? "";
+  const currentProject = searchParams.get("project") ?? "";
   const currentQuery = searchParams.get("q") ?? "";
 
   const buildUrl = useCallback(
@@ -54,7 +54,7 @@ export function ArticlesAdminToolbar({ categories, stats, isAdmin }: ArticlesAdm
     [searchParams],
   );
 
-  const hasActiveFilters = Boolean(currentStatus || currentCategory || currentQuery);
+  const hasActiveFilters = Boolean(currentStatus || currentProject || currentQuery);
 
   return (
     <div className="space-y-4">
@@ -91,7 +91,7 @@ export function ArticlesAdminToolbar({ categories, stats, isAdmin }: ArticlesAdm
             buildUrl({
               q: (formData.get("q") as string) || null,
               status: (formData.get("status") as string) || null,
-              category: (formData.get("category") as string) || null,
+              project: (formData.get("project") as string) || null,
             }),
           );
         }}
@@ -129,19 +129,19 @@ export function ArticlesAdminToolbar({ categories, stats, isAdmin }: ArticlesAdm
           </div>
 
           <div className="w-full lg:w-52">
-            <label htmlFor="article-category" className="mb-1.5 block text-xs font-medium text-primary/70">
-              Catégorie
+            <label htmlFor="article-project" className="mb-1.5 block text-xs font-medium text-primary/70">
+              Projet
             </label>
             <select
-              id="article-category"
-              name="category"
-              defaultValue={currentCategory}
+              id="article-project"
+              name="project"
+              defaultValue={currentProject}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             >
-              <option value="">Toutes les catégories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
+              <option value="">Tous les projets</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.title}
                 </option>
               ))}
             </select>
@@ -172,10 +172,10 @@ export function ArticlesAdminToolbar({ categories, stats, isAdmin }: ArticlesAdm
               href={buildUrl({ status: null })}
             />
           ) : null}
-          {currentCategory ? (
+          {currentProject ? (
             <FilterChip
-              label={categories.find((c) => c.id === currentCategory)?.name ?? "Catégorie"}
-              href={buildUrl({ category: null })}
+              label={projects.find((p) => p.id === currentProject)?.title ?? "Projet"}
+              href={buildUrl({ project: null })}
             />
           ) : null}
         </div>

@@ -1,0 +1,139 @@
+P0: Cahier des charges — Plateforme MEEED
+P1: Magazine (déjà livré) + Module Forum (nouveau) — Périmètre consolidé à valider avec le devis
+P3: 1. Objet du présent document
+P4: Ce document consolide en une seule référence les deux cahiers des charges échangés avec l'association MEEED : celui du Magazine (Blog), déjà livré et en production, et celui du Forum, pour lequel le client a arrêté ses choix ci-après.
+P5: Il est transmis avec le devis global afin que les deux parties se mettent d'accord, noir sur blanc, sur l'ensemble des fonctionnalités de la plateforme — celles déjà en place comme celles restant à développer.
+P6: Toute fonctionnalité non listée ou non explicitement retenue ci-dessous est réputée hors périmètre de la livraison couverte par le devis associé, sauf avenant écrit ultérieur.
+P7: 2. Vue d'ensemble de la plateforme
+P8: La plateforme MEEED réunit deux briques cohérentes, partageant la même base technique et la même identité visuelle :
+P10: 3. Partie A — Le Magazine (Blog) — rappel du périmètre déjà livré
+P11: Le Magazine MEEED est un site éditorial (actualités, projets, documents PDF) déjà livré et en production. Le détail exhaustif (49 fonctionnalités numérotées F-01 à F-49) figure dans le Cahier des charges MEEED Magazine v1.0 ; ce qui suit en est le résumé.
+P12: 3.1 Rôles utilisateurs
+P13: Lecteur (public / anonyme) — consultation du front-office uniquement
+P14: Contributeur — rédaction et gestion de ses propres contenus
+P15: Administrateur — gestion complète (utilisateurs, catégories, projets, tous les contenus)
+P17: 3.2 Stack technique et prestataires
+P19: 3.3 Grandes fonctions livrées
+P21: 3.4 Hors périmètre du Magazine (rappel)
+P22: Le Forum, la messagerie privée, les commentaires et réactions sur les articles, ainsi que la newsletter intégrée, faisaient partie du périmètre exclu du Magazine v1.0. Le Forum fait l'objet de la Partie B ci-dessous ; les autres exclusions restent valables (cf. §6).
+P24: 4. Partie B — Le Forum — Version retenue : Forum complet
+P25: Après comparaison des deux niveaux de prestation proposés (forum minimum viable / forum complet), le client a arrêté les choix suivants.
+P26: 4.1 Décisions validées par le client
+P27: ☑  Version retenue : Forum complet
+P28: ☑  Notifications par e-mail — retenues
+P29: Justification client : sans notification, il faudrait se connecter quotidiennement pour suivre l'évolution des quelques sujets auxquels on participe ; l'e-mail permet d'être alerté sans avoir à revenir vérifier soi-même.
+P30: ☑  Recherche full-text avancée — retenue
+P31: Justification client : faciliter la recherche d'un sujet précis dans l'ensemble des discussions du forum.
+P32: Définition fonctionnelle retenue pour les notifications : un e-mail est envoyé à un utilisateur lorsqu'un sujet qu'il a créé ou auquel il a répondu reçoit une nouvelle réponse. Aucun bouton « s'abonner » distinct n'est nécessaire pour couvrir ce besoin ; un suivi explicite de sujets auxquels l'utilisateur n'a pas encore participé est une fonctionnalité additionnelle distincte (cf. §4.4).
+P33: 4.2 Positionnement
+P34: Le forum complet fait du forum un espace de référence pour les échanges, la capitalisation et la vie de la communauté autour des contenus publiés sur le Magazine — avec davantage d'outils d'animation et de modération qu'une version minimale.
+P35: 4.3 Fonctionnalités retenues
+P37: 4.4 Fonctionnalités optionnelles du Forum complet — statut
+P38: Les fonctionnalités suivantes sont conditionnelles dans une offre « Forum complet » ; leur statut actuel est indiqué ci-dessous. Toute case « à confirmer » peut être activée par simple retour écrit avant chiffrage définitif.
+P40: 4.5 Point important à trancher — Qui peut publier sur le forum ?
+P41: Le Magazine v1.0 excluait explicitement un « espace membre lecteur » distinct du back-office Contributeur. Or, pour qu'un forum vive, il faut généralement permettre à de simples lecteurs (pas seulement aux Contributeurs qui rédigent les articles) de créer des sujets et des réponses. Ce point structurant reste à trancher :
+P42: ☐  Tout lecteur peut créer un compte « Membre du forum » (inscription légère, distincte des comptes CMS Contributeur / Administrateur)
+P43: ☐  Seuls les Contributeurs / Administrateurs actuels peuvent publier sur le forum (pas de nouveau type de compte)
+P44: Ce choix a un impact sur le chiffrage (création éventuelle d'un nouveau rôle et d'un parcours d'inscription dédié).
+P45: 4.6 Point à trancher — Modération : rôle dédié ?
+P46: ☐  La modération reste assurée uniquement par les Administrateurs actuels
+P47: ☐  Un rôle « Modérateur » dédié est introduit, distinct de l'Administrateur
+P48: 4.7 Périmètre technique livré
+P49: Architecture de données du forum (rubriques, sujets, messages, liens avec les articles), plus riche que la version minimum viable
+P50: Pages publiques et outils de modération étendus
+P51: Moteur de recherche full-text sur les sujets et messages
+P52: Envoi d'e-mails transactionnels pour les notifications
+P53: Composants dédiés au forum, intégrés à l'architecture actuelle du Magazine
+P54: 4.8 Hors périmètre du Forum (même en version complète)
+P55: La messagerie privée entre utilisateurs, sauf demande explicite
+P56: Un réseau social complet
+P57: Une modération algorithmique ou par intelligence artificielle
+P58: Les intégrations externes (Slack, Discord, newsletter automatique, CRM)
+P60: 5. Matrice des droits consolidée (Magazine + Forum)
+P61: * Rôle « Membre forum » : créé uniquement si l'option correspondante est retenue en §4.5.  ** Rôle « Modérateur » : créé uniquement si l'option correspondante est retenue en §4.6. À défaut, ces capacités reviennent respectivement au Contributeur (participation) et à l'Administrateur (modération).
+P62: 6. Périmètre exclu — commun à la plateforme
+P63: Indépendamment des choix ci-dessus, les éléments suivants restent hors périmètre et relèveraient d'un avenant distinct :
+P64: Paiement ou don intégré (seul le lien externe HelloAsso est prévu)
+P65: Newsletter / emailing marketing intégré
+P66: Version multilingue
+P67: Application mobile native ou fonctionnement hors-ligne
+P68: Analytics avancés (Google Analytics, etc.)
+P69: Export PDF d'un article ou d'une discussion
+P70: 7. Critères de réception
+P71: 7.1 Magazine (rappel — déjà validé)
+P72: Un contributeur peut publier un article avec image de couverture et le rendre visible en front-office
+P73: Les documents PDF publics sont listés et téléchargeables ; Neon et Cloudinary sont opérationnels
+P74: 7.2 Forum (nouveau périmètre)
+P75: Un utilisateur autorisé (cf. §4.5) peut créer un sujet et publier une réponse, visibles en front-office
+P76: Un e-mail de notification est envoyé à l'auteur d'un sujet ou d'une réponse lorsque ce sujet évolue
+P77: La recherche full-text retourne les sujets et messages pertinents du forum
+P78: Les rôles définis en §4.5 et §4.6 respectent la matrice des droits (§5)
+P79: Le forum est utilisable sur smartphone, dans la continuité du Magazine existant
+P80: 8. Récapitulatif des points restant à trancher avant devis final
+P81: Pour mémoire, les points suivants (déjà détaillés ci-dessus) doivent être confirmés par écrit avant chiffrage définitif :
+P82: §4.4 — Activation éventuelle des options communautaires non retenues par défaut
+P83: §4.5 — Qui peut publier sur le forum (nouveau type de compte ou non)
+P84: §4.6 — Introduction ou non d'un rôle Modérateur dédié
+P85: 9. Validation
+P86: Le présent document, une fois signé, constitue la référence fonctionnelle unique de la plateforme MEEED (Magazine déjà livré + Forum) pour le devis associé. Sa signature vaut acceptation du périmètre décrit ci-dessus, sous réserve des points de l'§8 à confirmer.
+P89: Document unique — Cahier des charges consolidé Plateforme MEEED (Magazine + Forum) — Version 1.0 — 27 juillet 2026
+---TABLES---
+TABLE 0 rows=7 cols=2
+  R0: ['Projet', 'Plateforme MEEED — Magazine (déjà livré) + Module Forum (nouveau)']
+  R1: ['Domaine cible', 'meeed.fr']
+  R2: ['Documents sources', 'Cahier des charges MEEED Magazine v1.0 (27/07/2026) — Comparatif « Choix de version du forum » (10/07/2026)']
+  R3: ['Version du présent document', '1.0 — Périmètre consolidé']
+  R4: ['Date', '27 juillet 2026']
+  R5: ['Objet', "Document unique, transmis avec le devis, résumant (a) le périmètre du Magazine déjà livré et (b) le périmètre du module Forum retenu par le client, afin d'acter ensemble les fonctionnalités qui seront développées"]
+  R6: ['Statut', "Base d'accord — à valider / signer avant démarrage du développement du Forum"]
+TABLE 1 rows=3 cols=3
+  R0: ['Brique', 'Statut', 'Périmètre de référence']
+  R1: ['Magazine (Blog)', 'Déjà livré, en production', 'Cahier des charges MEEED Magazine v1.0 — F-01 à F-49 (rappel §3)']
+  R2: ['Forum', 'Nouveau — version « Forum complet » retenue', 'Détaillé au §4 du présent document']
+TABLE 2 rows=7 cols=2
+  R0: ['Couche', 'Choix retenu']
+  R1: ['Framework / langage', 'Next.js 15 (App Router), TypeScript, React 19']
+  R2: ['Styles', 'Tailwind CSS 4']
+  R3: ['Données', 'Prisma 6 + PostgreSQL, hébergé chez Neon']
+  R4: ['Médias (images / PDF)', 'Cloudinary (CDN)']
+  R5: ['Authentification', 'NextAuth.js (Auth.js) v5 — comptes Contributeur / Administrateur']
+  R6: ['Hébergement applicatif', 'PaaS (ex. Heroku), domaine meeed.fr']
+TABLE 3 rows=8 cols=2
+  R0: ['Bloc fonctionnel', 'Contenu (réf. cahier des charges v1.0)']
+  R1: ['Navigation & structure', "En-tête, menu mobile, recherche, pied de page, pages d'erreur (F-01 à F-05)"]
+  R2: ['Contenu éditorial', "Accueil magazine, liste et page d'article, catégories, projets, bibliothèque de documents PDF, recherche full-text, pages À propos / Contact / Don (F-06 à F-16)"]
+  R3: ['Partage & référencement', 'Partage WhatsApp, Open Graph, JSON-LD, sitemap, robots.txt, redirections 301 (F-17 à F-22)']
+  R4: ['Authentification & profil', 'Connexion, inscription contributeur, protection des routes, mon profil, mot de passe (F-23 à F-30)']
+  R5: ['Back-office éditorial', 'Dashboard, gestion des articles (brouillon/publication/archivage), éditeur riche TipTap, upload images et PDF (F-31 à F-44)']
+  R6: ['Administration', 'Gestion des catégories, des projets et des utilisateurs (F-45 à F-47)']
+  R7: ['Exploitation technique', 'Endpoint de supervision, en-têtes de sécurité (F-48 à F-49)']
+TABLE 4 rows=7 cols=2
+  R0: ['Bloc fonctionnel', 'Contenu (réf. comparatif forum)']
+  R1: ['Navigation & structure', "Accueil forum enrichi, rubriques multiples avec ordre configurable, fil d'Ariane, tris (FB-01, FB-02, FB-08)"]
+  R2: ['Sujets & réponses', 'Création de sujets et réponses avec confort supérieur, épinglage, verrouillage / archivage de sujets, vues complémentaires (récents, liés à un article, discussions importantes) (FB-03 à FB-06)']
+  R3: ['Lien avec les articles', "Un article relié à plusieurs discussions, affichage croisé article ↔ sujet, association gérée depuis l'espace éditorial (FB-09 à FB-12)"]
+  R4: ['Administration & modération étendue', 'Tableau de modération pour administrateurs (et modérateurs si ce rôle est retenu, cf. §4.6) : masquer, supprimer logiquement, verrouiller, déverrouiller, mettre en avant, déplacer un sujet ; gestion fine des permissions ; édition avec règles enrichies (FB-13, FB-14, FB-15, FB-18)']
+  R5: ['Notifications', 'Notifications par e-mail — retenues (voir justification §4.1)']
+  R6: ['Recherche', 'Recherche full-text sur les sujets et messages du forum — retenue (voir justification §4.1)']
+TABLE 5 rows=9 cols=2
+  R0: ['Fonctionnalité optionnelle (Forum complet)', 'Statut']
+  R1: ['Notifications par e-mail', 'Retenu']
+  R2: ['Recherche full-text avancée (sujets et messages)', 'Retenu']
+  R3: ['Suivi / abonnement explicite à une discussion (indépendant de toute participation)', 'Non retenu par défaut — à confirmer si souhaité']
+  R4: ['Profils publics légers avec historique des contributions', 'Non retenu par défaut — à confirmer si souhaité']
+  R5: ['Réactions, likes ou badges', 'Non retenu par défaut — à confirmer si souhaité']
+  R6: ['Réponses plus structurées', 'Non retenu par défaut — à confirmer si souhaité']
+  R7: ['Signalement de contenu par les utilisateurs', 'Non retenu par défaut — à confirmer si souhaité']
+  R8: ['Journal des actions de modération', 'Non retenu par défaut — à confirmer si souhaité']
+TABLE 6 rows=7 cols=6
+  R0: ['Capacité', 'Anonyme', 'Membre forum*', 'Contributeur', 'Modérateur**', 'Administrateur']
+  R1: ['Consulter le magazine et le forum', 'Oui', 'Oui', 'Oui', 'Oui', 'Oui']
+  R2: ["S'inscrire / se connecter", 'Oui', '—', '—', '—', '—']
+  R3: ['Créer un sujet / publier une réponse', 'Non', 'Selon §4.5', 'Oui', 'Oui', 'Oui']
+  R4: ['Publier un article (magazine)', 'Non', 'Non', 'Oui (les siens)', 'Non', 'Oui (tous)']
+  R5: ['Modérer le forum', 'Non', 'Non', 'Non', 'Oui', 'Oui']
+  R6: ['Gérer catégories / projets / utilisateurs', 'Non', 'Non', 'Non', 'Non', 'Oui']
+TABLE 7 rows=3 cols=3
+  R0: ['Partie', 'Nom / Date', 'Signature']
+  R1: ["Association MEEED / (maître d'ouvrage)", ' ', ' ']
+  R2: ['Prestataire / développeur', ' ', ' ']

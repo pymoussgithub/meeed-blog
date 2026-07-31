@@ -71,7 +71,12 @@ export function ProfileForm({ user, stats }: ProfileFormProps) {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    setToast({ message: "Mot de passe modifié.", variant: "success" });
+    setToast({
+      message: "Mot de passe modifié. Reconnectez-vous avec le nouveau mot de passe.",
+      variant: "success",
+    });
+    router.push("/admin/login?reset=success");
+    router.refresh();
   };
 
   return (
@@ -104,9 +109,20 @@ export function ProfileForm({ user, stats }: ProfileFormProps) {
               Mettez à jour le nom affiché sur vos articles.
             </p>
           </div>
-          <Input label="Nom affiché" value={name} onChange={(e) => setName(e.target.value)} required />
+          <Input
+            label="Nom affiché"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            data-tour-id="admin.profil.name"
+          />
           <Input label="Email" value={user.email} disabled />
-          <Button type="submit" variant="accent" disabled={savingProfile || name === user.name}>
+          <Button
+            type="submit"
+            variant="accent"
+            disabled={savingProfile || name === user.name}
+            data-tour-id="admin.profil.save"
+          >
             {savingProfile ? "Enregistrement…" : "Enregistrer"}
           </Button>
         </form>
@@ -114,6 +130,7 @@ export function ProfileForm({ user, stats }: ProfileFormProps) {
         <form
           onSubmit={handlePasswordSubmit}
           className="space-y-4 rounded-xl border border-gray-200 bg-white p-6"
+          data-tour-id="admin.profil.password"
         >
           <div>
             <h3 className="font-semibold text-primary-dark">Sécurité</h3>

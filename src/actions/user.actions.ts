@@ -2,9 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { compare, hash } from "bcryptjs";
+import { signOut } from "@/lib/auth";
 import { requireAdmin, requireAuth } from "@/lib/auth-helpers";
+import { sendAccountCreatedEmail } from "@/lib/mail";
 import {
   createUser,
+  deleteUser,
   getUserById,
   isEmailTaken,
   updateUser,
@@ -34,6 +37,11 @@ export async function createUserAction(input: unknown): Promise<ActionResult<{ i
 
     const passwordHash = await hash(parsed.data.password, 12);
     const user = await createUser({ ...parsed.data, passwordHash });
+
+    await sendAccountCreatedEmail({
+      email: user.email,
+      name: user.name,
+    });
 
     revalidatePath("/admin/utilisateurs");
 
@@ -99,6 +107,30 @@ export async function resetUserPasswordAction(
   }
 }
 
+export async function deleteUserAction(id: string): Promise<ActionResult> {
+  try {
+    const currentUser = await requireAdmin();
+
+    if (currentUser.id === id) {
+      return actionError("Vous ne pouvez pas supprimer votre propre compte");
+    }
+
+    const target = await getUserById(id);
+    if (!target) {
+      return actionError("Utilisateur introuvable");
+    }
+
+    await deleteUser(id, currentUser.id);
+
+    revalidatePath("/admin/utilisateurs");
+    revalidatePath("/admin");
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(error instanceof Error ? error.message : "Erreur");
+  }
+}
+
 export async function updateProfileAction(input: unknown): Promise<ActionResult> {
   try {
     const currentUser = await requireAuth();
@@ -140,6 +172,8 @@ export async function changePasswordAction(input: unknown): Promise<ActionResult
 
     const passwordHash = await hash(parsed.data.newPassword, 12);
     await updateUserPassword(currentUser.id, passwordHash);
+    // Invalide le JWT courant ; les autres sessions échouent via credentialsVersion
+    await signOut({ redirect: false });
 
     return actionSuccess(undefined);
   } catch (error) {

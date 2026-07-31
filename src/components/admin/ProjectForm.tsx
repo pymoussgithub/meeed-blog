@@ -22,12 +22,19 @@ import {
 } from "@/lib/validations/project";
 import { cn, slugify } from "@/lib/utils";
 
+type ProjectCategoryOption = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 type ProjectFormProps = {
   projectId?: string;
   articleCount?: number;
   initialData?: Partial<ProjectFormInput>;
   isNew?: boolean;
   defaultSortOrder?: number;
+  categories: ProjectCategoryOption[];
 };
 
 const defaultForm: ProjectFormInput = {
@@ -41,6 +48,7 @@ const defaultForm: ProjectFormInput = {
   color: "#4ecdc4",
   sortOrder: 0,
   isActive: true,
+  categoryId: "",
 };
 
 function FormSection({
@@ -69,6 +77,7 @@ export function ProjectForm({
   initialData,
   isNew = false,
   defaultSortOrder = 0,
+  categories,
 }: ProjectFormProps) {
   const router = useRouter();
   const { confirm } = useDialog();
@@ -76,6 +85,7 @@ export function ProjectForm({
     normalizeProjectFormInput({
       ...defaultForm,
       sortOrder: defaultSortOrder,
+      categoryId: initialData?.categoryId || categories[0]?.id || "",
       ...initialData,
     }),
   );
@@ -90,6 +100,8 @@ export function ProjectForm({
       setForm((current) => ({ ...current, slug: slugify(form.title) }));
     }
   }, [form.title, isNew, slugLocked]);
+
+  const selectedCategory = categories.find((category) => category.id === form.categoryId);
 
   const updateField = <K extends keyof ProjectFormInput>(key: K, value: ProjectFormInput[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -109,9 +121,21 @@ export function ProjectForm({
 
     setIsSaving(true);
 
+    const payload = validation.data;
     const result = projectId
-      ? await updateProjectAction(projectId, validation.data)
-      : await createProjectAction(validation.data);
+      ? await updateProjectAction(projectId, {
+          title: payload.title,
+          slug: payload.slug,
+          summary: payload.summary,
+          description: payload.description,
+          donationUrl: payload.donationUrl,
+          coverImageUrl: payload.coverImageUrl,
+          coverImagePublicId: payload.coverImagePublicId,
+          color: payload.color,
+          isActive: payload.isActive,
+          categoryId: payload.categoryId,
+        })
+      : await createProjectAction(payload);
 
     setIsSaving(false);
 
@@ -152,14 +176,9 @@ export function ProjectForm({
   const handleDelete = async () => {
     if (!projectId) return;
 
-    const articleWarning =
-      articleCount > 0
-        ? `\n\nAttention : ${articleCount} article${articleCount > 1 ? "s" : ""} associé${articleCount > 1 ? "s" : ""} à ce projet seront également supprimé${articleCount > 1 ? "s" : ""} définitivement.`
-        : "";
-
     if (
       !(await confirm(
-        `Supprimer définitivement le projet « ${form.title} » ? Cette action est irréversible.${articleWarning}`,
+        `Supprimer définitivement le projet « ${form.title} » ? La catégorie associée et ses articles seront conservés.`,
         { variant: "danger", confirmLabel: "Supprimer" },
       ))
     ) {
@@ -202,7 +221,7 @@ export function ProjectForm({
           <Button
             type="button"
             variant="accent"
-            disabled={isSaving}
+            disabled={isSaving || categories.length === 0}
             onClick={handleSave}
             className="!px-4 !py-2 text-xs"
           >
@@ -219,7 +238,7 @@ export function ProjectForm({
               >
                 {form.isActive ? "Masquer" : "Afficher"}
               </Button>
-              {form.isActive && form.slug ? (
+              {form.isActive && selectedCategory?.slug ? (
                 <>
                   <Button
                     href="/projets"
@@ -230,7 +249,7 @@ export function ProjectForm({
                     Page projets
                   </Button>
                   <Button
-                    href={`/c/${form.slug}`}
+                    href={`/c/${selectedCategory.slug}`}
                     external
                     variant="outline"
                     className="!px-4 !py-2 text-xs"
@@ -253,6 +272,16 @@ export function ProjectForm({
         </div>
       </div>
 
+      {categories.length === 0 ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Aucune catégorie disponible. Créez d&apos;abord une catégorie dans{" "}
+          <Link href="/admin/categories" className="font-medium underline">
+            Catégories
+          </Link>
+          , puis rattachez-la au projet.
+        </div>
+      ) : null}
+
       <div className="min-w-0 space-y-4">
         <section className="rounded-lg border-2 border-accent/25 bg-bg-soft/50 p-4 shadow-sm">
           <label
@@ -269,10 +298,44 @@ export function ProjectForm({
             className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-lg font-bold text-primary-dark placeholder:text-primary/35 shadow-sm transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 sm:text-xl"
             style={{ fontFamily: "var(--font-heading)" }}
           />
-          <p className="mt-2 text-xs text-primary/55">
-            Affiché sur la page Projets et comme nom de la catégorie associée.
-          </p>
+          <p className="mt-2 text-xs text-primary/55">Affiché sur la page Projets.</p>
         </section>
+
+        <FormSection
+          title="Catégorie"
+          description="Obligatoire — les articles de cette catégorie seront liés au projet"
+        >
+          <label
+            htmlFor="project-category"
+            className="mb-1.5 block text-xs font-medium text-primary-dark"
+          >
+            Catégorie associée
+          </label>
+          <select
+            id="project-category"
+            value={form.categoryId}
+            onChange={(event) => updateField("categoryId", event.target.value)}
+            required
+            disabled={categories.length === 0}
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-primary outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:bg-gray-50"
+          >
+            {categories.length === 0 ? (
+              <option value="">Aucune catégorie disponible</option>
+            ) : (
+              categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))
+            )}
+          </select>
+          {selectedCategory ? (
+            <p className="mt-2 text-xs text-primary/50">
+              Articles :{" "}
+              <span className="font-mono text-primary/70">/c/{selectedCategory.slug}</span>
+            </p>
+          ) : null}
+        </FormSection>
 
         <div className="grid gap-4 md:grid-cols-2">
           <FormSection
@@ -303,24 +366,15 @@ export function ProjectForm({
           </FormSection>
 
           <FormSection
-            title="Apparence & ordre"
-            description="Couleur d'accent et position dans la liste"
+            title="Apparence"
+            description="Couleur d'accent du projet"
           >
-            <div className="space-y-3">
-              <Input
-                label="Couleur"
-                type="color"
-                value={form.color ?? "#4ecdc4"}
-                onChange={(event) => updateField("color", event.target.value)}
-              />
-              <Input
-                label="Ordre d'affichage"
-                type="number"
-                min={0}
-                value={form.sortOrder}
-                onChange={(event) => updateField("sortOrder", Number(event.target.value))}
-              />
-            </div>
+            <Input
+              label="Couleur"
+              type="color"
+              value={form.color ?? "#4ecdc4"}
+              onChange={(event) => updateField("color", event.target.value)}
+            />
           </FormSection>
         </div>
 
@@ -365,7 +419,7 @@ export function ProjectForm({
           />
         </FormSection>
 
-        <FormSection title="URL & référencement" description="Adresse de la catégorie associée">
+        <FormSection title="URL & référencement" description="Identifiant unique du projet">
           <Input
             label="URL (slug)"
             value={form.slug}
@@ -375,9 +429,6 @@ export function ProjectForm({
             }}
             placeholder="mon-projet"
           />
-          <p className="mt-2 text-xs text-primary/50">
-            Catégorie : <span className="font-mono text-primary/70">/c/{form.slug || "…"}</span>
-          </p>
           {isNew ? (
             <button
               type="button"
@@ -392,18 +443,10 @@ export function ProjectForm({
         {!isNew ? (
           <FormSection title="Informations">
             <p className="text-sm text-primary/70">
-              {articleCount} article{articleCount > 1 ? "s" : ""} rattaché
-              {articleCount > 1 ? "s" : ""} à ce projet via sa catégorie.
+              {articleCount} article{articleCount > 1 ? "s" : ""} dans la catégorie associée.
             </p>
           </FormSection>
-        ) : (
-          <FormSection title="À propos">
-            <p className="text-sm text-primary/70">
-              Chaque projet crée automatiquement une catégorie. Les contributeurs pourront y
-              rattacher leurs articles.
-            </p>
-          </FormSection>
-        )}
+        ) : null}
       </div>
 
       <Toast

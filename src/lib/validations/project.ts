@@ -30,15 +30,21 @@ export const createProjectSchema = z.object({
   color: colorSchema,
   sortOrder: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
+  categoryId: z.string().cuid("Catégorie requise"),
 });
 
 export const updateProjectSchema = createProjectSchema.partial();
+
+export const reorderProjectsSchema = z.object({
+  orderedIds: z.array(z.string().min(1)).min(1),
+});
 
 export const projectFormSchema = createProjectSchema;
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type ProjectFormInput = z.infer<typeof projectFormSchema>;
+export type ReorderProjectsInput = z.infer<typeof reorderProjectsSchema>;
 
 export function normalizeProjectFormInput(
   input: Partial<ProjectFormInput> & Record<string, unknown>,
@@ -55,5 +61,6 @@ export function normalizeProjectFormInput(
     color: typeof input.color === "string" ? input.color : "#4ecdc4",
     sortOrder: typeof input.sortOrder === "number" ? input.sortOrder : 0,
     isActive: typeof input.isActive === "boolean" ? input.isActive : true,
+    categoryId: typeof input.categoryId === "string" ? input.categoryId : "",
   };
 }

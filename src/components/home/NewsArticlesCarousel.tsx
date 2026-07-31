@@ -93,6 +93,7 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
       role="region"
       aria-label="Actualités récentes"
       aria-roledescription="carousel"
+      data-tour-id="home.news-carousel"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -137,13 +138,13 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
                   aria-roledescription="slide"
                 >
                   <Link href={href} className="group flex gap-3.5 p-3.5 sm:gap-4 sm:p-4">
-                    <div className="relative h-[6.615rem] w-[6.615rem] shrink-0 overflow-hidden rounded-xl bg-bg-soft p-2 sm:h-[7.7175rem] sm:w-[7.7175rem] sm:p-2.5">
+                    <div className="relative h-[6.615rem] w-[6.615rem] shrink-0 overflow-hidden rounded-xl bg-bg-soft sm:h-[7.7175rem] sm:w-[7.7175rem]">
                       {article.coverUrl ? (
                         <Image
                           src={article.coverUrl}
                           alt=""
                           fill
-                          className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                           sizes="7.72rem"
                           priority={article.id === articles[0]?.id}
                         />
@@ -155,19 +156,14 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="inline-flex items-center rounded-md bg-primary/90 px-2 py-0.5 text-[0.65rem] font-semibold text-white sm:text-xs">
-                          {article.categoryLabel}
-                        </span>
-                        {publishedAt ? (
-                          <time
-                            dateTime={publishedAt.toISOString()}
-                            className="text-xs text-primary/50"
-                          >
-                            {formatDate(publishedAt)}
-                          </time>
-                        ) : null}
-                      </div>
+                      {publishedAt ? (
+                        <time
+                          dateTime={publishedAt.toISOString()}
+                          className="text-xs text-primary/50"
+                        >
+                          {formatDate(publishedAt)}
+                        </time>
+                      ) : null}
                       <h3 className="mt-1.5 text-sm font-bold leading-snug text-primary-dark transition-colors group-hover:text-accent-dark sm:text-base line-clamp-2">
                         {article.title}
                       </h3>

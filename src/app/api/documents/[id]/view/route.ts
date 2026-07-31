@@ -15,15 +15,15 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
   }
 
-  if (!document.isPublic) {
-    const user = await getCurrentUser();
-    const canAccess =
-      user &&
-      (user.role === "ADMIN" || user.id === document.uploadedById);
+  const user = await getCurrentUser();
+  const canAccess =
+    document.visibility === "PUBLIC" ||
+    user?.role === "ADMIN" ||
+    user?.id === document.uploadedById ||
+    (document.visibility === "CONTRIBUTOR" && Boolean(user));
 
-    if (!canAccess) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+  if (!canAccess) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
   const viewUrl = getDocumentViewUrl(document.cloudinaryPublicId);

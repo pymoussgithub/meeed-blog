@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { type ButtonHTMLAttributes, type ReactNode } from "react";
+import {
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 
 const variants = {
@@ -23,10 +27,11 @@ type ButtonAsButton = BaseProps &
     external?: undefined;
   };
 
-type ButtonAsLink = BaseProps & {
-  href: string;
-  external?: boolean;
-};
+type ButtonAsLink = BaseProps &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "children"> & {
+    href: string;
+    external?: boolean;
+  };
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
 
@@ -43,16 +48,22 @@ export function Button({
   );
 
   if ("href" in props && props.href) {
-    const { href, external } = props;
+    const { href, external, ...linkProps } = props;
     if (external) {
       return (
-        <a href={href} className={classes} target="_blank" rel="noopener noreferrer">
+        <a
+          href={href}
+          className={classes}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...linkProps}
+        >
           {children}
         </a>
       );
     }
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} className={classes} {...linkProps}>
         {children}
       </Link>
     );

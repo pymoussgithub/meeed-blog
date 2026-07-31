@@ -12,9 +12,14 @@ import { useDialog } from "@/components/ui/DialogProvider";
 type ArticleListActionsProps = {
   articleId: string;
   status: ArticleStatus;
+  className?: string;
 };
 
-export function ArticleListActions({ articleId, status }: ArticleListActionsProps) {
+export function ArticleListActions({
+  articleId,
+  status,
+  className = "",
+}: ArticleListActionsProps) {
   const router = useRouter();
   const { confirm, alert } = useDialog();
 
@@ -23,7 +28,7 @@ export function ArticleListActions({ articleId, status }: ArticleListActionsProp
       <>
         <button
           type="button"
-          className="text-accent-dark hover:underline"
+          className={`${className} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}
           onClick={async () => {
             if (!(await confirm("Republier cet article ?"))) return;
 
@@ -40,7 +45,7 @@ export function ArticleListActions({ articleId, status }: ArticleListActionsProp
         </button>
         <button
           type="button"
-          className="text-red-600 hover:underline"
+          className={`${className} border-red-200 bg-red-50 text-red-700 hover:bg-red-100`}
           onClick={async () => {
             if (
               !(await confirm(
@@ -69,7 +74,7 @@ export function ArticleListActions({ articleId, status }: ArticleListActionsProp
   return (
     <button
       type="button"
-      className="text-red-600 hover:underline"
+      className={`${className} border-red-200 bg-red-50 text-red-700 hover:bg-red-100`}
       onClick={async () => {
         if (
           !(await confirm("Archiver cet article ? Il ne sera plus visible sur le site.", {

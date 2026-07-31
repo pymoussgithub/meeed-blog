@@ -18,38 +18,71 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+enum ForumTopicStatus {
+  OPEN
+  LOCKED
+  ARCHIVED
+}
+
+enum DocumentVisibility {
+  PUBLIC
+  CONTRIBUTOR
+  ADMIN
+}
+
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
+  id           String       @id @default(cuid())
+  email        String       @unique
   name         String
   passwordHash String
-  role         UserRole   @default(CONTRIBUTEUR)
-  isActive     Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  role         UserRole     @default(CONTRIBUTEUR)
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  passwordResetTokens PasswordResetToken[]
   articles     Article[]
   documents    Document[]
+  forumTopics  ForumTopic[]
+  forumPosts   ForumPost[]
+  forumTopicSubscriptions ForumTopicSubscription[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Article {
-  id                 String            @id @default(cuid())
+  id                 String              @id @default(cuid())
   title              String
-  slug               String            @unique
+  slug               String              @unique
   excerpt            String
-  content            String            @db.Text
+  content            String              @db.Text
   coverImageUrl      String?
   coverImagePublicId String?
-  status             ArticleStatus     @default(DRAFT)
+  status             ArticleStatus       @default(DRAFT)
   publishedAt        DateTime?
   authorId           String
-  author             User              @relation(fields: [authorId], references: [id])
+  author             User                @relation(fields: [authorId], references: [id])
+  projectId          String?
+  project            Project?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
   categories         ArticleCategory[]
   documents          Document[]
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  forumTopics        ArticleForumTopic[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@index([status, publishedAt])
   @@index([authorId])
+  @@index([projectId])
 }
 
 model Category {
@@ -60,7 +93,7 @@ model Category {
   color       String?           @default("#4ecdc4")
   sortOrder   Int               @default(0)
   articles    ArticleCategory[]
-  project     Project?
+  projects    Project[]
   createdAt   DateTime          @default(now())
 }
 
@@ -76,12 +109,14 @@ model Project {
   color              String?  @default("#4ecdc4")
   sortOrder          Int      @default(0)
   isActive           Boolean  @default(true)
-  categoryId         String   @unique
+  categoryId         String
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  articles    Article[]
   documents   Document[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([categoryId])
   @@index([isActive, sortOrder])
 }
 
@@ -103,7 +138,7 @@ model Document {
   fileSize           Int
   mimeType           String   @default("application/pdf")
   cloudinaryPublicId String
-  isPublic           Boolean  @default(true)
+  visibility         DocumentVisibility @default(PUBLIC)
   articleId          String?
   article            Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
   projectId          String?
@@ -114,5 +149,83 @@ model Document {
 
   @@index([articleId])
   @@index([projectId])
-  @@index([isPublic])
+  @@index([visibility])
+}
+
+model ForumCategory {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  sortOrder   Int          @default(0)
+  isActive    Boolean      @default(true)
+  topics      ForumTopic[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model ForumTopic {
+  id         String            @id @default(cuid())
+  title      String
+  slug       String            @unique
+  status     ForumTopicStatus  @default(OPEN)
+  isPinned   Boolean           @default(false)
+  isHidden   Boolean           @default(false)
+  deletedAt  DateTime?
+  categoryId String
+  category   ForumCategory     @relation(fields: [categoryId], references: [id])
+  authorId   String
+  author     User              @relation(fields: [authorId], references: [id])
+  posts      ForumPost[]
+  articles   ArticleForumTopic[]
+  subscriptions ForumTopicSubscription[]
+  lastPostAt DateTime?
+  postsCount Int               @default(0)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([categoryId, isPinned, lastPostAt])
+  @@index([status, lastPostAt])
+  @@index([authorId])
+}
+
+model ForumTopicSubscription {
+  id        String     @id @default(cuid())
+  topicId    String
+  topic      ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([topicId, userId])
+  @@index([userId, isActive, updatedAt])
+  @@index([topicId, isActive])
+}
+
+model ForumPost {
+  id        String     @id @default(cuid())
+  body      String     @db.Text
+  isHidden  Boolean    @default(false)
+  deletedAt DateTime?
+  topicId   String
+  topic     ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([topicId, createdAt])
+  @@index([authorId])
+}
+
+model ArticleForumTopic {
+  articleId String
+  topicId   String
+  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  topic     ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@id([articleId, topicId])
 }

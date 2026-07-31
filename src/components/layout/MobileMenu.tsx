@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { NavLink } from "@/types";
 
 type MobileMenuProps = {
@@ -9,10 +9,44 @@ type MobileMenuProps = {
   isLoggedIn?: boolean;
 };
 
+const MOBILE_TOUR_IDS: Record<string, string> = {
+  "/actualites": "nav.header.articles",
+  "/projets": "nav.header.projets",
+  "/documents": "nav.header.documents",
+  "/forum": "nav.header.forum",
+  "/categories": "nav.header.categories",
+  "/contact": "nav.header.contact",
+};
+
 export function MobileMenu({ links, isLoggedIn = false }: MobileMenuProps) {
   const accountHref = isLoggedIn ? "/admin" : "/admin/login";
   const accountLabel = isLoggedIn ? "Mon compte" : "Se connecter";
   const [open, setOpen] = useState(false);
+  const groupedLinks = links.reduce<Array<{ title: string | null; links: NavLink[] }>>((groups, link) => {
+    const title = link.group ?? null;
+    const existingGroup = groups.find((group) => group.title === title);
+
+    if (existingGroup) {
+      existingGroup.links.push(link);
+      return groups;
+    }
+
+    groups.push({ title, links: [link] });
+    return groups;
+  }, []);
+  const featuredLinks = groupedLinks.find((group) => group.title === null)?.links ?? [];
+  const sectionGroups = groupedLinks.filter((group) => group.title !== null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [open]);
 
   return (
     <div className="md:hidden">
@@ -21,10 +55,12 @@ export function MobileMenu({ links, isLoggedIn = false }: MobileMenuProps) {
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-        className="rounded-lg p-2 text-primary hover:bg-gray-100"
+        data-tour-id="nav.header.menu"
+        className="inline-flex items-center gap-2 rounded-full border-2 border-accent px-4 py-1.5 text-sm font-medium text-accent-dark transition-colors hover:bg-accent hover:text-white"
         onClick={() => setOpen((value) => !value)}
       >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <span>Menu</span>
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
           {open ? (
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           ) : (
@@ -34,34 +70,94 @@ export function MobileMenu({ links, isLoggedIn = false }: MobileMenuProps) {
       </button>
 
       {open ? (
-        <nav
-          id="mobile-menu"
-          className="absolute left-0 right-0 top-16 border-b border-gray-200 bg-white px-4 py-4 shadow-lg"
-          aria-label="Navigation mobile"
-        >
-          <ul className="space-y-1">
-            {links.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="block rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-bg-soft"
+        <>
+          <button
+            type="button"
+            aria-label="Fermer le menu"
+            className="fixed inset-0 top-16 z-40 bg-primary/20 backdrop-blur-[2px]"
+            onClick={() => setOpen(false)}
+          />
+
+          <nav
+            id="mobile-menu"
+            className="fixed inset-x-0 top-16 bottom-0 z-50 border-t border-white/60 bg-white/92 px-4 py-4 shadow-xl backdrop-blur"
+            aria-label="Navigation mobile"
+          >
+            <div className="mx-auto max-h-full max-w-lg overflow-y-auto pb-6">
+              <div className="mb-4 flex items-center justify-between rounded-3xl bg-gradient-to-br from-bg-soft via-white to-accent/10 px-4 py-4 shadow-sm ring-1 ring-white/70">
+                <div>
+                  <p className="text-sm font-semibold text-primary">Navigation</p>
+                  <p className="text-xs text-primary/55">Acces rapide aux rubriques</p>
+                </div>
+                <button
+                  type="button"
+                  className="rounded-full p-2 text-primary/60 transition-colors hover:bg-white hover:text-accent-dark"
                   onClick={() => setOpen(false)}
+                  aria-label="Fermer le menu"
                 >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            <li>
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {featuredLinks.length > 0 ? (
+                <div className="mb-4 rounded-2xl bg-bg-soft/80 p-2">
+                  <ul className="space-y-1">
+                    {featuredLinks.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="flex items-center justify-between rounded-xl bg-white px-3 py-3 text-sm font-semibold text-primary shadow-sm ring-1 ring-primary/5 transition-colors hover:text-accent-dark"
+                          data-tour-id={MOBILE_TOUR_IDS[link.href]}
+                          onClick={() => setOpen(false)}
+                        >
+                          <span>{link.label}</span>
+                          <span aria-hidden className="text-primary/30">
+                            /
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="space-y-4">
+                {sectionGroups.map((group) => (
+                  <section key={group.title}>
+                    <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.2em] text-accent-dark/80">
+                      {group.title}
+                    </p>
+                    <ul className="space-y-1 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-primary/8">
+                      {group.links.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className="block rounded-xl px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-bg-soft hover:text-accent-dark"
+                            data-tour-id={MOBILE_TOUR_IDS[link.href]}
+                            onClick={() => setOpen(false)}
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+
               <Link
                 href={accountHref}
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-accent-dark hover:bg-bg-soft"
+                className="mt-5 block rounded-2xl border border-accent/30 bg-accent px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                data-tour-id="nav.header.login"
                 onClick={() => setOpen(false)}
               >
                 {accountLabel}
               </Link>
-            </li>
-          </ul>
-        </nav>
+            </div>
+          </nav>
+        </>
       ) : null}
     </div>
   );

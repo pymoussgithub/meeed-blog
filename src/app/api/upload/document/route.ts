@@ -18,7 +18,7 @@ const documentUploadSchema = z.object({
     .int()
     .positive()
     .max(UPLOAD_LIMITS.documentMaxBytes, "Fichier trop volumineux (max 25 Mo)"),
-  mimeType: z.literal("application/pdf"),
+  mimeType: z.string().min(1).max(255),
 });
 
 export async function POST(request: Request) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   try {
     const body = documentUploadSchema.parse(await request.json());
     const folder = buildDocumentFolder(body.documentId);
-    const publicId = slugify(body.fileName.replace(/\.pdf$/i, "")) || "document";
+    const publicId = slugify(body.fileName.replace(/\.[^.]+$/i, "")) || "document";
     const { signature, timestamp } = createSignedUploadParams(folder, { public_id: publicId });
     const { cloudName, apiKey } = getCloudinaryPublicConfig();
 

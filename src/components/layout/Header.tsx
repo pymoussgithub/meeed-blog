@@ -34,7 +34,7 @@ export async function Header() {
         </Suspense>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link href={accountHref} className={navButtonClass}>
+          <Link href={accountHref} className={navButtonClass} data-tour-id="nav.header.login">
             {accountLabel}
           </Link>
           <NavDropdown links={NAV_LINKS} />

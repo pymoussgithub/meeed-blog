@@ -7,5 +7,6 @@ export type { ArticleWithRelations } from "@/lib/services/article.service";
 export type NavLink = {
   href: string;
   label: string;
+  group?: string;
   external?: boolean;
 };

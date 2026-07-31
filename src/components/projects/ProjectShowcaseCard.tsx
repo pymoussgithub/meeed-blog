@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getCoverProjectUrl } from "@/lib/cloudinary";
+import { getProjectCoverUrl } from "@/lib/project-cover";
 import type { ActiveProject } from "@/lib/services/project.service";
 import { cn } from "@/lib/utils";
 
@@ -10,35 +10,19 @@ type ProjectShowcaseCardProps = {
   className?: string;
 };
 
-function getProjectCoverUrl(project: ActiveProject) {
-  if (project.coverImagePublicId) {
-    return getCoverProjectUrl(project.coverImagePublicId);
-  }
-  if (project.coverImageUrl) {
-    return project.coverImageUrl;
-  }
-
-  const article = project.category.articles[0]?.article;
-  if (!article) {
-    return null;
-  }
-  if (article.coverImagePublicId) {
-    return getCoverProjectUrl(article.coverImagePublicId);
-  }
-  return article.coverImageUrl;
-}
-
 export function ProjectShowcaseCard({
   project,
   imageOnRight = false,
   className,
 }: ProjectShowcaseCardProps) {
   const coverUrl = getProjectCoverUrl(project);
-  const articleCount = project.category._count.articles;
+  const articleCount = project._count.articles;
   const accentColor = project.color ?? "var(--color-accent)";
+  const articlesHref = `/actualites?project=${project.slug}`;
 
   return (
     <article
+      data-tour-id="projets.card"
       className={cn(
         "group w-full border-b border-gray-100 bg-white transition-colors hover:bg-bg-soft/20",
         className,
@@ -99,7 +83,7 @@ export function ProjectShowcaseCard({
 
           <h2 className="mt-4 text-2xl font-bold leading-tight sm:text-3xl xl:text-4xl">
             <Link
-              href={`/c/${project.slug}`}
+              href={articlesHref}
               className="transition-colors hover:text-accent-dark"
             >
               {project.title}
@@ -110,9 +94,9 @@ export function ProjectShowcaseCard({
             {project.summary}
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-5">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              href={`/c/${project.slug}`}
+              href={articlesHref}
               className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
             >
               Voir les articles
@@ -128,9 +112,10 @@ export function ProjectShowcaseCard({
                 href={project.donationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-primary/60 transition-colors hover:text-accent-dark hover:underline"
+                className="inline-flex items-center gap-2 rounded-lg border-2 border-accent px-5 py-2.5 text-sm font-semibold text-accent-dark transition-colors hover:bg-accent hover:text-white"
               >
-                Soutenir ce projet →
+                Soutenir ce projet
+                <span aria-hidden>→</span>
               </a>
             ) : null}
           </div>

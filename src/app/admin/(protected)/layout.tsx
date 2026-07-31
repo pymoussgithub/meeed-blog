@@ -21,7 +21,7 @@ export default async function AdminProtectedLayout({
         <AdminHeader userName={user.name ?? user.email ?? "Utilisateur"} userRole={user.role} />
         <div className="flex flex-col md:flex-row">
           <AdminSidebar userRole={user.role} />
-          <main className="flex-1">{children}</main>
+          <main className="min-w-0 flex-1">{children}</main>
         </div>
       </div>
     </AdminProviders>

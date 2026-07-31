@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { DocumentList } from "@/components/document/DocumentList";
-import { DocumentsFilterPanel } from "@/components/documents/DocumentsFilterPanel";
+import { DocumentsTable } from "@/components/documents/DocumentsTable";
+import { DocumentsToolbar } from "@/components/documents/DocumentsToolbar";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import {
   buildDocumentsUrl,
   hasActiveDocumentFilters,
@@ -37,13 +37,18 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/documents",
 });
 
-function getResultsLabel(total: number, isFiltered: boolean) {
-  if (total === 0) return isFiltered ? "Aucun document" : "Aucun document public";
-  if (total === 1) return "1 document";
-  return `${total} documents`;
+function getEmptyMessage(isFiltered: boolean, isAuthenticated: boolean) {
+  if (isFiltered) {
+    return "Aucun document ne correspond à vos filtres.";
+  }
+  if (isAuthenticated) {
+    return "Aucun document disponible pour votre niveau d’accès.";
+  }
+  return "Aucun document public pour le moment.";
 }
 
 export default async function DocumentsPage({ searchParams }: PageProps) {
+  const user = await getCurrentUser();
   const rawParams = await searchParams;
   const params = parseDocumentsListingParams(rawParams);
   const filters = listingParamsToDocumentFilters(params);
@@ -53,24 +58,20 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
   let projects: Awaited<ReturnType<typeof getPublicDocumentProjects>> = [];
   let categories: Awaited<ReturnType<typeof getPublicDocumentNewsCategories>> = [];
   let uploaders: Awaited<ReturnType<typeof getPublicDocumentUploaders>> = [];
-  let total = 0;
   let dbError = false;
 
   try {
-    const [documentList, projectList, categoryList, uploaderList, documentCount] =
-      await Promise.all([
-        getPublicDocuments(filters),
-        getPublicDocumentProjects(),
-        getPublicDocumentNewsCategories(),
-        getPublicDocumentUploaders(),
-        countPublicDocuments(filters),
-      ]);
+    const [documentList, projectList, categoryList, uploaderList] = await Promise.all([
+      getPublicDocuments(filters, user),
+      getPublicDocumentProjects(user),
+      getPublicDocumentNewsCategories(user),
+      getPublicDocumentUploaders(user),
+    ]);
 
     documents = documentList;
     projects = projectList;
     categories = categoryList;
     uploaders = uploaderList;
-    total = documentCount;
   } catch {
     dbError = true;
   }
@@ -80,70 +81,55 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
     { name: "Documents", path: "/documents" },
   ]);
 
+  const filterOptions = {
+    projects: projects.map(({ id, title, slug }) => ({
+      id,
+      label: title,
+      slug,
+    })),
+    categories: categories.map(({ id, name, slug }) => ({
+      id,
+      label: name,
+      slug,
+    })),
+    uploaders: uploaders.map(({ id, name }) => ({ id, label: name })),
+  };
+
   return (
-    <div className="container-meeed py-12">
+    <div className="container-meeed py-4 sm:py-5">
       <JsonLd data={breadcrumb} />
-      <p className="text-sm font-semibold uppercase tracking-wider text-accent-dark">
-        Ressources
-      </p>
-      <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Documents</h1>
-      <p className="mt-4 max-w-2xl text-primary/70">
-        Dossiers techniques, fiches et PDF produits par l&apos;association MEEED. Filtrez par
-        projet, catégorie, contributeur ou date pour trouver rapidement le bon document.
-      </p>
+      <h1 className="sr-only">Documents</h1>
+
+      <DocumentsToolbar
+        params={params}
+        projects={filterOptions.projects}
+        categories={filterOptions.categories}
+        uploaders={filterOptions.uploaders}
+        canAddDocument={Boolean(user)}
+      />
 
       {dbError ? (
-        <p className="mt-8 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Base de données non connectée. Lancez PostgreSQL puis{" "}
           <code className="rounded bg-amber-100 px-1">npm run db:migrate</code>.
         </p>
+      ) : documents.length === 0 ? (
+        <div className="space-y-3 text-center">
+          <DocumentsTable
+            documents={[]}
+            emptyMessage={getEmptyMessage(isFiltered, Boolean(user))}
+          />
+          {isFiltered ? (
+            <Link
+              href={buildDocumentsUrl({})}
+              className="inline-block text-sm font-semibold text-accent-dark hover:underline"
+            >
+              Voir tous les documents
+            </Link>
+          ) : null}
+        </div>
       ) : (
-        <>
-          <div className="mt-8">
-            <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-gray-100" />}>
-              <DocumentsFilterPanel
-                params={params}
-                projects={projects.map(({ id, title, slug }) => ({
-                  id,
-                  label: title,
-                  slug,
-                }))}
-                categories={categories.map(({ id, name, slug }) => ({
-                  id,
-                  label: name,
-                  slug,
-                }))}
-                uploaders={uploaders.map(({ id, name }) => ({ id, label: name }))}
-              />
-            </Suspense>
-          </div>
-
-          <p className="mt-6 text-sm font-medium text-primary/60">
-            {getResultsLabel(total, isFiltered)}
-          </p>
-
-          {total === 0 ? (
-            <div className="mt-8 rounded-xl border border-dashed border-gray-200 px-6 py-16 text-center">
-              <p className="text-lg font-medium text-primary/80">
-                {isFiltered
-                  ? "Aucun document ne correspond à vos filtres."
-                  : "Aucun document public pour le moment."}
-              </p>
-              {isFiltered ? (
-                <Link
-                  href={buildDocumentsUrl({})}
-                  className="mt-4 inline-block text-sm font-semibold text-accent-dark hover:underline"
-                >
-                  Voir tous les documents
-                </Link>
-              ) : null}
-            </div>
-          ) : (
-            <div className="mt-8">
-              <DocumentList documents={documents} showRelations />
-            </div>
-          )}
-        </>
+        <DocumentsTable documents={documents} />
       )}
     </div>
   );

@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { getAdminArticleStats, getAdminArticles } from "@/lib/services/article.service";
-import { getAllCategories } from "@/lib/services/category.service";
+import { getAllProjectsForAdmin } from "@/lib/services/project.service";
 import { formatDate } from "@/lib/utils";
 
 type PageProps = {
   searchParams: Promise<{
     status?: string;
-    category?: string;
+    project?: string;
     q?: string;
     page?: string;
   }>;
@@ -31,23 +31,25 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
     : undefined;
   const authorId = user.role === "ADMIN" ? undefined : user.id;
 
-  const [result, categories, stats] = await Promise.all([
+  const [result, projects, stats] = await Promise.all([
     getAdminArticles({
       status,
-      categoryId: params.category,
+      projectId: params.project,
       search: params.q,
       page,
       authorId,
     }),
-    getAllCategories(),
+    getAllProjectsForAdmin(),
     getAdminArticleStats(authorId),
   ]);
 
   const paginationQuery = {
     status: params.status,
-    category: params.category,
+    project: params.project,
     q: params.q,
   };
+  const tableActionClassName =
+    "inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2";
 
   return (
     <div className="container-meeed py-10">
@@ -59,17 +61,17 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
             {params.q ? ` pour « ${params.q} »` : ""}
           </p>
         </div>
-        <Button href="/admin/articles/nouveau" variant="accent">
+        <Button href="/admin/articles/nouveau" variant="accent" data-tour-id="admin.articles.new-button">
           + Nouvel article
         </Button>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8" data-tour-id="admin.articles.filters">
         <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-gray-100" />}>
           <ArticlesAdminToolbar
-            categories={categories.map((category) => ({
-              id: category.id,
-              name: category.name,
+            projects={projects.map((project) => ({
+              id: project.id,
+              title: project.title,
             }))}
             stats={stats}
             isAdmin={user.role === "ADMIN"}
@@ -81,12 +83,12 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
         <div className="mt-8 rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
           <p className="text-lg font-medium text-primary-dark">Aucun article trouvé</p>
           <p className="mt-2 text-sm text-primary/60">
-            {params.q || params.status || params.category
+            {params.q || params.status || params.project
               ? "Essayez d’élargir vos filtres ou de réinitialiser la recherche."
               : "Commencez par rédiger votre premier article."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {(params.q || params.status || params.category) && (
+            {(params.q || params.status || params.project) && (
               <Button href="/admin/articles" variant="outline">
                 Réinitialiser les filtres
               </Button>
@@ -98,7 +100,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
         </div>
       ) : (
         <>
-          <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white" data-tour-id="admin.articles.list">
             <table className="min-w-full text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
@@ -107,7 +109,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                   {user.role === "ADMIN" ? (
                     <th className="px-4 py-3 font-medium">Auteur</th>
                   ) : null}
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">Catégories</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">Projet</th>
                   <th className="px-4 py-3 font-medium">Modifié</th>
                   <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
@@ -153,16 +155,17 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                       <td className="px-4 py-3 text-primary/70">{article.author.name}</td>
                     ) : null}
                     <td className="hidden max-w-[180px] truncate px-4 py-3 text-primary/70 md:table-cell">
-                      {article.categories.length > 0
-                        ? article.categories.map((item) => item.category.name).join(", ")
-                        : "—"}
+                      {article.project?.title
+                        ?? (article.categories.length > 0
+                          ? article.categories.map((item) => item.category.name).join(", ")
+                          : "—")}
                     </td>
                     <td className="px-4 py-3 text-primary/70">{formatDate(article.updatedAt)}</td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Link
                           href={`/admin/articles/${article.id}`}
-                          className="text-accent-dark hover:underline"
+                          className={`${tableActionClassName} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}
                         >
                           Éditer
                         </Link>
@@ -170,12 +173,17 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                           <Link
                             href={`/a/${article.slug}`}
                             target="_blank"
-                            className="text-primary/60 hover:text-accent-dark hover:underline"
+                            rel="noreferrer"
+                            className={`${tableActionClassName} border-primary/15 bg-gray-50 text-primary/70 hover:border-accent/30 hover:bg-accent/10 hover:text-accent-dark`}
                           >
                             Voir
                           </Link>
                         ) : null}
-                        <ArticleListActions articleId={article.id} status={article.status} />
+                        <ArticleListActions
+                          articleId={article.id}
+                          status={article.status}
+                          className={tableActionClassName}
+                        />
                       </div>
                     </td>
                   </tr>

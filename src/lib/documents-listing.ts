@@ -43,15 +43,19 @@ export function buildDocumentsUrl(
 }
 
 export function hasActiveDocumentFilters(params: DocumentsListingParams): boolean {
-  return Boolean(
-    params.q ||
-      params.projectSlug ||
-      params.categorySlug ||
-      params.uploaderId ||
-      params.dateFrom ||
-      params.dateTo ||
-      params.linked,
-  );
+  return countDocumentFilters(params) > 0;
+}
+
+export function countDocumentFilters(params: DocumentsListingParams): number {
+  let count = 0;
+  if (params.q) count += 1;
+  if (params.projectSlug) count += 1;
+  if (params.categorySlug) count += 1;
+  if (params.uploaderId) count += 1;
+  if (params.dateFrom) count += 1;
+  if (params.dateTo) count += 1;
+  if (params.linked) count += 1;
+  return count;
 }
 
 export function listingParamsToDocumentFilters(
@@ -69,17 +73,29 @@ export function listingParamsToDocumentFilters(
 }
 
 export type DocumentWithArticleRelations = {
-  project?: { id: string; title: string; slug: string } | null;
+  project?: {
+    id: string;
+    title: string;
+    slug: string;
+    category: { slug: string };
+  } | null;
   article?: {
     id: string;
     title: string;
     slug: string;
+    project?: {
+      id: string;
+      title: string;
+      slug: string;
+      isActive?: boolean;
+      category: { slug: string };
+    } | null;
     categories: Array<{
       category: {
         id: string;
         name: string;
         slug: string;
-        project: { id: string; title: string; slug: string } | null;
+        projects: Array<{ id: string }>;
       };
     }>;
   } | null;
@@ -92,10 +108,8 @@ export function getDocumentProject(document: DocumentWithArticleRelations) {
 
   if (!document.article) return null;
 
-  for (const { category } of document.article.categories) {
-    if (category.project) {
-      return category.project;
-    }
+  if (document.article.project) {
+    return document.article.project;
   }
 
   return null;
@@ -106,7 +120,7 @@ export function getDocumentNewsCategories(document: DocumentWithArticleRelations
 
   return document.article.categories
     .map(({ category }) => category)
-    .filter((category) => !category.project);
+    .filter((category) => category.projects.length === 0);
 }
 
 export function getDocumentLinkLabel(document: DocumentWithArticleRelations) {

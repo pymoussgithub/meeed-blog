@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -17,6 +18,8 @@ type ConfirmOptions = {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "default" | "danger";
+  /** Si défini, l'utilisateur doit saisir exactement ce texte pour activer la confirmation. */
+  requireText?: string;
 };
 
 type AlertOptions = {
@@ -49,6 +52,7 @@ type DialogState =
       confirmLabel: string;
       cancelLabel: string;
       variant: "default" | "danger";
+      requireText?: string;
       resolve: (value: boolean) => void;
     }
   | {
@@ -72,10 +76,12 @@ type DialogState =
 
 export function DialogProvider({ children }: { children: ReactNode }) {
   const [dialog, setDialog] = useState<DialogState | null>(null);
+  const [typedText, setTypedText] = useState("");
   const promptInputRef = useRef<HTMLInputElement>(null);
 
   const confirm = useCallback((message: string, options?: ConfirmOptions) => {
     return new Promise<boolean>((resolve) => {
+      setTypedText("");
       setDialog({
         type: "confirm",
         message,
@@ -83,6 +89,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
         confirmLabel: options?.confirmLabel ?? "Confirmer",
         cancelLabel: options?.cancelLabel ?? "Annuler",
         variant: options?.variant ?? "default",
+        requireText: options?.requireText,
         resolve,
       });
     });
@@ -116,12 +123,16 @@ export function DialogProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const closeDialog = () => setDialog(null);
+  const closeDialog = () => {
+    setDialog(null);
+    setTypedText("");
+  };
 
   const handleConfirm = () => {
     if (!dialog) return;
 
     if (dialog.type === "confirm") {
+      if (dialog.requireText && typedText.trim() !== dialog.requireText) return;
       dialog.resolve(true);
     } else if (dialog.type === "alert") {
       dialog.resolve();
@@ -149,6 +160,17 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
   const promptValue =
     dialog?.type === "prompt" ? dialog.defaultValue : undefined;
+
+  const requireText =
+    dialog?.type === "confirm" ? dialog.requireText : undefined;
+  const confirmEnabled =
+    !requireText || typedText.trim() === requireText;
+
+  useEffect(() => {
+    if (dialog?.type === "confirm" && dialog.requireText) {
+      setTypedText("");
+    }
+  }, [dialog]);
 
   return (
     <DialogContext.Provider value={{ confirm, alert, prompt }}>
@@ -181,6 +203,30 @@ export function DialogProvider({ children }: { children: ReactNode }) {
               />
             ) : null}
 
+            {dialog.type === "confirm" && dialog.requireText ? (
+              <div className="space-y-2">
+                <p className="text-sm text-primary/70">
+                  Pour confirmer, tapez{" "}
+                  <span className="font-semibold text-primary-dark">
+                    {dialog.requireText}
+                  </span>{" "}
+                  ci-dessous.
+                </p>
+                <Input
+                  value={typedText}
+                  onChange={(event) => setTypedText(event.target.value)}
+                  placeholder={dialog.requireText}
+                  autoFocus
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      if (confirmEnabled) handleConfirm();
+                    }
+                  }}
+                />
+              </div>
+            ) : null}
+
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               {dialog.type !== "alert" ? (
                 <Button type="button" variant="outline" onClick={handleCancel}>
@@ -203,6 +249,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                     ? "bg-red-600 hover:bg-red-700"
                     : undefined
                 }
+                disabled={dialog.type === "confirm" && !confirmEnabled}
                 onClick={handleConfirm}
               >
                 {dialog.confirmLabel}
@@ -221,4 +268,9 @@ export function useDialog() {
     throw new Error("useDialog doit être utilisé dans un DialogProvider");
   }
   return context;
+}
+
+/** Variante tolérante pour les pages hors admin (ex. forum public). */
+export function useOptionalDialog() {
+  return useContext(DialogContext);
 }

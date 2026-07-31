@@ -1,0 +1,19 @@
+HIT: ☑  Recherche full-text avancée — retenue
+HIT: Justification client : faciliter la recherche d'un sujet précis dans l'ensemble des discussions du forum.
+HIT: Moteur de recherche full-text sur les sujets et messages
+HIT: La recherche full-text retourne les sujets et messages pertinents du forum
+Annexe A — Catalogue détaillé des fonctionnalités Magazine (F-01 à F-47)
+HIT: La présente annexe liste une à une les fonctionnalités du Magazine, référencées F-01 à F-47 dans le corps du document. Elle constitue le détail contractuel du §
+Annexe B — Catalogue détaillé des fonctionnalités Forum (FB-01 à FB-18)
+HIT: B.5 Notifications et recherche (retenues)
+ROW: FB-17 | Recherche full-text forum | Recherche full-text sur les sujets et messages du forum (retenue)
+F_COUNT=47
+FIRST=F-01 En-tête et menu
+LAST=F-47 En-têtes de sécurité
+F-01 En-tête et menu
+F-02 Menu mobile
+F-03 Pied de page
+F-04 Pages d'erreur
+F-05 Page d'accueil magazine
+F-06 Liste des articles
+F-13 Page Contact

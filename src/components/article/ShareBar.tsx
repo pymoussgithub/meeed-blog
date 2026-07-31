@@ -23,19 +23,20 @@ export function ShareBar({ title, url }: ShareBarProps) {
 
   return (
     <>
-      <div className="sticky bottom-4 z-30 mx-auto flex max-w-md items-center justify-center gap-2 rounded-full border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur md:static md:max-w-none md:justify-start md:rounded-xl md:shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
         <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="inline-flex items-center rounded-full bg-[#25D366]/15 px-2.5 py-0.5 text-xs font-medium text-[#128C7E] transition-opacity hover:opacity-80"
         >
           WhatsApp
         </a>
         <button
           type="button"
           onClick={copyLink}
-          className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-primary-dark transition-colors hover:bg-gray-50"
+          className="inline-flex items-center rounded-full bg-bg-soft px-2.5 py-0.5 text-xs font-medium text-accent-dark transition-opacity hover:opacity-80"
+          data-tour-id="article.share.copy-link"
         >
           Copier le lien
         </button>

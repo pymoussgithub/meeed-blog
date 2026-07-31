@@ -6,9 +6,14 @@ import {
   createCategory,
   deleteCategory,
   getCategoryById,
+  reorderCategories,
   updateCategory,
 } from "@/lib/services/category.service";
-import { createCategorySchema, updateCategorySchema } from "@/lib/validations/category";
+import {
+  createCategorySchema,
+  reorderCategoriesSchema,
+  updateCategorySchema,
+} from "@/lib/validations/category";
 import { actionError, actionSuccess, type ActionResult } from "@/types/actions";
 
 export async function createCategoryAction(
@@ -52,6 +57,28 @@ export async function updateCategoryAction(
     }
 
     await updateCategory(id, parsed.data);
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/");
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(error instanceof Error ? error.message : "Erreur");
+  }
+}
+
+export async function reorderCategoriesAction(
+  input: unknown,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const parsed = reorderCategoriesSchema.safeParse(input);
+
+    if (!parsed.success) {
+      return actionError(parsed.error.errors[0]?.message ?? "Données invalides");
+    }
+
+    await reorderCategories(parsed.data.orderedIds);
 
     revalidatePath("/admin/categories");
     revalidatePath("/");

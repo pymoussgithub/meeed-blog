@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+import { credentialsSignature } from "@/lib/credentials-signature";
+import { prisma } from "@/lib/prisma";
 
 export type AuthUser = {
   id: string;
@@ -7,17 +9,39 @@ export type AuthUser = {
   role: "ADMIN" | "CONTRIBUTEUR";
 };
 
+/** Relit la BDD à chaque appel : rôle, isActive et empreinte MDP (sessions invalidées). */
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const session = await auth();
   if (!session?.user?.id) {
     return null;
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isActive: true,
+      passwordHash: true,
+    },
+  });
+
+  if (!dbUser || !dbUser.isActive) {
+    return null;
+  }
+
+  const expected = credentialsSignature(dbUser.passwordHash);
+  if (session.user.credentialsVersion !== expected) {
+    return null;
+  }
+
   return {
-    id: session.user.id,
-    name: session.user.name,
-    email: session.user.email,
-    role: session.user.role,
+    id: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    role: dbUser.role,
   };
 }
 

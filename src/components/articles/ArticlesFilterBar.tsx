@@ -55,8 +55,11 @@ export function ArticlesFilterBar({
   const dateActive = Boolean(params.dateFrom || params.dateTo);
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-linear-to-b from-bg-soft/30 to-white shadow-sm">
+    <div className="space-y-4" data-tour-id="articles.filters.toggle">
+      <div
+        className="overflow-hidden rounded-2xl border border-gray-200 bg-linear-to-b from-bg-soft/30 to-white shadow-sm"
+        data-tour-id="articles.filters.panel"
+      >
         <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
           <form action="/actualites" method="GET" className="flex w-full gap-2">
             {params.projectSlug ? (

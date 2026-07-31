@@ -7,7 +7,7 @@ type ProjectsShowcaseListProps = {
 
 export function ProjectsShowcaseList({ projects }: ProjectsShowcaseListProps) {
   return (
-    <div className="w-full border-t border-gray-100">
+    <div className="w-full border-t border-gray-100" data-tour-id="projets.grid">
       {projects.map((project, index) => (
         <ProjectShowcaseCard
           key={project.id}
