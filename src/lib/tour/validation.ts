@@ -14,6 +14,7 @@ export function emitTourSuccess(detail: TourSuccessDetail = {}): void {
 
 export function matchRouteHint(pathname: string, routeHint?: string): boolean {
   if (!routeHint) return true;
+  // Suffixe `/` : préfixe strict (/forum/s/ → /forum/s/mon-slug)
   if (routeHint.endsWith("/")) {
     return pathname === routeHint.slice(0, -1) || pathname.startsWith(routeHint);
   }
@@ -22,11 +23,13 @@ export function matchRouteHint(pathname: string, routeHint?: string): boolean {
     const re = new RegExp("^" + routeHint.replace(/\*/g, ".*") + "$");
     return re.test(pathname);
   }
-  // Préfixe : /a/ matche /a/mon-slug
-  if (routeHint.endsWith("/") === false && pathname.startsWith(routeHint + "/")) return true;
-  return pathname.startsWith(routeHint) && (
-    pathname.length === routeHint.length || pathname[routeHint.length] === "/" || pathname[routeHint.length] === "?"
-  );
+  // Préfixe segment : /admin/articles → /admin/articles/123
+  // Mais /admin ne doit PAS matcher /admin/login (sinon auto-avance du tour / boucles).
+  if (routeHint === "/admin") {
+    return false;
+  }
+  if (pathname.startsWith(`${routeHint}/`)) return true;
+  return false;
 }
 
 export function fillDemoFields(fillDemo: Record<string, string>): void {

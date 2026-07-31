@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/layout/AdminHeader";
 import { AdminProviders } from "@/components/layout/AdminProviders";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
+import { signOut } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/auth-helpers";
 
 export default async function AdminProtectedLayout({
@@ -12,6 +13,10 @@ export default async function AdminProtectedLayout({
   const user = await getCurrentUser();
 
   if (!user) {
+    // Le middleware ne voit que le JWT ; getCurrentUser peut le refuser
+    // (compte inactif, MDP changé, session incomplète). Sans clear du cookie,
+    // middleware renvoyait /admin/login → /admin en boucle (crash Firefox History).
+    await signOut({ redirect: false });
     redirect("/admin/login");
   }
 

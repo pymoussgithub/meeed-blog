@@ -9,13 +9,14 @@ export default middlewareAuth((request) => {
   const isForumAccessPage = pathname === "/forum/acces";
   const isForumRoute = pathname === "/forum" || pathname.startsWith("/forum/");
 
-  if (isLoginPage && isLoggedIn) {
-    const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
-    const destination = sanitizeInternalPath(callbackUrl, "/admin");
-    return NextResponse.redirect(new URL(destination, request.url));
+  // Ne pas renvoyer automatiquement /admin/login → /admin quand un JWT est
+  // présent : getCurrentUser peut le rejeter (layout admin). La page login
+  // gère déjà la redirection post-connexion côté client.
+  if (isLoginPage) {
+    return NextResponse.next();
   }
 
-  if (pathname.startsWith("/admin") && !isLoginPage && !isLoggedIn) {
+  if (pathname.startsWith("/admin") && !isLoggedIn) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);

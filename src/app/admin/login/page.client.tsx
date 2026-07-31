@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { registerAction } from "@/actions/auth.actions";
@@ -13,7 +13,6 @@ import { emitTourSuccess } from "@/lib/tour/validation";
 type AuthMode = "login" | "register";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = sanitizeInternalPath(searchParams.get("callbackUrl"), "/admin");
   const resetStatus = searchParams.get("reset");
@@ -53,8 +52,9 @@ export default function AdminLoginPage() {
       }
 
       emitTourSuccess({ target: "auth.login.submit" });
-      router.push(callbackUrl);
-      router.refresh();
+      // Navigation hard : évite les soft-nav + middleware qui spam History (Firefox).
+      window.location.assign(callbackUrl);
+      return;
     } catch {
       setError("Une erreur est survenue. Réessayez.");
     } finally {
@@ -87,8 +87,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push(callbackUrl);
-      router.refresh();
+      window.location.assign(callbackUrl);
+      return;
     } catch {
       setError("Une erreur est survenue. Réessayez.");
     } finally {
