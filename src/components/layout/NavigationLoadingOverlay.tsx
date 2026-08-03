@@ -5,13 +5,13 @@ import { createPortal } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Spinner } from "@/components/ui/Spinner";
 
-/** Routes où le RSC reste dynamique (auth / BDD) — feedback utile. */
+/**
+ * Uniquement les destinations vraiment lourdes (auth + plusieurs requêtes BDD).
+ * Articles, actualités, catégories : assez rapides pour ne pas mériter l’overlay.
+ */
 function isSlowPath(pathname: string): boolean {
   if (pathname === "/documents" || pathname.startsWith("/documents/")) return true;
-  if (pathname.startsWith("/a/")) return true;
-  if (pathname === "/actualites" || pathname.startsWith("/actualites/")) return true;
   if (pathname === "/forum" || pathname.startsWith("/forum/")) return true;
-  if (pathname.startsWith("/c/")) return true;
   if (pathname === "/recherche" || pathname.startsWith("/recherche/")) return true;
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") return true;
   return false;
@@ -21,14 +21,11 @@ function loadingMessage(pathname: string): string {
   if (pathname === "/documents" || pathname.startsWith("/documents/")) {
     return "Chargement des documents…";
   }
-  if (pathname.startsWith("/a/")) {
-    return "Chargement de l'article…";
-  }
-  if (pathname === "/actualites" || pathname.startsWith("/actualites/")) {
-    return "Chargement des articles…";
-  }
   if (pathname === "/forum" || pathname.startsWith("/forum/")) {
     return "Chargement du forum…";
+  }
+  if (pathname === "/recherche" || pathname.startsWith("/recherche/")) {
+    return "Recherche en cours…";
   }
   if (pathname.startsWith("/admin")) {
     return "Chargement…";
@@ -36,17 +33,16 @@ function loadingMessage(pathname: string): string {
   return "Chargement…";
 }
 
-function pathFromHref(href: string): string | null {
+function locationFromHref(href: string): { pathname: string; search: string } | null {
   try {
     const url = new URL(href, window.location.origin);
     if (url.origin !== window.location.origin) return null;
-    return url.pathname;
+    return { pathname: url.pathname, search: url.search.startsWith("?") ? url.search.slice(1) : url.search };
   } catch {
     return null;
   }
 }
 
-const SHOW_DELAY_MS = 120;
 const SAFETY_HIDE_MS = 20_000;
 
 export function NavigationLoadingOverlay() {
@@ -55,19 +51,19 @@ export function NavigationLoadingOverlay() {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState("Chargement…");
+  const pathnameRef = useRef(pathname);
+  const searchRef = useRef(searchParams?.toString() ?? "");
   const pendingPathRef = useRef<string | null>(null);
-  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  pathnameRef.current = pathname;
+  searchRef.current = searchParams?.toString() ?? "";
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const clearTimers = () => {
-    if (showTimerRef.current) {
-      clearTimeout(showTimerRef.current);
-      showTimerRef.current = null;
-    }
     if (safetyTimerRef.current) {
       clearTimeout(safetyTimerRef.current);
       safetyTimerRef.current = null;
@@ -88,21 +84,21 @@ export function NavigationLoadingOverlay() {
   }, [pathname, searchParams]);
 
   useEffect(() => {
-    const startFor = (nextPath: string) => {
-      if (nextPath === pathname) return;
+    const startFor = (nextPath: string, nextSearch?: string) => {
+      const currentPath = pathnameRef.current;
+      const currentSearch = searchRef.current;
+      const samePath = nextPath === currentPath;
+      const sameSearch = nextSearch === undefined || nextSearch === currentSearch;
+      if (samePath && sameSearch) return;
       if (!isSlowPath(nextPath)) return;
 
       pendingPathRef.current = nextPath;
       setMessage(loadingMessage(nextPath));
       clearTimers();
-
-      showTimerRef.current = setTimeout(() => {
-        if (!pendingPathRef.current) return;
-        setVisible(true);
-        safetyTimerRef.current = setTimeout(() => {
-          hide();
-        }, SAFETY_HIDE_MS);
-      }, SHOW_DELAY_MS);
+      setVisible(true);
+      safetyTimerRef.current = setTimeout(() => {
+        hide();
+      }, SAFETY_HIDE_MS);
     };
 
     const onClick = (event: MouseEvent) => {
@@ -119,18 +115,40 @@ export function NavigationLoadingOverlay() {
       if (anchor.hasAttribute("download")) return;
       if (anchor.getAttribute("href")?.startsWith("#")) return;
 
-      const nextPath = pathFromHref(anchor.getAttribute("href") ?? anchor.href);
-      if (!nextPath) return;
+      const next = locationFromHref(anchor.getAttribute("href") ?? anchor.href);
+      if (!next) return;
 
-      startFor(nextPath);
+      startFor(next.pathname, next.search);
+    };
+
+    // Boutons / router.push / router.replace (Next.js passe par l’History API).
+    const originalPushState = window.history.pushState.bind(window.history);
+    const originalReplaceState = window.history.replaceState.bind(window.history);
+
+    const onHistoryWrite = (url: string | URL | null | undefined) => {
+      if (url == null) return;
+      const next = locationFromHref(String(url));
+      if (!next) return;
+      startFor(next.pathname, next.search);
+    };
+
+    window.history.pushState = (data, unused, url) => {
+      onHistoryWrite(url);
+      return originalPushState(data, unused, url);
+    };
+    window.history.replaceState = (data, unused, url) => {
+      onHistoryWrite(url);
+      return originalReplaceState(data, unused, url);
     };
 
     document.addEventListener("click", onClick, true);
     return () => {
       document.removeEventListener("click", onClick, true);
+      window.history.pushState = originalPushState;
+      window.history.replaceState = originalReplaceState;
       clearTimers();
     };
-  }, [pathname]);
+  }, []);
 
   if (!mounted || !visible) return null;
 
