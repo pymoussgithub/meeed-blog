@@ -6,11 +6,13 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Spinner } from "@/components/ui/Spinner";
 
 /**
- * Uniquement les destinations vraiment lourdes (auth + plusieurs requêtes BDD).
- * Articles, actualités, catégories : assez rapides pour ne pas mériter l’overlay.
+ * Destinations lourdes (auth + requêtes BDD) — articles inclus (toujours lents).
+ * Catégories seules : assez rapides pour ne pas mériter l’overlay.
  */
 function isSlowPath(pathname: string): boolean {
   if (pathname === "/documents" || pathname.startsWith("/documents/")) return true;
+  if (pathname.startsWith("/a/")) return true;
+  if (pathname === "/actualites" || pathname.startsWith("/actualites/")) return true;
   if (pathname === "/forum" || pathname.startsWith("/forum/")) return true;
   if (pathname === "/recherche" || pathname.startsWith("/recherche/")) return true;
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") return true;
@@ -20,6 +22,12 @@ function isSlowPath(pathname: string): boolean {
 function loadingMessage(pathname: string): string {
   if (pathname === "/documents" || pathname.startsWith("/documents/")) {
     return "Chargement des documents…";
+  }
+  if (pathname.startsWith("/a/")) {
+    return "Chargement de l'article…";
+  }
+  if (pathname === "/actualites" || pathname.startsWith("/actualites/")) {
+    return "Chargement des articles…";
   }
   if (pathname === "/forum" || pathname.startsWith("/forum/")) {
     return "Chargement du forum…";
