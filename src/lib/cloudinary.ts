@@ -115,11 +115,16 @@ export function getCoverProjectUrl(publicId: string) {
   return getCloudinaryUrl(publicId, { width: 960, height: 600, crop: "fit" });
 }
 
+function normalizeDocumentFormat(format?: string) {
+  const normalized = format?.replace(/^\./, "").trim().toLowerCase();
+  return normalized || "pdf";
+}
+
 /** URL de téléchargement signée (contourne la restriction livraison PDF Cloudinary). */
-export function getDocumentDownloadUrl(publicId: string) {
+export function getDocumentDownloadUrl(publicId: string, format = "pdf") {
   configureCloudinary();
 
-  return cloudinary.utils.private_download_url(publicId, "pdf", {
+  return cloudinary.utils.private_download_url(publicId, normalizeDocumentFormat(format), {
     resource_type: "raw",
     type: "upload",
     attachment: true,
@@ -128,10 +133,10 @@ export function getDocumentDownloadUrl(publicId: string) {
 }
 
 /** URL signée pour consulter le PDF dans le navigateur (sans forcer le téléchargement). */
-export function getDocumentViewUrl(publicId: string) {
+export function getDocumentViewUrl(publicId: string, format = "pdf") {
   configureCloudinary();
 
-  return cloudinary.utils.private_download_url(publicId, "pdf", {
+  return cloudinary.utils.private_download_url(publicId, normalizeDocumentFormat(format), {
     resource_type: "raw",
     type: "upload",
     attachment: false,

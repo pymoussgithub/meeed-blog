@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArticleFiltersModal } from "@/components/article/ArticleFiltersModal";
 import { cn } from "@/lib/utils";
@@ -66,8 +66,37 @@ export function ArticlesToolbar({
 }: ArticlesToolbarProps) {
   const searchParams = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [resolvedNewArticleHref, setResolvedNewArticleHref] = useState<string | null>(
+    newArticleHref,
+  );
   const activeCount = countActiveFilters(searchParams);
   const clearHref = "/actualites";
+
+  useEffect(() => {
+    if (newArticleHref) {
+      setResolvedNewArticleHref(newArticleHref);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch("/api/auth/session")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((session: { user?: { id?: string } | null } | null) => {
+        if (!cancelled) {
+          setResolvedNewArticleHref(session?.user?.id ? "/admin/articles/nouveau" : null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setResolvedNewArticleHref(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [newArticleHref]);
 
   return (
     <>
@@ -115,9 +144,9 @@ export function ArticlesToolbar({
           </div>
 
           <div className="col-start-2 justify-self-end md:col-start-3">
-            {newArticleHref ? (
+            {resolvedNewArticleHref ? (
               <Link
-                href={newArticleHref}
+                href={resolvedNewArticleHref}
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-3 text-sm font-semibold text-white shadow-sm shadow-accent/25 transition-all hover:bg-accent-dark hover:shadow-md hover:shadow-accent/30"
               >
                 <svg

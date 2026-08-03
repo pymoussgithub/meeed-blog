@@ -1,5 +1,4 @@
-import type { DocumentVisibility, Prisma } from "@prisma/client";
-import { getDocumentVisibilityLabel } from "@/lib/document-visibility";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { removeCloudinaryAsset } from "@/lib/services/upload.server";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/lib/validations/document";
@@ -64,20 +63,27 @@ export const publicDocumentInclude = {
 export function buildDocumentAccessWhere(
   user?: DocumentAccessUser | null,
 ): Prisma.DocumentWhereInput {
+  const notArchived: Prisma.DocumentWhereInput = { isArchived: false };
+
   if (user?.role === "ADMIN") {
-    return {};
+    return notArchived;
   }
 
   if (user) {
     return {
-      OR: [
-        { visibility: "PUBLIC" },
-        { visibility: "CONTRIBUTOR" },
+      AND: [
+        notArchived,
+        {
+          OR: [
+            { visibility: "PUBLIC" },
+            { visibility: "CONTRIBUTOR" },
+          ],
+        },
       ],
     };
   }
 
-  return { visibility: "PUBLIC" };
+  return { ...notArchived, visibility: "PUBLIC" };
 }
 
 function appendAnd(
@@ -309,6 +315,45 @@ export async function getAllDocuments(userId?: string, isAdmin = true) {
 
 export async function getDocumentById(id: string) {
   return prisma.document.findUnique({ where: { id } });
+}
+
+export async function getDocumentByIdForAdmin(id: string) {
+  return prisma.document.findUnique({
+    where: { id },
+    include: {
+      article: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          projectId: true,
+          project: { select: { id: true, title: true } },
+        },
+      },
+      project: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+        },
+      },
+      uploadedBy: { select: { id: true, name: true } },
+    },
+  });
+}
+
+export async function archiveDocument(id: string) {
+  return prisma.document.update({
+    where: { id },
+    data: { isArchived: true },
+  });
+}
+
+export async function restoreDocument(id: string) {
+  return prisma.document.update({
+    where: { id },
+    data: { isArchived: false },
+  });
 }
 
 export async function deleteDocument(id: string) {

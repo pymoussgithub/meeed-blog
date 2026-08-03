@@ -15,6 +15,7 @@ import {
 } from "@/lib/services/article.service";
 import {
   articleFormSchema,
+  draftArticleSchema,
   getFirstZodErrorMessage,
   normalizeArticleFormInput,
   publishArticleSchema,
@@ -51,6 +52,23 @@ function buildArticlePayload(input: ArticleFormInput, status: ArticleStatus) {
     categoryIds: input.categoryIds,
     ...(status === ArticleStatus.PUBLISHED ? { publishedAt: new Date() } : {}),
   };
+}
+
+async function resolveDraftSlug(title: string, slug: string, excludeId?: string) {
+  const fromTitle = slugify(title);
+  let candidate = slug.trim() || fromTitle;
+  if (!candidate || candidate.length < 3) {
+    candidate = `brouillon-${Date.now().toString(36)}`;
+  }
+
+  let unique = candidate;
+  let attempt = 2;
+  while (await isSlugTaken(unique, excludeId)) {
+    const suffix = `-${attempt}`;
+    unique = `${candidate.slice(0, Math.max(1, 80 - suffix.length))}${suffix}`;
+    attempt += 1;
+  }
+  return unique;
 }
 
 export async function createArticleAction(
@@ -119,8 +137,17 @@ export async function updateArticleAction(
 export async function saveDraftAction(
   id: string | null,
   input: ArticleFormInput,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<{ id: string; slug: string }>> {
   try {
+    const user = await requireAuth();
+    const parsed = draftArticleSchema.safeParse(
+      normalizeArticleFormInput({ ...input, status: "DRAFT" }),
+    );
+
+    if (!parsed.success) {
+      return actionError(getFirstZodErrorMessage(parsed.error));
+    }
+
     if (id) {
       const { article } = await assertCanEdit(id);
       if (article.status === ArticleStatus.PUBLISHED) {
@@ -133,13 +160,30 @@ export async function saveDraftAction(
           "Un article archivé ne peut pas être enregistré en brouillon. Republiez-le d'abord.",
         );
       }
+
+      const slug = await resolveDraftSlug(parsed.data.title, parsed.data.slug, id);
+      const articleUpdated = await updateArticle(
+        id,
+        buildArticlePayload({ ...parsed.data, slug, status: "DRAFT" }, ArticleStatus.DRAFT),
+      );
+
+      revalidatePath("/admin");
+      revalidatePath("/admin/articles");
+      revalidatePath(`/admin/articles/${id}`);
+
+      return actionSuccess({ id: articleUpdated.id, slug: articleUpdated.slug });
     }
 
-    const draftInput = { ...input, status: "DRAFT" as const };
-    if (id) {
-      return updateArticleAction(id, draftInput);
-    }
-    return createArticleAction(draftInput);
+    const slug = await resolveDraftSlug(parsed.data.title, parsed.data.slug);
+    const article = await createArticle({
+      ...buildArticlePayload({ ...parsed.data, slug, status: "DRAFT" }, ArticleStatus.DRAFT),
+      authorId: user.id,
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/articles");
+
+    return actionSuccess({ id: article.id, slug: article.slug });
   } catch (error) {
     return actionError(
       error instanceof Error ? error.message : "Erreur lors de l'enregistrement du brouillon",

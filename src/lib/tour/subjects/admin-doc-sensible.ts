@@ -10,19 +10,26 @@ export const adminDocSensible: TourSubject = {
   steps: [
     {
       id: "admin-doc-sensible-1",
-      message: "Uploadez ou éditez un document.",
+      message: "Ouvrez Documents dans le menu.",
       target: T["admin.sidebar.documents"],
       action: "navigate",
       routeHint: "/admin/documents",
     },
     {
       id: "admin-doc-sensible-2",
+      message: "Cliquez sur « Nouveau document » pour uploader, ou éditez un existant.",
+      target: T["admin.documents.new-button"],
+      action: "navigate",
+      routeHint: "/admin/documents/nouveau",
+    },
+    {
+      id: "admin-doc-sensible-3",
       message: "Choisissez « Admins uniquement ».",
       target: T["admin.documents.visibility"],
       action: "input",
     },
     {
-      id: "admin-doc-sensible-3",
+      id: "admin-doc-sensible-4",
       message: "Enregistrez : invisible aux contributeurs et anonymes.",
       target: T["admin.documents.upload"],
       action: "confirm",

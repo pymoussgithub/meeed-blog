@@ -11,9 +11,9 @@ export default async function AdminForumSubscriptionsPage() {
   return (
     <div className="container-meeed py-10">
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-primary-dark">Abonnements discussions</h1>
+        <h1 className="text-2xl font-bold text-primary-dark">Inscriptions discussions</h1>
         <p className="mt-2 text-primary/70">
-          Retrouvez les discussions du forum que vous suivez et désabonnez-vous en un clic.
+          Retrouvez les discussions du forum que vous suivez et désinscrivez-vous en un clic.
         </p>
       </div>
 

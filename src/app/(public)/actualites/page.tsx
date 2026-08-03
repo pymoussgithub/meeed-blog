@@ -13,7 +13,6 @@ import {
   parseArticlesListingParams,
 } from "@/lib/articles-listing";
 import { toCarouselArticle } from "@/lib/article-carousel";
-import { getCurrentUser } from "@/lib/auth-helpers";
 import {
   countFilteredPublishedArticles,
   getFilteredPublishedArticles,
@@ -47,7 +46,6 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default async function ActualitesPage({ searchParams }: PageProps) {
   const rawParams = await searchParams;
-  const user = await getCurrentUser();
   const params = parseArticlesListingParams(rawParams);
   const filters = listingParamsToPublicFilters(params);
   const isFiltered = hasActiveListingFilters(params);
@@ -134,7 +132,6 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
               projects={projects.map(({ id, title, slug }) => ({ id, title, slug }))}
               authors={authors.map(({ id, name }) => ({ id, name }))}
               total={total}
-              newArticleHref={user ? "/admin/articles/nouveau" : null}
             />
           </Suspense>
 

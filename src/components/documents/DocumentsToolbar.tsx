@@ -20,7 +20,7 @@ export function DocumentsToolbar({
   projects,
   categories,
   uploaders,
-  newDocumentHref = "/admin/documents",
+  newDocumentHref = "/admin/documents/nouveau",
   canAddDocument = false,
   className,
 }: DocumentsToolbarProps) {

@@ -58,7 +58,7 @@ export function ForumSubscriptionsTable({ subscriptions }: ForumSubscriptionsTab
     }
 
     setToast({
-      message: "Vous êtes désabonné de cette discussion.",
+      message: "Vous êtes désinscrit de cette discussion.",
       variant: "success",
     });
     router.refresh();
@@ -130,7 +130,7 @@ export function ForumSubscriptionsTable({ subscriptions }: ForumSubscriptionsTab
                     disabled={pendingId === topic.id}
                     onClick={() => unsubscribe(topic.id)}
                   >
-                    {pendingId === topic.id ? "…" : "Se désabonner"}
+                    {pendingId === topic.id ? "…" : "Se désinscrire"}
                   </Button>
                 </td>
               </tr>

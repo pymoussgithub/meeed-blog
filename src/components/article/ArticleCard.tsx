@@ -73,7 +73,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
           </Link>
         </h3>
 
-        <p className="mt-2 flex-1 text-sm leading-relaxed text-primary/70 line-clamp-3">
+        <p className="mt-2 flex-1 text-sm leading-relaxed text-primary/70">
           {article.excerpt}
         </p>
 

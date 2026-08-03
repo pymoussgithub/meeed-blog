@@ -87,6 +87,34 @@ const articleFormObjectSchema = z.object(articleFields);
 
 export const articleFormSchema = withClassificationRefine(articleFormObjectSchema);
 
+/** Brouillon : champs optionnels — la publication reste stricte via publishArticleSchema. */
+export const draftArticleSchema = z.object({
+  title: z.preprocess((value) => (value == null ? "" : value), z.string().max(200)),
+  slug: z.preprocess(
+    (value) => (value == null ? "" : value),
+    z
+      .string()
+      .max(80)
+      .refine(
+        (value) => value === "" || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value),
+        "Slug invalide (minuscules et tirets uniquement)",
+      ),
+  ),
+  excerpt: z.preprocess((value) => (value == null ? "" : value), z.string().max(300)),
+  content: z.preprocess((value) => (value == null ? "<p></p>" : value), z.string()),
+  coverImageUrl: z.string().url().nullish(),
+  coverImagePublicId: z.string().nullish(),
+  status: articleStatusSchema.default("DRAFT"),
+  projectId: z.preprocess(
+    (value) => (value === "" || value == null ? null : value),
+    z.string().cuid().nullable(),
+  ),
+  categoryIds: z.preprocess(
+    (value) => (value == null ? [] : value),
+    z.array(z.string().cuid()),
+  ),
+});
+
 export const publishArticleSchema = withClassificationRefine(
   z.object({
     ...articleFields,

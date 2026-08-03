@@ -116,7 +116,7 @@ export function AssociateArticlePicker({
                     {article.title}
                   </p>
                   {article.excerpt ? (
-                    <p className="line-clamp-2 text-xs leading-relaxed text-primary/55">
+                    <p className="text-xs leading-relaxed text-primary/55">
                       {article.excerpt}
                     </p>
                   ) : null}
@@ -215,7 +215,7 @@ export function AssociateArticlePicker({
                 Aucun article ne correspond.
               </p>
             ) : (
-              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-3">
                 {filtered.map((article) => {
                   const isSelected = draftIds.includes(article.id);
 
@@ -226,7 +226,7 @@ export function AssociateArticlePicker({
                         onClick={() => toggleDraft(article.id)}
                         aria-pressed={isSelected}
                         className={cn(
-                          "group flex h-full w-full overflow-hidden rounded-xl border bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md",
+                          "group flex w-full overflow-hidden rounded-xl border bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md",
                           isSelected
                             ? "border-accent ring-2 ring-accent/30"
                             : "border-primary/10",
@@ -252,7 +252,7 @@ export function AssociateArticlePicker({
                             </div>
                           )}
                         </div>
-                        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-3 py-3">
+                        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-3 py-3 sm:px-4">
                           {article.publishedAt ? (
                             <time
                               dateTime={article.publishedAt}
@@ -265,11 +265,11 @@ export function AssociateArticlePicker({
                             {article.title}
                           </p>
                           {article.excerpt ? (
-                            <p className="line-clamp-2 text-xs leading-relaxed text-primary/55">
+                            <p className="text-xs leading-relaxed text-primary/55 sm:text-sm">
                               {article.excerpt}
                             </p>
                           ) : null}
-                          <span className="mt-1 text-xs font-semibold text-accent-dark">
+                          <span className="mt-0.5 text-xs font-semibold text-accent-dark">
                             {isSelected ? "Sélectionné" : "Sélectionner"}
                           </span>
                         </div>

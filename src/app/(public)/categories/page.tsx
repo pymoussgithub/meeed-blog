@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getAllCategories } from "@/lib/services/category.service";
+import { getCachedAllCategories } from "@/lib/public-cache";
 import { buildBreadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Catégories",
@@ -11,10 +13,10 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function CategoriesPage() {
-  let categories: Awaited<ReturnType<typeof getAllCategories>> = [];
+  let categories: Awaited<ReturnType<typeof getCachedAllCategories>> = [];
 
   try {
-    categories = await getAllCategories();
+    categories = await getCachedAllCategories();
   } catch {
     // DB indisponible au build ou en local
   }

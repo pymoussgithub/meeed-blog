@@ -5,13 +5,26 @@ import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import {
+  archiveDocument,
   createDocument,
   deleteDocument,
   getDocumentById,
+  restoreDocument,
   updateDocument,
 } from "@/lib/services/document.service";
-import { createDocumentSchema } from "@/lib/validations/document";
+import {
+  createDocumentSchema,
+  updateDocumentMetaSchema,
+} from "@/lib/validations/document";
 import { actionError, actionSuccess, type ActionResult } from "@/types/actions";
+
+function revalidateDocumentPaths(id?: string) {
+  revalidatePath("/admin/documents");
+  revalidatePath("/documents");
+  if (id) {
+    revalidatePath(`/admin/documents/${id}`);
+  }
+}
 
 export async function createDocumentAction(input: {
   title: string;
@@ -40,12 +53,85 @@ export async function createDocumentAction(input: {
 
     const document = await createDocument(parsed.data);
 
-    revalidatePath("/admin/documents");
-    revalidatePath("/documents");
+    revalidateDocumentPaths(document.id);
 
     return actionSuccess({ id: document.id });
   } catch (error) {
     return actionError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement");
+  }
+}
+
+export async function updateDocumentAction(
+  id: string,
+  input: {
+    title: string;
+    description?: string | null;
+    visibility: DocumentVisibility;
+    articleId?: string | null;
+    projectId?: string | null;
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+    cloudinaryPublicId?: string;
+  },
+): Promise<ActionResult> {
+  try {
+    await assertCanManageDocument(id);
+
+    const parsed = updateDocumentMetaSchema.safeParse(input);
+    if (!parsed.success) {
+      return actionError(parsed.error.errors[0]?.message ?? "Données invalides");
+    }
+
+    const {
+      title,
+      description,
+      visibility,
+      articleId,
+      projectId,
+      fileUrl,
+      fileName,
+      fileSize,
+      mimeType,
+      cloudinaryPublicId,
+    } = parsed.data;
+
+    let nextArticleId = articleId ?? null;
+    let nextProjectId = projectId ?? null;
+
+    if (nextArticleId) {
+      const article = await prisma.article.findUnique({
+        where: { id: nextArticleId },
+        select: { id: true, projectId: true },
+      });
+
+      if (!article) {
+        return actionError("Article introuvable");
+      }
+
+      nextArticleId = article.id;
+      nextProjectId = article.projectId;
+    }
+
+    await updateDocument(id, {
+      title,
+      description,
+      visibility,
+      articleId: nextArticleId,
+      projectId: nextProjectId,
+      ...(fileUrl ? { fileUrl } : {}),
+      ...(fileName ? { fileName } : {}),
+      ...(fileSize ? { fileSize } : {}),
+      ...(mimeType ? { mimeType } : {}),
+      ...(cloudinaryPublicId ? { cloudinaryPublicId } : {}),
+    });
+
+    revalidateDocumentPaths(id);
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(getErrorMessage(error, "Erreur lors de la mise à jour"));
   }
 }
 
@@ -67,8 +153,7 @@ export async function setDocumentVisibilityAction(
 
     await updateDocument(id, { visibility });
 
-    revalidatePath("/admin/documents");
-    revalidatePath("/documents");
+    revalidateDocumentPaths(id);
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -111,8 +196,7 @@ export async function linkDocumentToArticleAction(
       });
     }
 
-    revalidatePath("/admin/documents");
-    revalidatePath("/documents");
+    revalidateDocumentPaths(id);
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -144,8 +228,7 @@ export async function linkDocumentToProjectAction(
 
     await updateDocument(id, { projectId });
 
-    revalidatePath("/admin/documents");
-    revalidatePath("/documents");
+    revalidateDocumentPaths(id);
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -185,9 +268,50 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+export async function archiveDocumentAction(id: string): Promise<ActionResult<void>> {
+  try {
+    const { document } = await assertCanManageDocument(id);
+
+    if (document.isArchived) {
+      return actionError("Ce document est déjà archivé");
+    }
+
+    await archiveDocument(id);
+    revalidateDocumentPaths(id);
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(getErrorMessage(error, "Erreur lors de l'archivage"));
+  }
+}
+
+export async function restoreDocumentAction(id: string): Promise<ActionResult<void>> {
+  try {
+    const { document } = await assertCanManageDocument(id);
+
+    if (!document.isArchived) {
+      return actionError("Seuls les documents archivés peuvent être restaurés");
+    }
+
+    await restoreDocument(id);
+    revalidateDocumentPaths(id);
+
+    return actionSuccess(undefined);
+  } catch (error) {
+    return actionError(getErrorMessage(error, "Erreur lors de la restauration"));
+  }
+}
+
 export async function deleteDocumentAction(id: string): Promise<ActionResult<void>> {
   try {
-    await assertCanManageDocument(id);
+    const { document } = await assertCanManageDocument(id);
+
+    if (!document.isArchived) {
+      return actionError(
+        "Seuls les documents archivés peuvent être supprimés. Archivez d'abord le document.",
+      );
+    }
+
     await deleteDocument(id);
 
     revalidatePath("/admin/documents");

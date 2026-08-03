@@ -3,15 +3,14 @@ import { Suspense } from "react";
 import "./globals.css";
 import { DemoTourProvider } from "@/components/tour/DemoTourProvider";
 import { DevAccountSwitcher } from "@/components/dev/DevAccountSwitcher";
+import { NavigationLoadingOverlay } from "@/components/layout/NavigationLoadingOverlay";
 import { DialogProvider } from "@/components/ui/DialogProvider";
-import { getCurrentUser } from "@/lib/auth-helpers";
-import { isDemoTourEnabled } from "@/lib/tour/flag";
 import { isDevAccountSwitcherEnabled } from "@/lib/dev-mode";
-import { getAllUsers } from "@/lib/services/user.service";
 import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
-// Evite le pool de workers SSG (EAGAIN sur Infomaniak / hebergements limites).
-export const dynamic = "force-dynamic";
+// Pas de force-dynamic ici : le build Infomaniak est déjà limité via next.config
+// (cpus: 1, staticGenerationMaxConcurrency: 1). Un layout dynamique force un
+// aller-retour RSC + auth/DB à chaque clic de navigation.
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -36,28 +35,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const devModeEnabled = isDevAccountSwitcherEnabled();
-  const demoTourEnabled = isDemoTourEnabled();
-  const user = devModeEnabled || demoTourEnabled ? await getCurrentUser() : null;
-  const accounts = devModeEnabled
-    ? await getAllUsers().then((users) =>
-        users
-          .filter((account) => account.isActive)
-          .map((account) => ({
-            id: account.id,
-            name: account.name,
-            email: account.email,
-            role: account.role,
-          })),
-      )
-    : [];
-  const sessionRole =
-    user?.role === "ADMIN" || user?.role === "CONTRIBUTEUR" ? user.role : null;
 
   return (
     <html lang="fr">
@@ -70,11 +53,14 @@ export default async function RootLayout({
       </head>
       <body>
         <DialogProvider>
-          <DemoTourProvider sessionRole={sessionRole}>
+          <DemoTourProvider>
             {children}
+            <Suspense fallback={null}>
+              <NavigationLoadingOverlay />
+            </Suspense>
             {devModeEnabled ? (
               <Suspense fallback={null}>
-                <DevAccountSwitcher currentUserId={user?.id ?? null} accounts={accounts} />
+                <DevAccountSwitcher />
               </Suspense>
             ) : null}
           </DemoTourProvider>

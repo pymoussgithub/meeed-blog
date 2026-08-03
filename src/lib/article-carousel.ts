@@ -20,6 +20,13 @@ export type CarouselArticle = {
   project: CarouselArticleProject | null;
 };
 
+/** unstable_cache JSON-ifie les Date → string ; on accepte les deux. */
+function toIsoDateString(value: Date | string | null | undefined): string | null {
+  if (value == null) return null;
+  if (typeof value === "string") return value;
+  return value.toISOString();
+}
+
 export function toCarouselArticle(
   article: ArticleWithRelations,
   categoryLabel?: string,
@@ -36,7 +43,7 @@ export function toCarouselArticle(
     title: article.title,
     excerpt: article.excerpt,
     coverUrl,
-    publishedAt: article.publishedAt?.toISOString() ?? null,
+    publishedAt: toIsoDateString(article.publishedAt),
     categoryLabel: categoryLabel ?? newsCategories[0]?.name ?? "Actualité",
     authorName: article.author?.name ?? null,
     project: linkedProject

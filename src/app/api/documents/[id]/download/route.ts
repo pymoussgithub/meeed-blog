@@ -16,10 +16,15 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const user = await getCurrentUser();
+  const isManager = user?.role === "ADMIN" || user?.id === document.uploadedById;
+
+  if (document.isArchived && !isManager) {
+    return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
+  }
+
   const canAccess =
     document.visibility === "PUBLIC" ||
-    user?.role === "ADMIN" ||
-    user?.id === document.uploadedById ||
+    isManager ||
     (document.visibility === "CONTRIBUTOR" && Boolean(user));
 
   if (!canAccess) {

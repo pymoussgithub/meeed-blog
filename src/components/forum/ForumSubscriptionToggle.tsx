@@ -64,7 +64,7 @@ export function ForumSubscriptionToggle({
             : "Recevoir un e-mail à chaque nouvelle réponse"
         }
       >
-        {pending ? "…" : subscribed ? "Se désabonner" : "S'abonner"}
+        {pending ? "…" : subscribed ? "Se désinscrire" : "S'inscrire"}
       </Button>
 
       {toast ? (

@@ -1,0 +1,155 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Spinner } from "@/components/ui/Spinner";
+
+/** Routes où le RSC reste dynamique (auth / BDD) — feedback utile. */
+function isSlowPath(pathname: string): boolean {
+  if (pathname === "/documents" || pathname.startsWith("/documents/")) return true;
+  if (pathname.startsWith("/a/")) return true;
+  if (pathname === "/actualites" || pathname.startsWith("/actualites/")) return true;
+  if (pathname === "/forum" || pathname.startsWith("/forum/")) return true;
+  if (pathname.startsWith("/c/")) return true;
+  if (pathname === "/recherche" || pathname.startsWith("/recherche/")) return true;
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login") return true;
+  return false;
+}
+
+function loadingMessage(pathname: string): string {
+  if (pathname === "/documents" || pathname.startsWith("/documents/")) {
+    return "Chargement des documents…";
+  }
+  if (pathname.startsWith("/a/")) {
+    return "Chargement de l'article…";
+  }
+  if (pathname === "/actualites" || pathname.startsWith("/actualites/")) {
+    return "Chargement des articles…";
+  }
+  if (pathname === "/forum" || pathname.startsWith("/forum/")) {
+    return "Chargement du forum…";
+  }
+  if (pathname.startsWith("/admin")) {
+    return "Chargement…";
+  }
+  return "Chargement…";
+}
+
+function pathFromHref(href: string): string | null {
+  try {
+    const url = new URL(href, window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    return url.pathname;
+  } catch {
+    return null;
+  }
+}
+
+const SHOW_DELAY_MS = 120;
+const SAFETY_HIDE_MS = 20_000;
+
+export function NavigationLoadingOverlay() {
+  const pathname = usePathname() ?? "/";
+  const searchParams = useSearchParams();
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState("Chargement…");
+  const pendingPathRef = useRef<string | null>(null);
+  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const clearTimers = () => {
+    if (showTimerRef.current) {
+      clearTimeout(showTimerRef.current);
+      showTimerRef.current = null;
+    }
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
+  };
+
+  const hide = () => {
+    pendingPathRef.current = null;
+    clearTimers();
+    setVisible(false);
+  };
+
+  // Fin de navigation soft (URL changée).
+  useEffect(() => {
+    pendingPathRef.current = null;
+    clearTimers();
+    setVisible(false);
+  }, [pathname, searchParams]);
+
+  useEffect(() => {
+    const startFor = (nextPath: string) => {
+      if (nextPath === pathname) return;
+      if (!isSlowPath(nextPath)) return;
+
+      pendingPathRef.current = nextPath;
+      setMessage(loadingMessage(nextPath));
+      clearTimers();
+
+      showTimerRef.current = setTimeout(() => {
+        if (!pendingPathRef.current) return;
+        setVisible(true);
+        safetyTimerRef.current = setTimeout(() => {
+          hide();
+        }, SAFETY_HIDE_MS);
+      }, SHOW_DELAY_MS);
+    };
+
+    const onClick = (event: MouseEvent) => {
+      if (event.defaultPrevented) return;
+      if (event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const anchor = target.closest("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      if (anchor.target && anchor.target !== "_self") return;
+      if (anchor.hasAttribute("download")) return;
+      if (anchor.getAttribute("href")?.startsWith("#")) return;
+
+      const nextPath = pathFromHref(anchor.getAttribute("href") ?? anchor.href);
+      if (!nextPath) return;
+
+      startFor(nextPath);
+    };
+
+    document.addEventListener("click", onClick, true);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+      clearTimers();
+    };
+  }, [pathname]);
+
+  if (!mounted || !visible) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      role="alertdialog"
+      aria-busy="true"
+      aria-live="assertive"
+      aria-labelledby="nav-loading-title"
+    >
+      <div className="absolute inset-0 bg-primary/35 backdrop-blur-[2px]" />
+      <div className="relative z-10 flex w-full max-w-xs flex-col items-center gap-4 rounded-3xl border border-gray-200 bg-white px-8 py-7 shadow-2xl">
+        <Spinner size="lg" />
+        <p id="nav-loading-title" className="text-center text-sm font-semibold text-primary-dark">
+          {message}
+        </p>
+      </div>
+    </div>,
+    document.body,
+  );
+}

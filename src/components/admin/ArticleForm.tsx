@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   archiveArticleAction,
   deleteArticleAction,
@@ -76,6 +76,8 @@ type ArticleFormProps = {
   forumLinksPanel?: React.ReactNode;
 };
 
+const AUTOSAVE_DELAY_MS = 1600;
+
 const defaultForm: ArticleFormInput = {
   title: "",
   slug: "",
@@ -87,6 +89,22 @@ const defaultForm: ArticleFormInput = {
   projectId: null,
   categoryIds: [],
 };
+
+function hasMeaningfulDraftContent(form: ArticleFormInput) {
+  return (
+    form.title.trim().length > 0 ||
+    form.excerpt.trim().length > 0 ||
+    form.slug.trim().length > 0 ||
+    !isHtmlContentEmpty(form.content) ||
+    Boolean(form.coverImageUrl) ||
+    Boolean(form.projectId) ||
+    form.categoryIds.length > 0
+  );
+}
+
+function snapshotForm(form: ArticleFormInput) {
+  return JSON.stringify(form);
+}
 
 function FormSection({
   title,
@@ -124,7 +142,9 @@ export function ArticleForm({
   const [form, setForm] = useState<ArticleFormInput>(
     normalizeArticleFormInput({ ...defaultForm, ...initialData }),
   );
+  const [currentArticleId, setCurrentArticleId] = useState<string | undefined>(articleId);
   const [slugLocked, setSlugLocked] = useState(!isNew);
+  const [isCreatingNew, setIsCreatingNew] = useState(isNew);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
@@ -137,11 +157,28 @@ export function ArticleForm({
   const [linkedTopicDraftBody, setLinkedTopicDraftBody] = useState("<p></p>");
   const [pendingCreatedTopics, setPendingCreatedTopics] = useState<PendingLinkedTopicDraft[]>([]);
 
+  const formRef = useRef(form);
+  const currentArticleIdRef = useRef(currentArticleId);
+  const pendingLinkedTopicIdsRef = useRef(pendingLinkedTopicIds);
+  const pendingCreatedTopicsRef = useRef(pendingCreatedTopics);
+  const lastSavedSnapshotRef = useRef(snapshotForm(form));
+  const saveInFlightRef = useRef(false);
+  const pendingAutosaveRef = useRef(false);
+  const autosaveReadyRef = useRef(false);
+  const persistDraftRef = useRef<(options?: { manual?: boolean }) => Promise<boolean>>(
+    async () => false,
+  );
+
+  formRef.current = form;
+  currentArticleIdRef.current = currentArticleId;
+  pendingLinkedTopicIdsRef.current = pendingLinkedTopicIds;
+  pendingCreatedTopicsRef.current = pendingCreatedTopics;
+
   useEffect(() => {
-    if (!slugLocked && isNew && form.title) {
+    if (!slugLocked && isCreatingNew && form.title) {
       setForm((current) => ({ ...current, slug: slugify(form.title) }));
     }
-  }, [form.title, isNew, slugLocked]);
+  }, [form.title, isCreatingNew, slugLocked]);
 
   useEffect(() => {
     if (!linkedTopicDraftCategoryId && forumLinkOptions?.categories[0]?.id) {
@@ -159,6 +196,127 @@ export function ArticleForm({
     setLinkedTopicDraftCategoryId(forumLinkOptions?.categories[0]?.id ?? "");
   };
 
+  const attachDeferredForumLinks = async (nextArticleId: string) => {
+    const topicIds = pendingLinkedTopicIdsRef.current;
+    const createdTopics = pendingCreatedTopicsRef.current;
+
+    for (const topicId of topicIds) {
+      const result = await linkArticleForumTopicAction({ articleId: nextArticleId, topicId });
+      if (!result.success) {
+        return result.error;
+      }
+    }
+
+    for (const topic of createdTopics) {
+      const result = await createLinkedForumTopicAction(nextArticleId, {
+        title: topic.title,
+        categoryId: topic.categoryId,
+        body: topic.body,
+      });
+      if (!result.success) {
+        return result.error;
+      }
+    }
+
+    if (topicIds.length > 0) setPendingLinkedTopicIds([]);
+    if (createdTopics.length > 0) setPendingCreatedTopics([]);
+
+    return null;
+  };
+
+  const persistDraft = async (options: { manual?: boolean } = {}) => {
+    const manual = Boolean(options.manual);
+    const currentForm = formRef.current;
+
+    if (currentForm.status === "PUBLISHED" || currentForm.status === "ARCHIVED") {
+      return false;
+    }
+
+    if (!manual && !hasMeaningfulDraftContent(currentForm)) {
+      return false;
+    }
+
+    const snapshot = snapshotForm(currentForm);
+    const hasPendingForumLinks =
+      pendingLinkedTopicIdsRef.current.length > 0 || pendingCreatedTopicsRef.current.length > 0;
+    if (!manual && snapshot === lastSavedSnapshotRef.current && !hasPendingForumLinks) {
+      return false;
+    }
+
+    if (saveInFlightRef.current) {
+      pendingAutosaveRef.current = true;
+      return false;
+    }
+
+    saveInFlightRef.current = true;
+    setIsSaving(true);
+
+    try {
+      const result = await saveDraftAction(currentArticleIdRef.current ?? null, currentForm);
+
+      if (!result.success) {
+        setToast({ message: result.error, variant: "error" });
+        return false;
+      }
+
+      lastSavedSnapshotRef.current = snapshot;
+
+      if (!currentArticleIdRef.current) {
+        setCurrentArticleId(result.data.id);
+        currentArticleIdRef.current = result.data.id;
+        setIsCreatingNew(false);
+        setSlugLocked(true);
+        window.history.replaceState(null, "", `/admin/articles/${result.data.id}`);
+      }
+
+      if (currentForm.slug !== result.data.slug) {
+        setForm((current) => {
+          const next = { ...current, slug: result.data.slug };
+          lastSavedSnapshotRef.current = snapshotForm(next);
+          return next;
+        });
+      }
+
+      const linkError = await attachDeferredForumLinks(result.data.id);
+      if (linkError) {
+        setToast({ message: linkError, variant: "error" });
+        return false;
+      }
+
+      setToast({ message: "Brouillon enregistré.", variant: "success" });
+      if (manual) {
+        emitTourSuccess({ target: "article.form.save-draft" });
+      }
+      return true;
+    } finally {
+      saveInFlightRef.current = false;
+      setIsSaving(false);
+
+      if (pendingAutosaveRef.current) {
+        pendingAutosaveRef.current = false;
+        void persistDraftRef.current({ manual: false });
+      }
+    }
+  };
+
+  persistDraftRef.current = persistDraft;
+
+  useEffect(() => {
+    if (!autosaveReadyRef.current) {
+      autosaveReadyRef.current = true;
+      lastSavedSnapshotRef.current = snapshotForm(form);
+      return;
+    }
+
+    if (form.status !== "DRAFT") return;
+
+    const timer = window.setTimeout(() => {
+      void persistDraftRef.current({ manual: false });
+    }, AUTOSAVE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [form]);
+
   const queueLinkedTopicDraft = () => {
     if (!linkedTopicDraftTitle.trim()) {
       setToast({ message: "Le titre de la discussion est requis.", variant: "error" });
@@ -175,43 +333,34 @@ export function ArticleForm({
       return;
     }
 
-    setPendingCreatedTopics((current) => [
-      ...current,
-      {
-        localId: crypto.randomUUID(),
-        title: linkedTopicDraftTitle.trim(),
-        categoryId: linkedTopicDraftCategoryId,
-        body: linkedTopicDraftBody,
-      },
-    ]);
+    const nextTopic: PendingLinkedTopicDraft = {
+      localId: crypto.randomUUID(),
+      title: linkedTopicDraftTitle.trim(),
+      categoryId: linkedTopicDraftCategoryId,
+      body: linkedTopicDraftBody,
+    };
+    setPendingCreatedTopics((current) => {
+      const next = [...current, nextTopic];
+      pendingCreatedTopicsRef.current = next;
+      return next;
+    });
     resetLinkedTopicDraft();
     setToast({ message: "Discussion préparée pour la création du brouillon.", variant: "success" });
+    if (currentArticleIdRef.current) {
+      void persistDraftRef.current({ manual: true });
+    }
+  };
+
+  const handlePendingTopicsConfirm = (topicIds: string[]) => {
+    pendingLinkedTopicIdsRef.current = topicIds;
+    setPendingLinkedTopicIds(topicIds);
+    if (currentArticleIdRef.current && topicIds.length > 0) {
+      void persistDraftRef.current({ manual: true });
+    }
   };
 
   const removePendingCreatedTopic = (localId: string) => {
     setPendingCreatedTopics((current) => current.filter((topic) => topic.localId !== localId));
-  };
-
-  const attachDeferredForumLinks = async (nextArticleId: string) => {
-    for (const topicId of pendingLinkedTopicIds) {
-      const result = await linkArticleForumTopicAction({ articleId: nextArticleId, topicId });
-      if (!result.success) {
-        return result.error;
-      }
-    }
-
-    for (const topic of pendingCreatedTopics) {
-      const result = await createLinkedForumTopicAction(nextArticleId, {
-        title: topic.title,
-        categoryId: topic.categoryId,
-        body: topic.body,
-      });
-      if (!result.success) {
-        return result.error;
-      }
-    }
-
-    return null;
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -230,42 +379,8 @@ export function ArticleForm({
     }));
   };
 
-  const validateBeforeSave = () => {
-    if (!form.title.trim()) {
-      setToast({ message: "Le titre est requis.", variant: "error" });
-      return false;
-    }
-
-    if (isHtmlContentEmpty(form.content)) {
-      setToast({ message: "Le corps de l'article ne peut pas être vide.", variant: "error" });
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSaveDraft = async () => {
-    if (!validateBeforeSave()) return;
-
-    setIsSaving(true);
-    const result = await saveDraftAction(articleId ?? null, form);
-    setIsSaving(false);
-
-    if (!result.success) {
-      setToast({ message: result.error, variant: "error" });
-      return;
-    }
-
-    setToast({ message: "Brouillon enregistré.", variant: "success" });
-    if (!articleId) {
-      const linkError = await attachDeferredForumLinks(result.data.id);
-      if (linkError) {
-        setToast({ message: linkError, variant: "error" });
-      }
-      router.push(`/admin/articles/${result.data.id}`);
-    } else {
-      router.refresh();
-    }
+    await persistDraft({ manual: true });
   };
 
   const handlePublish = async () => {
@@ -283,7 +398,7 @@ export function ArticleForm({
     }
 
     setIsSaving(true);
-    const result = await publishArticleAction(articleId ?? null, normalizedForm);
+    const result = await publishArticleAction(currentArticleId ?? null, normalizedForm);
     setIsSaving(false);
 
     if (!result.success) {
@@ -293,7 +408,7 @@ export function ArticleForm({
 
     emitTourSuccess({ target: "article.form.publish" });
     setToast({ message: "Article publié !", variant: "success" });
-    if (!articleId) {
+    if (!currentArticleId) {
       const linkError = await attachDeferredForumLinks(result.data.id);
       if (linkError) {
         setToast({ message: linkError, variant: "error" });
@@ -304,7 +419,7 @@ export function ArticleForm({
   };
 
   const handleArchive = async () => {
-    if (!articleId) return;
+    if (!currentArticleId) return;
     if (
       !(await confirm("Archiver cet article ? Il ne sera plus visible sur le site.", {
         variant: "danger",
@@ -315,7 +430,7 @@ export function ArticleForm({
     }
 
     setIsSaving(true);
-    const result = await archiveArticleAction(articleId);
+    const result = await archiveArticleAction(currentArticleId);
     setIsSaving(false);
 
     if (!result.success) {
@@ -329,7 +444,7 @@ export function ArticleForm({
   };
 
   const handleRepublish = async () => {
-    if (!articleId) return;
+    if (!currentArticleId) return;
 
     const normalizedForm = normalizeArticleFormInput({ ...form, status: "PUBLISHED" });
     const validation = publishArticleSchema.safeParse(normalizedForm);
@@ -344,7 +459,7 @@ export function ArticleForm({
     if (!(await confirm("Republier cet article ?"))) return;
 
     setIsSaving(true);
-    const result = await publishArticleAction(articleId, normalizedForm);
+    const result = await publishArticleAction(currentArticleId, normalizedForm);
     setIsSaving(false);
 
     if (!result.success) {
@@ -358,7 +473,7 @@ export function ArticleForm({
   };
 
   const handleDelete = async () => {
-    if (!articleId) return;
+    if (!currentArticleId) return;
     if (
       !(await confirm(
         "Supprimer définitivement cet article ? Cette action est irréversible.",
@@ -369,7 +484,7 @@ export function ArticleForm({
     }
 
     setIsSaving(true);
-    const result = await deleteArticleAction(articleId);
+    const result = await deleteArticleAction(currentArticleId);
     setIsSaving(false);
 
     if (!result.success) {
@@ -429,7 +544,7 @@ export function ArticleForm({
             >
               {form.status === "PUBLISHED" ? "Mettre à jour" : "Publier"}
             </Button>
-            {articleId ? (
+            {currentArticleId ? (
               <Button
                 type="button"
                 variant="outline"
@@ -441,7 +556,7 @@ export function ArticleForm({
                 Archiver
               </Button>
             ) : null}
-            {articleId && form.status === "PUBLISHED" && form.slug ? (
+            {currentArticleId && form.status === "PUBLISHED" && form.slug ? (
               <Button
                 href={`/a/${form.slug}`}
                 external
@@ -454,7 +569,7 @@ export function ArticleForm({
             ) : null}
           </>
         ) : null}
-        {articleId && form.status === "ARCHIVED" ? (
+        {currentArticleId && form.status === "ARCHIVED" ? (
           <>
             <Button
               type="button"
@@ -487,7 +602,7 @@ export function ArticleForm({
 
       <ComposerPanel
         eyebrow="Publication"
-        title={isNew ? "Nouvel article" : "Édition de l'article"}
+        title={isCreatingNew ? "Nouvel article" : "Édition de l'article"}
         description="Un panneau de rédaction plus guidé pour structurer plus vite le contenu, vérifier la publication et garder les informations importantes sous la main."
         stats={[
           {
@@ -619,7 +734,7 @@ export function ArticleForm({
             >
               <ImageUpload
                 purpose="cover"
-                articleId={articleId}
+                articleId={currentArticleId}
                 initialUrl={form.coverImageUrl}
                 initialPublicId={form.coverImagePublicId}
                 onUploaded={(metadata) => {
@@ -670,7 +785,7 @@ export function ArticleForm({
             <TipTapEditor
               content={form.content}
               onChange={(html) => updateField("content", html)}
-              articleId={articleId}
+              articleId={currentArticleId}
             />
           </section>
 
@@ -691,7 +806,7 @@ export function ArticleForm({
               Adresse publique :{" "}
               <span className="font-mono text-primary/70">/a/{form.slug || "…"}</span>
             </p>
-            {isNew ? (
+            {isCreatingNew ? (
               <button
                 type="button"
                 className="mt-2 text-xs text-accent-dark hover:underline"
@@ -702,7 +817,7 @@ export function ArticleForm({
             ) : null}
           </FormSection>
 
-          {isNew && forumLinkOptions ? (
+          {forumLinkOptions ? (
             <FormSection
               title="Discussions forum liées"
               description="Pendant la création, vous pouvez déjà préparer les liaisons. Elles seront appliquées automatiquement au premier enregistrement du brouillon."
@@ -722,7 +837,7 @@ export function ArticleForm({
                     <AssociateForumTopicPicker
                       topics={forumLinkOptions.browsableTopics}
                       selectedIds={pendingLinkedTopicIds}
-                      onConfirm={setPendingLinkedTopicIds}
+                      onConfirm={handlePendingTopicsConfirm}
                       triggerClassName="h-10 whitespace-nowrap rounded-lg border border-accent/50 px-3.5 py-0 text-sm font-medium"
                     />
                   </div>

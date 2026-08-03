@@ -1,4 +1,5 @@
 import { DocumentsManager } from "@/components/admin/DocumentsManager";
+import { Button } from "@/components/ui/Button";
 import { getAdminArticles } from "@/lib/services/article.service";
 import { getAllDocuments } from "@/lib/services/document.service";
 import { getActiveProjects } from "@/lib/services/project.service";
@@ -17,8 +18,21 @@ export default async function AdminDocumentsPage() {
 
   return (
     <div className="container-meeed py-10">
-      <h1 className="text-2xl font-bold">Documents</h1>
-      <p className="mt-2 text-primary/70">Gérez les PDF hébergés sur Cloudinary.</p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-primary-dark">Documents</h1>
+          <p className="mt-1 text-sm text-primary/60">
+            {documents.length} document{documents.length > 1 ? "s" : ""}
+          </p>
+        </div>
+        <Button
+          href="/admin/documents/nouveau"
+          variant="accent"
+          data-tour-id="admin.documents.new-button"
+        >
+          + Nouveau document
+        </Button>
+      </div>
       <div className="mt-8">
         <DocumentsManager
           documents={documents}

@@ -31,3 +31,13 @@ export const FORUM_TOPIC_STATUS_COLORS: Record<string, string> = {
   LOCKED: "#e09f3e",
   ARCHIVED: "#94979b",
 };
+
+export const DOCUMENT_STATUS_LABELS = {
+  ACTIVE: "Actif",
+  ARCHIVED: "Archivé",
+} as const;
+
+export const DOCUMENT_STATUS_COLORS = {
+  ACTIVE: "#4ecdc4",
+  ARCHIVED: "#292f36",
+} as const;

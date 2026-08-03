@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/Button";
 import { HELLOASSO_URL, SITE_CONTACT } from "@/lib/content/site";
 import { buildPageMetadata } from "@/lib/seo";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = buildPageMetadata({
   title: "Contact",
   description: "Contactez l'association MEEED.",

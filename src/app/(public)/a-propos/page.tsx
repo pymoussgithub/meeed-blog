@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = buildPageMetadata({
   title: "À propos",
   description:

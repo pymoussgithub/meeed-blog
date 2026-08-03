@@ -12,6 +12,7 @@ import {
   getAdminArticleStats,
   getAdminArticles,
 } from "@/lib/services/article.service";
+import { getAllCategories } from "@/lib/services/category.service";
 import { getAllProjectsForAdmin } from "@/lib/services/project.service";
 import { formatDate } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ type PageProps = {
   searchParams: Promise<{
     status?: string;
     project?: string;
+    category?: string;
     author?: string;
     q?: string;
     page?: string;
@@ -36,16 +38,21 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
     : undefined;
   const isAdmin = user.role === "ADMIN";
   const authorId = isAdmin ? params.author || undefined : user.id;
+  const hasActiveFilters = Boolean(
+    params.q || params.status || params.project || params.category || params.author,
+  );
 
-  const [result, projects, stats, authors] = await Promise.all([
+  const [result, projects, categories, stats, authors] = await Promise.all([
     getAdminArticles({
       status,
       projectId: params.project,
+      categoryId: params.category,
       search: params.q,
       page,
       authorId,
     }),
     getAllProjectsForAdmin(),
+    getAllCategories(),
     getAdminArticleStats(authorId),
     isAdmin ? getAdminArticleAuthors() : Promise.resolve([]),
   ]);
@@ -58,6 +65,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
   const paginationQuery = {
     status: params.status,
     project: params.project,
+    category: params.category,
     author: params.author,
     q: params.q,
   };
@@ -86,6 +94,10 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
               id: project.id,
               title: project.title,
             }))}
+            categories={categories.map((category) => ({
+              id: category.id,
+              name: category.name,
+            }))}
             authors={authorsWithSelf}
             currentUserId={user.id}
             stats={stats}
@@ -98,12 +110,12 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
         <div className="mt-8 rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
           <p className="text-lg font-medium text-primary-dark">Aucun article trouvé</p>
           <p className="mt-2 text-sm text-primary/60">
-            {params.q || params.status || params.project || params.author
+            {hasActiveFilters
               ? "Essayez d’élargir vos filtres ou de réinitialiser la recherche."
               : "Commencez par rédiger votre premier article."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {(params.q || params.status || params.project || params.author) && (
+            {hasActiveFilters && (
               <Button href="/admin/articles" variant="outline">
                 Réinitialiser les filtres
               </Button>

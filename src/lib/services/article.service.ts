@@ -127,6 +127,15 @@ function categorySlugWhere(slug: string): Prisma.ArticleWhereInput {
   };
 }
 
+function categoryIdWhere(categoryId: string): Prisma.ArticleWhereInput {
+  return {
+    OR: [
+      { project: { categoryId } },
+      { categories: { some: { categoryId } } },
+    ],
+  };
+}
+
 export async function getArticlesByCategorySlug(slug: string, limit = 12, offset = 0) {
   return prisma.article.findMany({
     where: {
@@ -390,6 +399,7 @@ export async function deleteArticle(id: string) {
 export type AdminArticleFilters = {
   status?: ArticleStatus;
   projectId?: string;
+  categoryId?: string;
   search?: string;
   authorId?: string;
   page?: number;
@@ -401,19 +411,27 @@ export async function getAdminArticles(filters: AdminArticleFilters = {}) {
   const pageSize = filters.pageSize ?? 10;
   const skip = (page - 1) * pageSize;
 
-  const where: Prisma.ArticleWhereInput = {
-    status: filters.status,
-    ...(filters.authorId ? { authorId: filters.authorId } : {}),
-    ...(filters.projectId ? { projectId: filters.projectId } : {}),
-    ...(filters.search
-      ? {
-          OR: [
-            { title: { contains: filters.search, mode: "insensitive" } },
-            { excerpt: { contains: filters.search, mode: "insensitive" } },
-          ],
-        }
-      : {}),
-  };
+  const conditions: Prisma.ArticleWhereInput[] = [];
+
+  if (filters.status) conditions.push({ status: filters.status });
+  if (filters.authorId) conditions.push({ authorId: filters.authorId });
+  if (filters.projectId) conditions.push({ projectId: filters.projectId });
+  if (filters.categoryId) conditions.push(categoryIdWhere(filters.categoryId));
+  if (filters.search) {
+    conditions.push({
+      OR: [
+        { title: { contains: filters.search, mode: "insensitive" } },
+        { excerpt: { contains: filters.search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  const where: Prisma.ArticleWhereInput =
+    conditions.length === 0
+      ? {}
+      : conditions.length === 1
+        ? conditions[0]
+        : { AND: conditions };
 
   const [articles, total] = await Promise.all([
     prisma.article.findMany({

@@ -88,6 +88,7 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
   const autoAdvancedKeyRef = useRef<string | null>(null);
 
   const [hydrated, setHydrated] = useState(false);
+  const [resolvedSessionRole, setResolvedSessionRole] = useState<TourSessionRole>(sessionRole);
   const [uiState, setUiState] = useState<TourUiState>("closed");
   const [audience, setAudienceState] = useState<TourAudience | null>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
@@ -95,6 +96,35 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
   const [chainMode, setChainMode] = useState(false);
   const [chainIndex, setChainIndex] = useState(0);
   const [targetMissing, setTargetMissing] = useState(false);
+
+  useEffect(() => {
+    setResolvedSessionRole(sessionRole);
+  }, [sessionRole]);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    let cancelled = false;
+
+    fetch("/api/auth/session")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((session: { user?: { role?: string } | null } | null) => {
+        if (cancelled) return;
+        const role = session?.user?.role;
+        setResolvedSessionRole(
+          role === "ADMIN" || role === "CONTRIBUTEUR" ? role : null,
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setResolvedSessionRole(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, pathname]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -138,15 +168,15 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
         !subject.audience.includes("VISITOR") &&
         (subject.audience.includes("CONTRIBUTEUR") || subject.audience.includes("ADMIN"));
 
-      if (isAdminOnly && sessionRole !== "ADMIN") {
+      if (isAdminOnly && resolvedSessionRole !== "ADMIN") {
         return { ok: false, reason: "Réservé aux administrateurs" };
       }
-      if (needsMember && !sessionRole) {
+      if (needsMember && !resolvedSessionRole) {
         return { ok: false, reason: "Connectez-vous d’abord (parcours connexion)" };
       }
       return { ok: true };
     },
-    [sessionRole],
+    [resolvedSessionRole],
   );
 
   const advanceAfterStep = useCallback(
@@ -239,9 +269,9 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
   const startDemoChain = useCallback(() => {
     setChainMode(true);
     setAudienceState(
-      sessionRole === "ADMIN"
+      resolvedSessionRole === "ADMIN"
         ? "ADMIN"
-        : sessionRole === "CONTRIBUTEUR"
+        : resolvedSessionRole === "CONTRIBUTEUR"
           ? "CONTRIBUTEUR"
           : "VISITOR",
     );
@@ -254,7 +284,7 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
     setSubjectId(first.id);
     setStepIndex(0);
     setUiState("running");
-  }, [resolveNextChainId, sessionRole]);
+  }, [resolveNextChainId, resolvedSessionRole]);
 
   const nextChainSubjectId = useMemo(() => {
     if (!chainMode) return null;
@@ -433,7 +463,7 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
       isActive,
       uiState,
       audience,
-      sessionRole,
+      sessionRole: resolvedSessionRole,
       currentSubject,
       currentStep,
       stepIndex,
@@ -463,7 +493,7 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
       isActive,
       uiState,
       audience,
-      sessionRole,
+      resolvedSessionRole,
       currentSubject,
       currentStep,
       stepIndex,

@@ -10,6 +10,10 @@ import { LinkInsertModal, type LinkInsertValues } from "@/components/admin/LinkI
 import { useOptionalDialog } from "@/components/ui/DialogProvider";
 import { countEditorWords } from "@/lib/editor-utils";
 import { cn } from "@/lib/utils";
+import {
+  buildInlineDocumentViewPath,
+  getFileExtension,
+} from "@/lib/inline-document";
 import { UPLOAD_LIMITS } from "@/lib/upload-constants";
 
 type TipTapEditorProps = {
@@ -108,9 +112,14 @@ async function uploadInlineDocument(file: File, articleId?: string) {
   }
 
   const result = await uploadResponse.json();
+  const publicId = typeof result.public_id === "string" ? result.public_id : "";
+  if (!publicId) {
+    throw new Error("Identifiant Cloudinary manquant apres l'upload");
+  }
+
   return {
     fileName: file.name,
-    url: result.secure_url as string,
+    url: buildInlineDocumentViewPath(publicId, getFileExtension(file.name)),
   };
 }
 

@@ -3,8 +3,8 @@ import type { TourSubject } from "@/lib/tour/types";
 
 export const contribForumAbonnement: TourSubject = {
   id: "contrib-forum-abonnement",
-  label: "S’abonner à une discussion",
-  description: "Activer les notifications et gérer les abonnements.",
+  label: "S’inscrire à une discussion",
+  description: "Activer les notifications et gérer les inscriptions.",
   audience: ["CONTRIBUTEUR", "ADMIN"],
   nextSuggested: ["contrib-forum-repondre", "contrib-profil"],
   steps: [
@@ -17,13 +17,13 @@ export const contribForumAbonnement: TourSubject = {
     },
     {
       id: "contrib-forum-abonnement-2",
-      message: "Activez l’abonnement (notifications).",
+      message: "Activez l’inscription aux notifications.",
       target: T["forum.topic.subscribe"],
       action: "confirm",
     },
     {
       id: "contrib-forum-abonnement-3",
-      message: "Gérez vos abonnements depuis l’espace membre.",
+      message: "Gérez vos inscriptions depuis l’espace membre.",
       target: T["admin.sidebar.forum-abonnements"],
       action: "navigate",
       routeHint: "/admin/forum/abonnements",

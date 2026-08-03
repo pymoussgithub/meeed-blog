@@ -118,6 +118,7 @@ export const CONTEXT_SUBJECTS: Record<string, string[]> = {
   "/admin": ["contrib-dashboard", "contrib-publier-article"],
   "/admin/articles": ["contrib-publier-article", "contrib-brouillon", "admin-tous-articles"],
   "/admin/documents": ["contrib-document", "contrib-visibilite-doc", "admin-doc-sensible"],
+  "/admin/documents/nouveau": ["contrib-document", "admin-doc-sensible"],
   "/admin/categories": ["admin-categories"],
   "/admin/projets": ["admin-projets"],
   "/admin/utilisateurs": ["admin-utilisateurs"],

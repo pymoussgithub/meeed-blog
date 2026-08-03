@@ -63,7 +63,7 @@ export function ForumModerationTable({ topics, categories }: ForumModerationTabl
 
   const handleHardDelete = async (topic: TopicRow) => {
     const ok = await confirm(
-      `Attention : vous allez supprimer définitivement la discussion « ${topic.title} ».\n\nCette action efface toute la conversation, toutes les réponses et les abonnements liés. Elle est irréversible.`,
+      `Attention : vous allez supprimer définitivement la discussion « ${topic.title} ».\n\nCette action efface toute la conversation, toutes les réponses et les inscriptions liées. Elle est irréversible.`,
       {
         title: "Supprimer définitivement ?",
         variant: "danger",

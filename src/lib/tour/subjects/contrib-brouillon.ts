@@ -24,7 +24,7 @@ export const contribBrouillon: TourSubject = {
     },
     {
       id: "contrib-brouillon-3",
-      message: "Cliquez sur « Enregistrer brouillon ».",
+      message: "Le brouillon se sauvegarde aussi automatiquement pendant la rédaction. Vous pouvez aussi cliquer sur « Enregistrer brouillon ».",
       target: T["article.form.save-draft"],
       action: "success",
     },

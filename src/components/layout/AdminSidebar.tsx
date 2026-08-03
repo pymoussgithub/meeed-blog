@@ -57,7 +57,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/forum", label: "Voir le forum", exact: true },
       { href: "/forum/nouveau", label: "Nouveau sujet" },
-      { href: "/admin/forum/abonnements", label: "Abonnements\ndiscussions" },
+      { href: "/admin/forum/abonnements", label: "Inscriptions\ndiscussions" },
       { href: "/admin/forum", label: "Modération", adminOnly: true, exact: true },
       { href: "/admin/forum/rubriques", label: "Rubriques", adminOnly: true },
     ],

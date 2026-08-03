@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth } from "@/lib/auth";
 import { credentialsSignature } from "@/lib/credentials-signature";
 import { prisma } from "@/lib/prisma";
@@ -9,8 +10,11 @@ export type AuthUser = {
   role: "ADMIN" | "CONTRIBUTEUR";
 };
 
-/** Relit la BDD à chaque appel : rôle, isActive et empreinte MDP (sessions invalidées). */
-export async function getCurrentUser(): Promise<AuthUser | null> {
+/**
+ * Relit la BDD : rôle, isActive et empreinte MDP (sessions invalidées).
+ * Dédupliqué par requête React via cache() (layout + page + header).
+ */
+export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   const session = await auth();
   if (!session?.user?.id) {
     return null;
@@ -43,7 +47,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     email: dbUser.email,
     role: dbUser.role,
   };
-}
+});
 
 export async function requireAuth(): Promise<AuthUser> {
   const user = await getCurrentUser();

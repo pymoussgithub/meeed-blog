@@ -3,8 +3,10 @@ import { ProjectsShowcaseList } from "@/components/projects/ProjectsShowcaseList
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HELLOASSO_URL } from "@/lib/content/site";
-import { getActiveProjects } from "@/lib/services/project.service";
+import { getCachedActiveProjects } from "@/lib/public-cache";
 import { buildBreadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Nos projets",
@@ -13,10 +15,10 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function ProjectsPage() {
-  let projects: Awaited<ReturnType<typeof getActiveProjects>> = [];
+  let projects: Awaited<ReturnType<typeof getCachedActiveProjects>> = [];
 
   try {
-    projects = await getActiveProjects();
+    projects = await getCachedActiveProjects();
   } catch {
     // DB indisponible au build ou en local
   }

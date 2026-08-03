@@ -119,6 +119,7 @@ export const TOUR_TARGETS = {
   "article.form.editor-image": "article.form.editor-image",
 
   // Documents admin
+  "admin.documents.new-button": "admin.documents.new-button",
   "admin.documents.upload": "admin.documents.upload",
   "admin.documents.title": "admin.documents.title",
   "admin.documents.visibility": "admin.documents.visibility",

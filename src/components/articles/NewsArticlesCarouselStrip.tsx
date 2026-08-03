@@ -171,6 +171,12 @@ function NewsCarouselCard({
           </Link>
         </h2>
 
+        {article.excerpt ? (
+          <p className="mt-1.5 text-xs leading-relaxed text-primary/60 sm:text-sm">
+            {article.excerpt}
+          </p>
+        ) : null}
+
         {article.authorName ? (
           <p className="mt-auto pt-2 text-[11px] text-primary/40">{article.authorName}</p>
         ) : null}
