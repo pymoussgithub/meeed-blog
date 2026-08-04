@@ -14,15 +14,15 @@ import {
 } from "@/lib/articles-listing";
 import { toCarouselArticle } from "@/lib/article-carousel";
 import {
-  countFilteredPublishedArticles,
-  getFilteredPublishedArticles,
-  getPublishedArticleAuthors,
-} from "@/lib/services/article.service";
-import { getAllCategories } from "@/lib/services/category.service";
-import { getActiveProjects } from "@/lib/services/project.service";
+  getCachedActiveProjectsForFilters,
+  getCachedActualitesListing,
+  getCachedAllCategories,
+  getCachedPublishedArticleAuthors,
+  PUBLIC_REVALIDATE_SECONDS,
+} from "@/lib/public-cache";
 import { buildPageMetadata } from "@/lib/seo";
 
-const ARTICLES_FETCH_LIMIT = 200;
+export const revalidate = PUBLIC_REVALIDATE_SECONDS;
 
 type PageProps = {
   searchParams: Promise<{
@@ -51,25 +51,25 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
   const isFiltered = hasActiveListingFilters(params);
 
   let sections: ArticlesCategorySection[] = [];
-  let categories: Awaited<ReturnType<typeof getAllCategories>> = [];
-  let projects: Awaited<ReturnType<typeof getActiveProjects>> = [];
-  let authors: Awaited<ReturnType<typeof getPublishedArticleAuthors>> = [];
+  let categories: Awaited<ReturnType<typeof getCachedAllCategories>> = [];
+  let projects: Awaited<ReturnType<typeof getCachedActiveProjectsForFilters>> = [];
+  let authors: Awaited<ReturnType<typeof getCachedPublishedArticleAuthors>> = [];
   let total = 0;
   let dbError = false;
 
   try {
-    const [categoryList, projectList, authorList, articleCount, articleList] = await Promise.all([
-      getAllCategories(),
-      getActiveProjects(),
-      getPublishedArticleAuthors(),
-      countFilteredPublishedArticles(filters),
-      getFilteredPublishedArticles(filters, ARTICLES_FETCH_LIMIT, 0),
+    const [categoryList, projectList, authorList, listing] = await Promise.all([
+      getCachedAllCategories(),
+      getCachedActiveProjectsForFilters(),
+      getCachedPublishedArticleAuthors(),
+      getCachedActualitesListing(filters),
     ]);
 
     categories = categoryList;
     projects = projectList;
     authors = authorList;
-    total = articleCount;
+    total = listing.total;
+    const articleList = listing.articles;
 
     const filteredCategories = params.categorySlug
       ? categoryList.filter((category) => category.slug === params.categorySlug)

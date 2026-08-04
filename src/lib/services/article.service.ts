@@ -36,8 +36,39 @@ const articleWithRelations = {
   },
 } satisfies Prisma.ArticleInclude;
 
+/** Champs carte/liste uniquement — pas de `content` ni de projets imbriqués. */
+const articleListingSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  excerpt: true,
+  coverImageUrl: true,
+  coverImagePublicId: true,
+  publishedAt: true,
+  projectId: true,
+  author: { select: { id: true, name: true } },
+  project: {
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      color: true,
+      category: { select: { id: true, name: true, slug: true } },
+    },
+  },
+  categories: {
+    select: {
+      category: { select: { id: true, name: true, slug: true } },
+    },
+  },
+} satisfies Prisma.ArticleSelect;
+
 export type ArticleWithRelations = Prisma.ArticleGetPayload<{
   include: typeof articleWithRelations;
+}>;
+
+export type ArticleListingItem = Prisma.ArticleGetPayload<{
+  select: typeof articleListingSelect;
 }>;
 
 export async function getPublishedArticles(limit = 12, offset = 0) {
@@ -264,6 +295,21 @@ export async function getFilteredPublishedArticles(
   });
 
   return sortArticlesNewsFirst(all).slice(offset, offset + limit);
+}
+
+/** Liste publique légère (actualités, carrousels) — sans HTML `content`. */
+export async function getFilteredPublishedArticlesForListing(
+  filters: PublicArticleFilters,
+  limit = 12,
+  offset = 0,
+) {
+  return prisma.article.findMany({
+    where: buildPublicArticleWhere(filters),
+    select: articleListingSelect,
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+    skip: offset,
+  });
 }
 
 export async function countFilteredPublishedArticles(filters: PublicArticleFilters) {

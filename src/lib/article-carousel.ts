@@ -1,6 +1,6 @@
 import { getLinkedProject, getNewsCategories } from "@/lib/articles-listing";
 import { getCoverCardUrl } from "@/lib/cloudinary";
-import type { ArticleWithRelations } from "@/lib/services/article.service";
+import type { ArticleListingItem, ArticleWithRelations } from "@/lib/services/article.service";
 
 export type CarouselArticleProject = {
   title: string;
@@ -20,6 +20,8 @@ export type CarouselArticle = {
   project: CarouselArticleProject | null;
 };
 
+type CarouselArticleSource = ArticleListingItem | ArticleWithRelations;
+
 /** unstable_cache JSON-ifie les Date → string ; on accepte les deux. */
 function toIsoDateString(value: Date | string | null | undefined): string | null {
   if (value == null) return null;
@@ -28,7 +30,7 @@ function toIsoDateString(value: Date | string | null | undefined): string | null
 }
 
 export function toCarouselArticle(
-  article: ArticleWithRelations,
+  article: CarouselArticleSource,
   categoryLabel?: string,
 ): CarouselArticle {
   const coverUrl = article.coverImagePublicId

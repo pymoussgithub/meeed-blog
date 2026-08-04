@@ -95,6 +95,7 @@ export async function createArticleAction(
     revalidatePath("/admin");
     revalidatePath("/admin/articles");
     revalidatePath("/");
+    revalidatePath("/actualites");
 
     return actionSuccess({ id: article.id });
   } catch (error) {
@@ -127,6 +128,7 @@ export async function updateArticleAction(
     revalidatePath("/admin/articles");
     revalidatePath(`/admin/articles/${id}`);
     revalidatePath("/");
+    revalidatePath("/actualites");
 
     return actionSuccess({ id: article.id });
   } catch (error) {
@@ -219,6 +221,7 @@ export async function publishArticleAction(
       );
 
       revalidatePath("/");
+      revalidatePath("/actualites");
       revalidatePath("/admin");
       revalidatePath("/admin/articles");
       return actionSuccess({ id: article.id });
@@ -235,6 +238,7 @@ export async function publishArticleAction(
     });
 
     revalidatePath("/");
+    revalidatePath("/actualites");
     revalidatePath("/admin");
     revalidatePath("/admin/articles");
     return actionSuccess({ id: article.id });
@@ -257,6 +261,7 @@ export async function archiveArticleAction(id: string): Promise<ActionResult<voi
     revalidatePath("/admin/articles");
     revalidatePath(`/admin/articles/${id}`);
     revalidatePath("/");
+    revalidatePath("/actualites");
     revalidatePath(`/a/${article.slug}`);
 
     return actionSuccess(undefined);
@@ -279,6 +284,7 @@ export async function republishArticleAction(id: string): Promise<ActionResult<v
     revalidatePath("/admin/articles");
     revalidatePath(`/admin/articles/${id}`);
     revalidatePath("/");
+    revalidatePath("/actualites");
     revalidatePath(`/a/${article.slug}`);
 
     return actionSuccess(undefined);
@@ -302,6 +308,7 @@ export async function deleteArticleAction(id: string): Promise<ActionResult<void
     revalidatePath("/admin");
     revalidatePath("/admin/articles");
     revalidatePath("/");
+    revalidatePath("/actualites");
     revalidatePath(`/a/${article.slug}`);
 
     return actionSuccess(undefined);

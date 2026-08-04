@@ -43,6 +43,15 @@ export async function getActiveProjects() {
   });
 }
 
+/** Options de filtre (toolbar) — sans cover ni counts. */
+export async function getActiveProjectsForFilters() {
+  return prisma.project.findMany({
+    where: { isActive: true },
+    select: { id: true, title: true, slug: true },
+    orderBy: { sortOrder: "asc" },
+  });
+}
+
 export async function getAllProjectsForAdmin() {
   return prisma.project.findMany({
     include: {

@@ -1,5 +1,22 @@
-import type { ArticleWithRelations } from "@/lib/services/article.service";
 import type { PublicArticleFilters } from "@/lib/services/article.service";
+
+type ArticleListingSource = {
+  projectId?: string | null;
+  project?: {
+    title: string;
+    slug: string;
+    color: string | null;
+  } | null;
+  categories: Array<{
+    category: {
+      id?: string;
+      name: string;
+      slug?: string;
+      /** Absent sur le select listing allégé. */
+      projects?: { length: number };
+    };
+  }>;
+};
 
 export type ArticlesListingParams = PublicArticleFilters & {
   q?: string | null;
@@ -101,17 +118,17 @@ export function listingParamsToPaginationQuery(params: ArticlesListingParams) {
 
 export type ArticleKind = "news" | "project" | "mixed";
 
-export function getLinkedProject(article: ArticleWithRelations) {
+export function getLinkedProject(article: ArticleListingSource) {
   if (article.project) {
     return article.project;
   }
   return null;
 }
 
-export function getArticleKind(article: ArticleWithRelations): ArticleKind {
+export function getArticleKind(article: ArticleListingSource): ArticleKind {
   const hasProject = Boolean(article.projectId);
   const hasNews = article.categories.some(
-    ({ category }) => category.projects.length === 0,
+    ({ category }) => !category.projects || category.projects.length === 0,
   );
 
   if (hasProject && hasNews) return "mixed";
@@ -119,8 +136,8 @@ export function getArticleKind(article: ArticleWithRelations): ArticleKind {
   return "news";
 }
 
-export function getNewsCategories(article: ArticleWithRelations) {
+export function getNewsCategories(article: ArticleListingSource) {
   return article.categories
     .map(({ category }) => category)
-    .filter((category) => category.projects.length === 0);
+    .filter((category) => !category.projects || category.projects.length === 0);
 }
