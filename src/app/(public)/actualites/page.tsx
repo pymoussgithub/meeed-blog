@@ -18,11 +18,11 @@ import {
   getCachedActualitesListing,
   getCachedAllCategories,
   getCachedPublishedArticleAuthors,
-  PUBLIC_REVALIDATE_SECONDS,
 } from "@/lib/public-cache";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const revalidate = PUBLIC_REVALIDATE_SECONDS;
+/** Doit être un littéral (Next parse l’export `revalidate` statiquement). */
+export const revalidate = 60;
 
 type PageProps = {
   searchParams: Promise<{
