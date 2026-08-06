@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ArticleStatus } from "@prisma/client";
 import { requireAuth } from "@/lib/auth-helpers";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 import { sanitizeHtml } from "@/lib/sanitize";
 import {
   archiveArticle,
@@ -12,6 +13,7 @@ import {
   isSlugTaken,
   republishArticle,
   updateArticle,
+  type ArticleWithRelations,
 } from "@/lib/services/article.service";
 import {
   articleFormSchema,
@@ -37,6 +39,18 @@ async function assertCanEdit(articleId: string) {
   }
 
   return { user, article };
+}
+
+function categorySlugsOf(article: ArticleWithRelations | { categories: { category: { slug: string } }[] }) {
+  return article.categories.map((link) => link.category.slug);
+}
+
+function revalidateAdminArticles(articleId?: string) {
+  revalidatePath("/admin");
+  revalidatePath("/admin/articles");
+  if (articleId) {
+    revalidatePath(`/admin/articles/${articleId}`);
+  }
 }
 
 function buildArticlePayload(
@@ -98,10 +112,11 @@ export async function createArticleAction(
       authorId: user.id,
     });
 
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
-    revalidatePath("/");
-    revalidatePath("/actualites");
+    revalidateAdminArticles();
+    revalidatePublicContent({
+      articleSlug: article.slug,
+      categorySlugs: categorySlugsOf(article),
+    });
 
     return actionSuccess({ id: article.id });
   } catch (error) {
@@ -114,7 +129,7 @@ export async function updateArticleAction(
   input: ArticleFormInput,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    await assertCanEdit(id);
+    const { article: existing } = await assertCanEdit(id);
     const parsed = articleFormSchema.safeParse(normalizeArticleFormInput(input));
 
     if (!parsed.success) {
@@ -132,11 +147,13 @@ export async function updateArticleAction(
       }),
     );
 
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
-    revalidatePath(`/admin/articles/${id}`);
-    revalidatePath("/");
-    revalidatePath("/actualites");
+    revalidateAdminArticles(id);
+    revalidatePublicContent({
+      articleSlug: article.slug,
+      categorySlugs: [
+        ...new Set([...categorySlugsOf(existing), ...categorySlugsOf(article)]),
+      ],
+    });
 
     return actionSuccess({ id: article.id });
   } catch (error) {
@@ -177,9 +194,7 @@ export async function saveDraftAction(
         buildArticlePayload({ ...parsed.data, slug, status: "DRAFT" }, ArticleStatus.DRAFT),
       );
 
-      revalidatePath("/admin");
-      revalidatePath("/admin/articles");
-      revalidatePath(`/admin/articles/${id}`);
+      revalidateAdminArticles(id);
 
       return actionSuccess({ id: articleUpdated.id, slug: articleUpdated.slug });
     }
@@ -190,8 +205,7 @@ export async function saveDraftAction(
       authorId: user.id,
     });
 
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
+    revalidateAdminArticles();
 
     return actionSuccess({ id: article.id, slug: article.slug });
   } catch (error) {
@@ -234,14 +248,13 @@ export async function publishArticleAction(
         }),
       );
 
-      revalidatePath("/");
-      revalidatePath("/actualites");
-      revalidatePath("/admin");
-      revalidatePath("/admin/articles");
-      revalidatePath(`/admin/articles/${id}`);
-      if (article.slug) {
-        revalidatePath(`/a/${article.slug}`);
-      }
+      revalidateAdminArticles(id);
+      revalidatePublicContent({
+        articleSlug: article.slug,
+        categorySlugs: [
+          ...new Set([...categorySlugsOf(existing), ...categorySlugsOf(article)]),
+        ],
+      });
       return actionSuccess({ id: article.id });
     }
 
@@ -255,10 +268,11 @@ export async function publishArticleAction(
       authorId: user.id,
     });
 
-    revalidatePath("/");
-    revalidatePath("/actualites");
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
+    revalidateAdminArticles();
+    revalidatePublicContent({
+      articleSlug: article.slug,
+      categorySlugs: categorySlugsOf(article),
+    });
     return actionSuccess({ id: article.id });
   } catch (error) {
     return actionError(error instanceof Error ? error.message : "Erreur lors de la publication");
@@ -275,12 +289,11 @@ export async function archiveArticleAction(id: string): Promise<ActionResult<voi
 
     await archiveArticle(id);
 
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
-    revalidatePath(`/admin/articles/${id}`);
-    revalidatePath("/");
-    revalidatePath("/actualites");
-    revalidatePath(`/a/${article.slug}`);
+    revalidateAdminArticles(id);
+    revalidatePublicContent({
+      articleSlug: article.slug,
+      categorySlugs: categorySlugsOf(article),
+    });
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -298,12 +311,11 @@ export async function republishArticleAction(id: string): Promise<ActionResult<v
 
     await republishArticle(id);
 
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
-    revalidatePath(`/admin/articles/${id}`);
-    revalidatePath("/");
-    revalidatePath("/actualites");
-    revalidatePath(`/a/${article.slug}`);
+    revalidateAdminArticles(id);
+    revalidatePublicContent({
+      articleSlug: article.slug,
+      categorySlugs: categorySlugsOf(article),
+    });
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -323,11 +335,11 @@ export async function deleteArticleAction(id: string): Promise<ActionResult<void
 
     await deleteArticle(id);
 
-    revalidatePath("/admin");
-    revalidatePath("/admin/articles");
-    revalidatePath("/");
-    revalidatePath("/actualites");
-    revalidatePath(`/a/${article.slug}`);
+    revalidateAdminArticles();
+    revalidatePublicContent({
+      articleSlug: article.slug,
+      categorySlugs: categorySlugsOf(article),
+    });
 
     return actionSuccess(undefined);
   } catch (error) {

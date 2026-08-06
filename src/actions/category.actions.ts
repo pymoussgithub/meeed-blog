@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-helpers";
+import { revalidatePublicContent } from "@/lib/revalidate-public";
 import {
   createCategory,
   deleteCategory,
@@ -30,7 +31,7 @@ export async function createCategoryAction(
     const category = await createCategory(parsed.data);
 
     revalidatePath("/admin/categories");
-    revalidatePath("/");
+    revalidatePublicContent({ categorySlugs: [category.slug] });
 
     return actionSuccess({ id: category.id });
   } catch (error) {
@@ -56,10 +57,12 @@ export async function updateCategoryAction(
       return actionError(parsed.error.errors[0]?.message ?? "Données invalides");
     }
 
-    await updateCategory(id, parsed.data);
+    const updated = await updateCategory(id, parsed.data);
 
     revalidatePath("/admin/categories");
-    revalidatePath("/");
+    revalidatePublicContent({
+      categorySlugs: [...new Set([existing.slug, updated.slug])],
+    });
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -81,7 +84,7 @@ export async function reorderCategoriesAction(
     await reorderCategories(parsed.data.orderedIds);
 
     revalidatePath("/admin/categories");
-    revalidatePath("/");
+    revalidatePublicContent();
 
     return actionSuccess(undefined);
   } catch (error) {
@@ -101,9 +104,7 @@ export async function deleteCategoryAction(id: string): Promise<ActionResult> {
     await deleteCategory(id);
 
     revalidatePath("/admin/categories");
-    revalidatePath("/");
-    revalidatePath("/actualites");
-    revalidatePath(`/c/${existing.slug}`);
+    revalidatePublicContent({ categorySlugs: [existing.slug] });
 
     return actionSuccess(undefined);
   } catch (error) {
