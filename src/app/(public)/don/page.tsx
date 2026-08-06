@@ -27,7 +27,7 @@ export default function DonPage() {
         <p>
           Les dons sont collectés via HelloAsso, plateforme sécurisée dédiée aux associations.
           Vous pouvez choisir le montant de votre contribution et, si vous le souhaitez, la
-          affecter à l&apos;association ou à l&apos;un de nos projets en cours.
+          affecter à l&apos;association ou à l&apos;un de nos domaines en cours.
         </p>
 
         <div className="not-prose mt-8">

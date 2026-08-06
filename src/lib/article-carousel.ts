@@ -1,12 +1,6 @@
-import { getLinkedProject, getNewsCategories } from "@/lib/articles-listing";
-import { getCoverCardUrl } from "@/lib/cloudinary";
+import { getNewsCategories } from "@/lib/articles-listing";
+import { resolveCoverUrl } from "@/lib/cloudinary";
 import type { ArticleListingItem, ArticleWithRelations } from "@/lib/services/article.service";
-
-export type CarouselArticleProject = {
-  title: string;
-  slug: string;
-  color: string | null;
-};
 
 export type CarouselArticle = {
   id: string;
@@ -17,7 +11,6 @@ export type CarouselArticle = {
   publishedAt: string | null;
   categoryLabel: string;
   authorName: string | null;
-  project: CarouselArticleProject | null;
 };
 
 type CarouselArticleSource = ArticleListingItem | ArticleWithRelations;
@@ -33,11 +26,8 @@ export function toCarouselArticle(
   article: CarouselArticleSource,
   categoryLabel?: string,
 ): CarouselArticle {
-  const coverUrl = article.coverImagePublicId
-    ? getCoverCardUrl(article.coverImagePublicId)
-    : article.coverImageUrl;
+  const coverUrl = resolveCoverUrl(article.coverImagePublicId, article.coverImageUrl, "card");
   const newsCategories = getNewsCategories(article);
-  const linkedProject = getLinkedProject(article);
 
   return {
     id: article.id,
@@ -48,12 +38,5 @@ export function toCarouselArticle(
     publishedAt: toIsoDateString(article.publishedAt),
     categoryLabel: categoryLabel ?? newsCategories[0]?.name ?? "Actualité",
     authorName: article.author?.name ?? null,
-    project: linkedProject
-      ? {
-          title: linkedProject.title,
-          slug: linkedProject.slug,
-          color: linkedProject.color ?? null,
-        }
-      : null,
   };
 }

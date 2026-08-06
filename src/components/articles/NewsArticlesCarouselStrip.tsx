@@ -116,6 +116,7 @@ function NewsCarouselCard({
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              referrerPolicy="no-referrer"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-xs font-semibold text-primary/25">
@@ -125,18 +126,9 @@ function NewsCarouselCard({
         </Link>
 
         <div className="pointer-events-none absolute left-2 top-2 z-10 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">
-          {article.project ? (
-            <span
-              className="inline-flex max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
-              style={{ backgroundColor: article.project.color ?? "var(--color-accent-dark)" }}
-            >
-              {article.project.title}
-            </span>
-          ) : (
-            <span className="inline-flex max-w-full truncate rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-              {article.categoryLabel}
-            </span>
-          )}
+          <span className="inline-flex max-w-full truncate rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            {article.categoryLabel}
+          </span>
         </div>
 
         {showPrev && onPrev ? (

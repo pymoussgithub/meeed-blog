@@ -168,7 +168,7 @@ model ArticleForumTopic {
 
 - [x] Étendre `prisma/schema.prisma` avec les modèles ci-dessus + relations inverses sur `User` et `Article`
 - [x] Créer une migration Prisma (`npm run db:migrate` en local)
-- [x] Seed : 2–3 rubriques d’exemple (`Discussions générales`, `Projets`, `Questions`)
+- [x] Seed : 2–3 rubriques d’exemple (`Discussions générales`, `Domaines`, `Questions`)
 - [x] Documenter toute nouvelle variable d’env dans `.env.example` (ex. SMTP pour l’étape 8)
 
 ### Critères d’acceptation

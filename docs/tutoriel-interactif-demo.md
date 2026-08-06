@@ -65,7 +65,7 @@ Chaque étape du document suit ce format :
 | `pub-articles` | Parcourir les articles | §3.2 |
 | `pub-lire-article` | Lire et partager un article | §3.3 |
 | `pub-categories` | Explorer une catégorie | §3.4 |
-| `pub-projets` | Voir les projets & faire un don | §3.5 |
+| `pub-domaines` | Voir les domaines & faire un don | §3.5 |
 | `pub-documents` | Consulter / télécharger un PDF | §3.6 |
 | `pub-forum-lire` | Lire le forum | §3.7 |
 | `pub-forum-recherche` | Rechercher dans le forum | §3.8 |
@@ -98,7 +98,7 @@ Chaque étape du document suit ce format :
 |-----------|---------|----------|
 | `admin-tous-articles` | Gérer tous les articles | §5.1 |
 | `admin-categories` | Créer / ordonner les catégories | §5.2 |
-| `admin-projets` | Créer un projet | §5.3 |
+| `admin-domaines` | Créer un domaine | §5.3 |
 | `admin-utilisateurs` | Inviter / gérer un utilisateur | §5.4 |
 | `admin-forum-rubriques` | Organiser les rubriques forum | §5.5 |
 | `admin-forum-moderation` | Modérer le forum | §5.6 |
@@ -132,7 +132,7 @@ Chaque étape du document suit ce format :
 |---|-------------------|----------|-----------------|------------|
 | 1 | « Ouvrons la liste des articles. » | Nav « Articles » | Clic | `navigate` `/actualites` |
 | 2 | « Ouvrez les filtres avancés. » | Bouton filtres / toolbar | Clic | `click` |
-| 3 | « Filtrez par mot-clé, catégorie, projet ou dates. » | Panneau filtres | Appliquer ≥ 1 filtre | `confirm` ou changement d’URL |
+| 3 | « Filtrez par mot-clé, catégorie, domaine ou dates. » | Panneau filtres | Appliquer ≥ 1 filtre | `confirm` ou changement d’URL |
 | 4 | « Naviguez vers la page suivante si disponible. » | Pagination | Clic page 2 (si existe) | `click` ou `confirm` si une seule page |
 
 **Fin :** → `pub-lire-article`, `pub-categories`.
@@ -166,13 +166,13 @@ Chaque étape du document suit ce format :
 
 ---
 
-### 3.5 Voir les projets & faire un don — `pub-projets`
+### 3.5 Voir les domaines & faire un don — `pub-domaines`
 
 | # | Message assistant | Cible UI | Action attendue | Validation |
 |---|-------------------|----------|-----------------|------------|
-| 1 | « Ouvrez la page Projets. » | Nav Projets | Clic | `navigate` `/projets` |
-| 2 | « Chaque carte présente un projet MEEED. » | Grille projets | Observer | `confirm` |
-| 3 | « Ouvrez un projet (si fiche détaillée). » | Carte projet | Clic | `click` |
+| 1 | « Ouvrez la page Domaines. » | Nav Domaines | Clic | `navigate` `/domaines` |
+| 2 | « Chaque carte présente un domaine MEEED. » | Grille domaines | Observer | `confirm` |
+| 3 | « Ouvrez un domaine (si fiche détaillée). » | Carte domaine | Clic | `click` |
 | 4 | « Un lien de don peut renvoyer vers HelloAsso. » | CTA don | Clic (ou confirm sans ouvrir externe) | `confirm` |
 
 ---
@@ -336,7 +336,7 @@ Identique à §3.10, avec prérequis compte contributeur.
 | 2 | « Renseignez le titre. » | Champ titre | Saisie | `input` |
 | 3 | « Choisissez la visibilité (ex. Tout le monde). » | Sélecteur visibilité | Sélection | `input` |
 | 4 | « Sélectionnez un PDF (max 25 Mo) et validez. » | Zone upload | Upload | `success` |
-| 5 | « Liez-le éventuellement à un article ou un projet. » | Actions liaison | Clic | `confirm` |
+| 5 | « Liez-le éventuellement à un article ou un domaine. » | Actions liaison | Clic | `confirm` |
 | 6 | « Vérifiez-le sur la bibliothèque publique si public. » | Lien `/documents` | Clic | `navigate` |
 
 ---
@@ -442,16 +442,16 @@ Identique à §3.10, avec prérequis compte contributeur.
 
 ---
 
-### 5.3 Créer un projet — `admin-projets`
+### 5.3 Créer un domaine — `admin-domaines`
 
 | # | Message assistant | Cible UI | Action attendue | Validation |
 |---|-------------------|----------|-----------------|------------|
-| 1 | « Ouvrez Projets → Nouveau projet. » | Sidebar + bouton | Clic | `navigate` `/admin/projets/nouveau` |
+| 1 | « Ouvrez Domaines → Nouveau domaine. » | Sidebar + bouton | Clic | `navigate` `/admin/domaines/nouveau` |
 | 2 | « Renseignez titre, résumé, description. » | Champs formulaire | Saisie | `input` |
 | 3 | « Ajoutez une couverture et une catégorie. » | Upload + select | Remplir | `input` |
-| 4 | « Ajoutez un lien de don HelloAsso si besoin, activez le projet. » | Champs don / actif | Remplir | `input` |
+| 4 | « Ajoutez un lien de don HelloAsso si besoin, activez le domaine. » | Champs don / actif | Remplir | `input` |
 | 5 | « Enregistrez. » | Bouton save | Clic | `success` |
-| 6 | « Réordonnez dans le tableau, puis vérifiez `/projets`. » | DnD + public | Confirm | `confirm` |
+| 6 | « Réordonnez dans le tableau, puis vérifiez `/domaines`. » | DnD + public | Confirm | `confirm` |
 
 ---
 
@@ -590,7 +590,7 @@ Ordre recommandé (~15–20 min) :
 | Liste + filtres articles | `pub-articles` |
 | Page article + partage | `pub-lire-article` |
 | Catégories publiques | `pub-categories` |
-| Projets + don | `pub-projets` |
+| Domaines + don | `pub-domaines` |
 | Bibliothèque PDF | `pub-documents`, `contrib-document` |
 | Visibilité documents | `contrib-visibilite-doc`, `admin-doc-sensible` |
 | Forum lecture / recherche | `pub-forum-lire`, `pub-forum-recherche` |
@@ -600,7 +600,7 @@ Ordre recommandé (~15–20 min) :
 | Archiver | `contrib-archiver` |
 | Lien article ↔ forum | `contrib-lier-forum` |
 | Sujet / réponse / abonnement | `contrib-forum-sujet`, `contrib-forum-repondre`, `contrib-forum-abonnement` |
-| Catégories / projets admin | `admin-categories`, `admin-projets` |
+| Catégories / domaines admin | `admin-categories`, `admin-domaines` |
 | Utilisateurs | `admin-utilisateurs` |
 | Rubriques / modération / épinglage | `admin-forum-rubriques`, `admin-forum-moderation`, `admin-forum-epingler` |
 | Aide wiki admin | `contrib-aide` |

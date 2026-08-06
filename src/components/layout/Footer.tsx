@@ -35,22 +35,13 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/projets" className="hover:text-white" data-tour-id="nav.header.projets">
-                    Projets
+                  <Link href="/categories" className="hover:text-white" data-tour-id="nav.header.domaines">
+                    Domaines
                   </Link>
                 </li>
                 <li>
                   <Link href="/documents" className="hover:text-white" data-tour-id="nav.header.documents">
                     Documents
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/categories"
-                    className="hover:text-white"
-                    data-tour-id="articles.categories.link"
-                  >
-                    Catégories
                   </Link>
                 </li>
                 <li>

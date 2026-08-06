@@ -147,6 +147,7 @@ export function NewsArticlesCarousel({ articles }: NewsArticlesCarouselProps) {
                           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                           sizes="7.72rem"
                           priority={article.id === articles[0]?.id}
+                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center text-xs font-medium text-primary/30">

@@ -7,7 +7,6 @@ type FilterOption = { id: string; label: string; slug?: string };
 
 type DocumentsToolbarProps = {
   params: DocumentsListingParams;
-  projects: FilterOption[];
   categories: FilterOption[];
   uploaders: FilterOption[];
   newDocumentHref?: string;
@@ -17,7 +16,6 @@ type DocumentsToolbarProps = {
 
 export function DocumentsToolbar({
   params,
-  projects,
   categories,
   uploaders,
   newDocumentHref = "/admin/documents/nouveau",
@@ -32,7 +30,6 @@ export function DocumentsToolbar({
         <div className="justify-self-start md:col-start-2 md:justify-self-center">
           <DocumentsAdvancedSearch
             params={params}
-            projects={projects}
             categories={categories}
             uploaders={uploaders}
           />

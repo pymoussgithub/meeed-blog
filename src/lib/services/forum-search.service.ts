@@ -134,18 +134,6 @@ function buildTopicWhereSql(filters: ForumSearchFilters): Prisma.Sql {
     parts.push(Prisma.sql`c.slug = ${filters.rubrique}`);
   }
 
-  if (filters.project) {
-    parts.push(Prisma.sql`EXISTS (
-      SELECT 1
-      FROM "ArticleForumTopic" aft
-      JOIN "Article" a ON a.id = aft."articleId"
-      JOIN "Project" proj ON proj.id = a."projectId"
-      WHERE aft."topicId" = t.id
-        AND proj.slug = ${filters.project}
-        AND proj."isActive" = true
-    )`);
-  }
-
   const fromDate = filters.from ? parseDayStart(filters.from) : null;
   if (fromDate) {
     parts.push(Prisma.sql`t."createdAt" >= ${fromDate}`);
@@ -198,7 +186,7 @@ function mapHit(hit: RawHit, query = ""): ForumSearchHit {
 }
 
 /**
- * Recherche forum : full-text (optionnel) + filtres titre / contributeur / date / rubrique / projet.
+ * Recherche forum : full-text (optionnel) + filtres titre / contributeur / date / rubrique.
  * Exclut contenus masqués / soft-deleted / sujets archivés pour le public.
  */
 export async function searchForum(
@@ -375,15 +363,10 @@ export async function searchForum(
 }
 
 export async function getForumSearchFacets() {
-  const [categories, projects, authors] = await Promise.all([
+  const [categories, authors] = await Promise.all([
     prisma.forumCategory.findMany({
       where: { isActive: true },
       select: { id: true, name: true, slug: true },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.project.findMany({
-      where: { isActive: true },
-      select: { id: true, title: true, slug: true },
       orderBy: { sortOrder: "asc" },
     }),
     prisma.user.findMany({
@@ -419,5 +402,5 @@ export async function getForumSearchFacets() {
     }),
   ]);
 
-  return { categories, projects, authors };
+  return { categories, authors };
 }

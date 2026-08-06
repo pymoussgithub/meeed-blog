@@ -16,7 +16,6 @@ type FilterOption = { id: string; label: string; slug?: string };
 type ArticlesFilterBarProps = {
   params: ArticlesListingParams;
   categories: FilterOption[];
-  projects: FilterOption[];
   authors: FilterOption[];
   total: number;
 };
@@ -27,7 +26,6 @@ const filterBtnBase =
 export function ArticlesFilterBar({
   params,
   categories,
-  projects,
   authors,
   total,
 }: ArticlesFilterBarProps) {
@@ -49,7 +47,6 @@ export function ArticlesFilterBar({
     setDateOpen(false);
   }
 
-  const activeProject = projects.find((p) => p.slug === params.projectSlug);
   const activeCategory = categories.find((c) => c.slug === params.categorySlug);
   const activeAuthor = authors.find((a) => a.id === params.authorId);
   const dateActive = Boolean(params.dateFrom || params.dateTo);
@@ -62,9 +59,6 @@ export function ArticlesFilterBar({
       >
         <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
           <form action="/actualites" method="GET" className="flex w-full gap-2">
-            {params.projectSlug ? (
-              <input type="hidden" name="project" value={params.projectSlug} />
-            ) : null}
             {params.categorySlug ? (
               <input type="hidden" name="category" value={params.categorySlug} />
             ) : null}
@@ -97,27 +91,15 @@ export function ArticlesFilterBar({
             </button>
           </form>
 
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <p className="sr-only">Filtrer par</p>
             <FilterSelect
-              label="Thématique"
-              value={params.projectSlug ?? ""}
-              displayValue={activeProject?.label}
-              placeholder="Thématique"
-              options={[
-                { value: "", label: "Toutes les thématiques" },
-                ...projects.map((p) => ({ value: p.slug ?? "", label: p.label })),
-              ]}
-              onChange={(value) => navigate({ projectSlug: value || null })}
-            />
-
-            <FilterSelect
-              label="Catégorie"
+              label="Domaine"
               value={params.categorySlug ?? ""}
               displayValue={activeCategory?.label}
-              placeholder="Catégorie"
+              placeholder="Domaine"
               options={[
-                { value: "", label: "Toutes les catégories" },
+                { value: "", label: "Tous les domaines" },
                 ...categories.map((c) => ({ value: c.slug ?? "", label: c.label })),
               ]}
               onChange={(value) => navigate({ categorySlug: value || null })}
@@ -229,12 +211,6 @@ export function ArticlesFilterBar({
                 <FilterChip
                   href={buildArticlesUrl(params, { q: null, page: null })}
                   label={`« ${params.q} »`}
-                />
-              ) : null}
-              {activeProject ? (
-                <FilterChip
-                  href={buildArticlesUrl(params, { projectSlug: null, page: null })}
-                  label={activeProject.label}
                 />
               ) : null}
               {activeCategory ? (

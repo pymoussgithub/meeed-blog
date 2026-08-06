@@ -7,10 +7,7 @@ import {
   listForumTopicsForLinking,
 } from "@/lib/services/article-forum.service";
 import { getArticleById } from "@/lib/services/article.service";
-import {
-  getCategoriesForArticleForm,
-  getProjectsForArticleForm,
-} from "@/lib/services/category.service";
+import { getCategoriesForArticleForm } from "@/lib/services/category.service";
 import { getActiveForumCategories } from "@/lib/services/forum-category.service";
 
 type PageProps = {
@@ -30,10 +27,7 @@ export default async function AdminEditArticlePage({ params }: PageProps) {
     redirect("/admin/articles");
   }
 
-  const [categories, projects] = await Promise.all([
-    getCategoriesForArticleForm(article.categories.map((item) => item.categoryId)),
-    getProjectsForArticleForm(article.projectId),
-  ]);
+  const categories = await getCategoriesForArticleForm();
 
   const canManageForumLinks =
     user?.role === "ADMIN" || article.authorId === user?.id;
@@ -56,13 +50,6 @@ export default async function AdminEditArticlePage({ params }: PageProps) {
       <ArticleForm
         articleId={article.id}
         categories={categories}
-        projects={projects.map((project) => ({
-          id: project.id,
-          title: project.title,
-          slug: project.slug,
-          color: project.color,
-          categoryName: project.category.name,
-        }))}
         initialData={{
           title: article.title,
           slug: article.slug,
@@ -71,7 +58,6 @@ export default async function AdminEditArticlePage({ params }: PageProps) {
           coverImageUrl: article.coverImageUrl,
           coverImagePublicId: article.coverImagePublicId,
           status: article.status,
-          projectId: article.projectId,
           categoryIds: article.categories.map((item) => item.categoryId),
         }}
         forumLinksPanel={

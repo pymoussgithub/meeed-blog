@@ -333,7 +333,12 @@ function EditorToolbar({
       >
         {isUploading ? <IconSpinner /> : <IconImage />}
       </ToolbarButton>
-      <ToolbarButton title="Uploader un PDF de référence" disabled={isUploading} onClick={onAddDocument}>
+      <ToolbarButton
+        title="Joindre un PDF (insère un lien dans le texte)"
+        disabled={isUploading}
+        onClick={onAddDocument}
+        data-tour-id="editor.toolbar.document"
+      >
         {isUploading ? <IconSpinner /> : <IconDocument />}
       </ToolbarButton>
 
@@ -433,6 +438,9 @@ export function TipTapEditor({
       StarterKit.configure({
         heading: { levels: [2, 3] },
         horizontalRule: {},
+        // StarterKit v3 embarque déjà Link — on le désactive pour garder
+        // notre config (openOnClick, target, classes) sans doublon.
+        link: false,
       }),
       Link.configure({
         openOnClick: false,
@@ -569,7 +577,7 @@ export function TipTapEditor({
         <span>{wordCount} mot{wordCount > 1 ? "s" : ""}</span>
         <span className="text-accent-dark">{uploadFeedback ?? ""}</span>
         <span className="hidden sm:inline">
-          Ctrl+B gras · Ctrl+I italique · Glisser-déposer, coller une image ou joindre un PDF
+          Ctrl+B gras · Ctrl+I italique · Image : glisser/coller · PDF : icône document
         </span>
       </div>
     </div>

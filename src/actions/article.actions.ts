@@ -39,7 +39,14 @@ async function assertCanEdit(articleId: string) {
   return { user, article };
 }
 
-function buildArticlePayload(input: ArticleFormInput, status: ArticleStatus) {
+function buildArticlePayload(
+  input: ArticleFormInput,
+  status: ArticleStatus,
+  options?: { stampPublishedAt?: boolean },
+) {
+  const stampPublishedAt =
+    options?.stampPublishedAt ?? status === ArticleStatus.PUBLISHED;
+
   return {
     title: input.title.trim(),
     slug: input.slug.trim(),
@@ -48,9 +55,8 @@ function buildArticlePayload(input: ArticleFormInput, status: ArticleStatus) {
     coverImageUrl: input.coverImageUrl ?? null,
     coverImagePublicId: input.coverImagePublicId ?? null,
     status,
-    projectId: input.projectId ?? null,
     categoryIds: input.categoryIds,
-    ...(status === ArticleStatus.PUBLISHED ? { publishedAt: new Date() } : {}),
+    ...(stampPublishedAt ? { publishedAt: new Date() } : {}),
   };
 }
 
@@ -121,7 +127,9 @@ export async function updateArticleAction(
 
     const article = await updateArticle(
       id,
-      buildArticlePayload(parsed.data, parsed.data.status),
+      buildArticlePayload(parsed.data, parsed.data.status, {
+        stampPublishedAt: false,
+      }),
     );
 
     revalidatePath("/admin");
@@ -210,20 +218,30 @@ export async function publishArticleAction(
     }
 
     if (id) {
-      await assertCanEdit(id);
+      const { article: existing } = await assertCanEdit(id);
       if (await isSlugTaken(parsed.data.slug, id)) {
         return actionError("Ce slug est déjà utilisé");
       }
 
+      // Keep the original publish date when editing an already-published article.
+      // Stamp publishedAt only on first publish or when republishing from archive.
+      const stampPublishedAt = existing.status !== ArticleStatus.PUBLISHED;
+
       const article = await updateArticle(
         id,
-        buildArticlePayload(parsed.data, ArticleStatus.PUBLISHED),
+        buildArticlePayload(parsed.data, ArticleStatus.PUBLISHED, {
+          stampPublishedAt,
+        }),
       );
 
       revalidatePath("/");
       revalidatePath("/actualites");
       revalidatePath("/admin");
       revalidatePath("/admin/articles");
+      revalidatePath(`/admin/articles/${id}`);
+      if (article.slug) {
+        revalidatePath(`/a/${article.slug}`);
+      }
       return actionSuccess({ id: article.id });
     }
 

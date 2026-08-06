@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Button } from "@/components/ui/Button";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-static";
@@ -9,6 +10,21 @@ export const metadata: Metadata = buildPageMetadata({
     "L'association MEEED établit et diffuse un savoir-faire sur le maraîchage efficient en eau et en énergie décarbonée.",
   path: "/a-propos",
 });
+
+const flyers = [
+  {
+    title: "Flyer agriculteurs",
+    description:
+      "Présentation de MEEED et de ses solutions destinée aux maraîchers et agriculteurs.",
+    href: "/MEEED_Flyer-Agricult_V01.pdf",
+  },
+  {
+    title: "Flyer institutions",
+    description:
+      "Présentation de MEEED destinée aux collectivités, partenaires et institutions.",
+    href: "/MEEED_Flyer-Instit_V01.pdf",
+  },
+] as const;
 
 export default function AboutPage() {
   return (
@@ -50,7 +66,7 @@ export default function AboutPage() {
 
         <h2 className="mt-10 text-xl font-semibold text-primary-dark">Notre approche</h2>
         <p>
-          MEEED est une équipe de bénévoles qui imagine des projets pragmatiques et
+          MEEED est une équipe de bénévoles qui imagine des domaines pragmatiques et
           réplicables pour apporter à la culture maraîchère des solutions innovantes sur
           l&apos;eau et l&apos;énergie.
         </p>
@@ -60,24 +76,52 @@ export default function AboutPage() {
             la dépendance aux énergies fossiles.
           </li>
           <li>
-            <strong>Des dossiers réplicables</strong> : une fois nos projets testés, les
+            <strong>Des dossiers réplicables</strong> : une fois nos domaines testés, les
             documents de création sont mis à disposition.
           </li>
           <li>
             <strong>Des formations</strong> sur les sujets techniques et les réalisations de
-            nos projets.
+            nos domaines.
           </li>
         </ul>
 
-        <p className="mt-6">
-          Nous pouvons vous accompagner pour répliquer l&apos;un de nos projets ou travailler
-          sur le vôtre avec nos compétences.{" "}
-          <a href="/contact" className="font-medium text-accent-dark hover:underline">
-            Contactez-nous
-          </a>
-          .
+        <h2 className="mt-10 text-xl font-semibold text-primary-dark">Nos flyers</h2>
+        <p>
+          Deux flyers présentent l&apos;association selon le public : agriculteurs et
+          institutions. Consultez-les en ligne ou téléchargez-les pour les partager.
         </p>
       </div>
+
+      <ul className="mt-6 max-w-3xl space-y-4">
+        {flyers.map((flyer) => (
+          <li
+            key={flyer.href}
+            className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-bg-soft/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="font-semibold text-primary-dark">{flyer.title}</p>
+              <p className="mt-1 text-sm text-primary/70">{flyer.description}</p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button href={flyer.href} external variant="outline">
+                Consulter
+              </Button>
+              <Button href={flyer.href} download variant="accent">
+                Télécharger
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <p className="prose prose-neutral mt-8 max-w-3xl text-primary/80">
+        Nous pouvons vous accompagner pour répliquer l&apos;un de nos domaines ou travailler
+        sur le vôtre avec nos compétences.{" "}
+        <a href="/contact" className="font-medium text-accent-dark hover:underline">
+          Contactez-nous
+        </a>
+        .
+      </p>
     </div>
   );
 }

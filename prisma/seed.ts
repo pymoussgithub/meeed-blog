@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 const DEFAULT_ADMIN_PASSWORD = "Meeed2026!";
 
-const INITIAL_PROJECTS = [
+const INITIAL_DOMAINS = [
   {
     slug: "tracteur",
     title: "Tracteur électrique en rétrofit",
@@ -46,8 +46,8 @@ const INITIAL_ARTICLES = [
       <p>La mécanisation maraîchère repose encore largement sur des tracteurs thermiques. Le retrofit électrique permet de réutiliser un matériel existant tout en supprimant les émissions directes sur le parcelle.</p>
       <h2>Le comment</h2>
       <p>MEEED travaille sur la transformation d'un tracteur thermique de 20 CV en tracteur électrique, dimensionné pour les travaux courants du maraîchage de petite et moyenne dimension.</p>
-      <p>Les avancées du projet sont documentées au fil de l'eau : composants, essais terrain et retours d'expérience seront publiés ici.</p>
-      <p><strong>Statut :</strong> projet en cours de développement — revenez régulièrement pour les mises à jour.</p>
+      <p>Les avancées du domaine sont documentées au fil de l'eau : composants, essais terrain et retours d'expérience seront publiés ici.</p>
+      <p><strong>Statut :</strong> domaine en cours de développement — revenez régulièrement pour les mises à jour.</p>
     `.trim(),
   },
   {
@@ -78,7 +78,7 @@ const INITIAL_ARTICLES = [
       <p>Après récolte, les légumes se dégradent rapidement si la température et l'humidité ne sont pas maîtrisées. Une mauvaise conservation entraîne des pertes, du gaspillage alimentaire et une baisse de qualité pour la vente.</p>
       <h2>L'approche adiabatique</h2>
       <p>La chambre fraîche adiabatique utilise l'évaporation de l'eau pour refroidir l'air dans un espace clos, avec une consommation énergétique bien inférieure à une chambre froide classique. L'objectif est d'entreposer les légumes dans un environnement <strong>frais et humide</strong>, adapté aux besoins du maraîchage de proximité.</p>
-      <h2>Projet MEEED</h2>
+      <h2>Domaine MEEED</h2>
       <p>MEEED développe et expérimente cette solution pour une exploitation maraîchère, en visant un équilibre entre performance, coût et réplicabilité. Les résultats, plans et retours d'usage seront partagés sur cette page.</p>
       <p><strong>Statut :</strong> phase de conception et d'essais — documentation à venir.</p>
     `.trim(),
@@ -151,44 +151,12 @@ async function main() {
     categoryMap.set(record.slug, record.id);
   }
 
-  for (const project of INITIAL_PROJECTS) {
-    const categoryId = categoryMap.get(project.slug);
-    if (!categoryId) {
-      throw new Error(`Catégorie introuvable pour le projet : ${project.slug}`);
-    }
-
-    await prisma.project.upsert({
-      where: { slug: project.slug },
-      update: {
-        title: project.title,
-        summary: project.summary,
-        donationUrl: "donationUrl" in project ? project.donationUrl : null,
-        color: project.color,
-        sortOrder: project.sortOrder,
-        isActive: true,
-        categoryId,
-      },
-      create: {
-        title: project.title,
-        slug: project.slug,
-        summary: project.summary,
-        donationUrl: "donationUrl" in project ? project.donationUrl : null,
-        color: project.color,
-        sortOrder: project.sortOrder,
-        isActive: true,
-        categoryId,
-      },
-    });
-  }
-
   const publishedAt = new Date();
 
   for (const article of INITIAL_ARTICLES) {
-    const project = await prisma.project.findUnique({
-      where: { slug: article.categorySlug },
-    });
-    if (!project) {
-      throw new Error(`Projet introuvable pour l'article : ${article.categorySlug}`);
+    const categoryId = categoryMap.get(article.categorySlug);
+    if (!categoryId) {
+      throw new Error(`Domaine introuvable pour l'article : ${article.categorySlug}`);
     }
 
     await prisma.article.upsert({
@@ -199,7 +167,7 @@ async function main() {
         content: article.content,
         status: ArticleStatus.PUBLISHED,
         publishedAt,
-        projectId: project.id,
+        categories: { create: [{ categoryId }] },
       },
       create: {
         title: article.title,
@@ -209,7 +177,7 @@ async function main() {
         status: ArticleStatus.PUBLISHED,
         publishedAt,
         authorId: admin.id,
-        projectId: project.id,
+        categories: { create: [{ categoryId }] },
       },
     });
   }
@@ -228,9 +196,9 @@ async function main() {
       isActive: true,
     },
     {
-      name: "Projets",
-      slug: "projets",
-      description: "Discussions liées aux projets (tracteur, arrosage, chambre fraîche…).",
+      name: "Domaines",
+      slug: "domaines",
+      description: "Discussions liées aux domaines (tracteur, arrosage, chambre fraîche…).",
       sortOrder: 2,
       isActive: true,
     },
@@ -256,7 +224,7 @@ async function main() {
   console.log(`Mot de passe temporaire : ${DEFAULT_ADMIN_PASSWORD}`);
   console.log("→ À changer dès la mise en production.");
   console.log(`${INITIAL_ARTICLES.length} articles publiés (tracteur, arrosage, énergie).`);
-  console.log(`${INITIAL_PROJECTS.length} projets créés.`);
+  console.log(`${INITIAL_DOMAINS.length} domaines créés.`);
   console.log(`${forumCategories.length} rubriques forum créées.`);
 }
 

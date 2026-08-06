@@ -35,7 +35,7 @@ export async function createDocumentAction(input: {
   mimeType: string;
   cloudinaryPublicId: string;
   articleId?: string | null;
-  projectId?: string | null;
+  categoryId?: string | null;
   visibility?: DocumentVisibility;
 }): Promise<ActionResult<{ id: string }>> {
   try {
@@ -49,6 +49,16 @@ export async function createDocumentAction(input: {
 
     if (!parsed.success) {
       return actionError(parsed.error.errors[0]?.message ?? "Données invalides");
+    }
+
+    if (parsed.data.categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: parsed.data.categoryId },
+        select: { id: true },
+      });
+      if (!category) {
+        return actionError("Domaine introuvable");
+      }
     }
 
     const document = await createDocument(parsed.data);
@@ -68,7 +78,7 @@ export async function updateDocumentAction(
     description?: string | null;
     visibility: DocumentVisibility;
     articleId?: string | null;
-    projectId?: string | null;
+    categoryId?: string | null;
     fileUrl?: string;
     fileName?: string;
     fileSize?: number;
@@ -89,7 +99,7 @@ export async function updateDocumentAction(
       description,
       visibility,
       articleId,
-      projectId,
+      categoryId,
       fileUrl,
       fileName,
       fileSize,
@@ -98,12 +108,12 @@ export async function updateDocumentAction(
     } = parsed.data;
 
     let nextArticleId = articleId ?? null;
-    let nextProjectId = projectId ?? null;
+    let nextCategoryId = categoryId ?? null;
 
     if (nextArticleId) {
       const article = await prisma.article.findUnique({
         where: { id: nextArticleId },
-        select: { id: true, projectId: true },
+        select: { id: true },
       });
 
       if (!article) {
@@ -111,7 +121,19 @@ export async function updateDocumentAction(
       }
 
       nextArticleId = article.id;
-      nextProjectId = article.projectId;
+    }
+
+    if (nextCategoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: nextCategoryId },
+        select: { id: true },
+      });
+
+      if (!category) {
+        return actionError("Domaine introuvable");
+      }
+
+      nextCategoryId = category.id;
     }
 
     await updateDocument(id, {
@@ -119,7 +141,7 @@ export async function updateDocumentAction(
       description,
       visibility,
       articleId: nextArticleId,
-      projectId: nextProjectId,
+      categoryId: nextCategoryId,
       ...(fileUrl ? { fileUrl } : {}),
       ...(fileName ? { fileName } : {}),
       ...(fileSize ? { fileSize } : {}),
@@ -182,51 +204,15 @@ export async function linkDocumentToArticleAction(
     } else {
       const article = await prisma.article.findUnique({
         where: { id: articleId },
-        select: { id: true, projectId: true },
+        select: { id: true },
       });
 
       if (!article) {
         return actionError("Article introuvable");
       }
 
-      // Le projet du document suit automatiquement celui de l'article lié.
-      await updateDocument(id, {
-        articleId: article.id,
-        projectId: article.projectId,
-      });
+      await updateDocument(id, { articleId: article.id });
     }
-
-    revalidateDocumentPaths(id);
-
-    return actionSuccess(undefined);
-  } catch (error) {
-    return actionError(error instanceof Error ? error.message : "Erreur");
-  }
-}
-
-export async function linkDocumentToProjectAction(
-  id: string,
-  projectId: string | null,
-): Promise<ActionResult> {
-  try {
-    const user = await requireAuth();
-    const document = await getDocumentById(id);
-
-    if (!document) {
-      return actionError("Document introuvable");
-    }
-
-    if (user.role !== "ADMIN" && document.uploadedById !== user.id) {
-      return actionError("Non autorisé");
-    }
-
-    if (document.articleId) {
-      return actionError(
-        "Le projet est défini par l’article lié. Dissociez l’article pour choisir un projet manuellement.",
-      );
-    }
-
-    await updateDocument(id, { projectId });
 
     revalidateDocumentPaths(id);
 

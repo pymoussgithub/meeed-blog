@@ -1,5 +1,5 @@
 /**
- * Deux articles liés au projet Ferme solaire (catégorie Énergie).
+ * Deux articles liés au domaine Ferme solaire (domaine Énergie).
  * Images : Unsplash (licence Unsplash) — URLs publiques.
  *
  * Usage : npx tsx scripts/seed-ferme-solaire-articles.ts
@@ -59,9 +59,9 @@ const ARTICLES = [
 ] as const;
 
 async function main() {
-  const ferme = await prisma.project.findUnique({ where: { slug: "ferme-solaire" } });
-  if (!ferme) {
-    throw new Error("Projet « ferme-solaire » introuvable.");
+  const category = await prisma.category.findUnique({ where: { slug: "energie" } });
+  if (!category) {
+    throw new Error("Domaine « energie » introuvable.");
   }
 
   const created: string[] = [];
@@ -87,13 +87,13 @@ async function main() {
           excerpt: item.excerpt,
           content: item.content,
           coverImageUrl,
-          projectId: ferme.id,
           authorId: author.id,
           status: ArticleStatus.PUBLISHED,
           publishedAt: existing.publishedAt ?? publishedAt,
         },
       });
       await prisma.articleCategory.deleteMany({ where: { articleId: existing.id } });
+      await prisma.articleCategory.create({ data: { articleId: existing.id, categoryId: category.id } });
       updated.push(item.slug);
       continue;
     }
@@ -109,16 +109,13 @@ async function main() {
         status: ArticleStatus.PUBLISHED,
         publishedAt,
         authorId: author.id,
-        projectId: ferme.id,
+        categories: { create: [{ categoryId: category.id }] },
       },
-      include: {
-        author: { select: { name: true } },
-        project: { select: { title: true } },
-      },
+      include: { author: { select: { name: true } } },
     });
 
     created.push(
-      `${article.title} — ${article.author.name} → /a/${article.slug} (${article.project?.title})`,
+      `${article.title} — ${article.author.name} → /a/${article.slug}`,
     );
   }
 
@@ -127,7 +124,7 @@ async function main() {
     console.log(`  • ${line}`);
   }
   if (updated.length > 0) {
-    console.log(`\n${updated.length} mis à jour (projet Ferme solaire) : ${updated.join(", ")}`);
+    console.log(`\n${updated.length} mis à jour (domaine énergie) : ${updated.join(", ")}`);
   }
 }
 

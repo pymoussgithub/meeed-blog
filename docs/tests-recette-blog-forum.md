@@ -1,6 +1,6 @@
 # F-01 En-tête et menu ==============> fait
 1. Ouvrir la page d'accueil.
-2. Vérifier la présence des liens `Accueil`, `Articles`, `Projets`, `Documents`, `À propos`, `Contact`, `Faire un don`.
+2. Vérifier la présence des liens `Accueil`, `Articles`, `Domaines`, `Documents`, `À propos`, `Contact`, `Faire un don`.
 3. Cliquer sur chaque lien du menu.
 4. Vérifier que chaque lien ouvre la bonne page.
 
@@ -41,7 +41,7 @@
 4. Vérifier que la page suivante charge correctement.
 5. Tester le filtre par mot-clé.
 6. Tester le filtre par catégorie.
-7. Tester le filtre par projet.
+7. Tester le filtre par domaine.
 8. Tester le filtre par auteur.
 9. Tester le filtre par dates.
 10. Tester le filtre par type.
@@ -62,10 +62,10 @@
 3. Ouvrir plusieurs catégories différentes.
 4. Vérifier que le changement de catégorie charge les bonnes listes.
 
-# F-09 Page projets
-1. Ouvrir `/projets`.
-2. Vérifier l'affichage des projets actifs.
-3. Ouvrir un projet si une fiche détaillée existe.
+# F-09 Page domaines
+1. Ouvrir `/domaines`.
+2. Vérifier l'affichage des domaines actifs.
+3. Ouvrir un domaine si une fiche détaillée existe.
 4. Vérifier la présence du lien de don quand il est configuré.
 5. Cliquer sur le lien de don.
 6. Vérifier que la redirection fonctionne.
@@ -289,7 +289,7 @@
 3. Vérifier qu'il apparaît sur `/documents`.
 4. Le passer en privé.
 5. Vérifier qu'il disparaît du front public.
-6. Le lier à un article et/ou à un projet si l'option existe.
+6. Le lier à un article et/ou à un domaine si l'option existe.
 7. Supprimer le document.
 8. Vérifier qu'il n'apparaît plus.
 
@@ -316,14 +316,14 @@
 7. Supprimer la catégorie si le scénario est autorisé.
 8. Vérifier le comportement attendu.
 
-# F-44 CRUD projets
+# F-44 CRUD domaines
 1. Se connecter en Administrateur.
-2. Créer un projet avec titre, slug, résumé, description, couverture, couleur, ordre, statut actif, URL de don et catégorie existante obligatoire.
+2. Créer un domaine avec titre, slug, résumé, description, couverture, couleur, ordre, statut actif, URL de don et catégorie existante obligatoire.
 3. Vérifier qu'il apparaît dans la liste admin et qu'aucune nouvelle catégorie n'a été créée.
-4. Modifier le projet, y compris sa catégorie.
+4. Modifier le domaine, y compris sa catégorie.
 5. Vérifier que les changements sont enregistrés.
 6. Vérifier sa présence sur le front s'il est actif.
-7. Désactiver ou supprimer le projet selon le flux disponible (la catégorie et ses articles doivent être conservés).
+7. Désactiver ou supprimer le domaine selon le flux disponible (la catégorie et ses articles doivent être conservés).
 8. Vérifier le comportement attendu.
 
 # F-45 Gestion des utilisateurs

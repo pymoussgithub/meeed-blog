@@ -37,6 +37,8 @@ export type CloudinaryUploadResult = {
 export type FileUploadHandle = {
   /** Envoie le fichier sélectionné. Retourne true si l’upload a réussi. */
   upload: () => Promise<boolean>;
+  /** Envoie un fichier fourni (ex. bibliothèque d’images libres). */
+  uploadFile: (file: File) => Promise<boolean>;
   clear: () => void;
   getSelectedFile: () => File | null;
 };
@@ -211,6 +213,7 @@ export const FileUpload = forwardRef<FileUploadHandle, FileUploadProps>(
           }
           return uploadFile(file);
         },
+        uploadFile: (file: File) => uploadFile(file),
         clear: () => setFile(null),
         getSelectedFile: () => selectedFileRef.current,
       }),

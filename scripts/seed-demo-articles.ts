@@ -35,7 +35,7 @@ const ARTICLES: DemoArticle[] = [
     slug: "demo-assemblee-generale-2026",
     title: "Assemblée générale 2026 : compte rendu et prochaines étapes",
     excerpt:
-      "Retour sur l’AG annuelle : bilan des projets, budget et feuille de route pour la saison à venir.",
+      "Retour sur l’AG annuelle : bilan des domaines, budget et feuille de route pour la saison à venir.",
     categorySlug: "actualites",
     coverPhotoId: "photo-1511632765486-a01980e01a18",
     authorIndex: 0,
@@ -101,7 +101,7 @@ const ARTICLES: DemoArticle[] = [
     slug: "demo-newsletter-juin",
     title: "Newsletter de juin : ce qu’il ne fallait pas manquer",
     excerpt:
-      "Synthèse mensuelle : avancées projets, dates clés et ressources récemment mises en ligne.",
+      "Synthèse mensuelle : avancées domaines, dates clés et ressources récemment mises en ligne.",
     categorySlug: "actualites",
     coverPhotoId: "photo-1486312338219-ce68d2c6f44d",
     authorIndex: 3,
@@ -148,7 +148,7 @@ const ARTICLES: DemoArticle[] = [
     daysAgo: 12,
     content: `
       <h2>Pourquoi cette formation</h2>
-      <p>Les projets MEEED mêlent électronique, puissance et humidité. Une mauvaise manipulation peut endommager le matériel ou mettre en danger les opérateurs. Ce module rappelle les bases H0/B0 adaptées au contexte agricole.</p>
+      <p>Les domaines MEEED mêlent électronique, puissance et humidité. Une mauvaise manipulation peut endommager le matériel ou mettre en danger les opérateurs. Ce module rappelle les bases H0/B0 adaptées au contexte agricole.</p>
       <h2>Programme</h2>
       <p>Identification des risques, EPI, consignation simple, et check-list avant toute intervention sur l’automate ou le pack batterie du tracteur.</p>
     `.trim(),
@@ -594,24 +594,9 @@ async function main() {
 
   const categories = await prisma.category.findMany();
   const categoryBySlug = new Map(categories.map((c) => [c.slug, c]));
-  const projects = await prisma.project.findMany();
-  // Prefer canonical project when several share a category (e.g. energie + ferme-solaire)
-  const projectByCategorySlug = new Map(
-    projects.map((project) => {
-      const category = categories.find((c) => c.id === project.categoryId);
-      return [category?.slug ?? project.slug, project] as const;
-    }),
-  );
-  for (const project of projects) {
-    if (project.slug === "tracteur" || project.slug === "arrosage" || project.slug === "energie") {
-      const category = categories.find((c) => c.id === project.categoryId);
-      if (category) projectByCategorySlug.set(category.slug, project);
-    }
-  }
-
   for (const slug of ["actualites", "formation", "tracteur", "arrosage", "energie"]) {
     if (!categoryBySlug.has(slug)) {
-      throw new Error(`Catégorie manquante : ${slug}. Lancez npm run db:seed`);
+      throw new Error(`Domaine manquant : ${slug}. Lancez npm run db:seed`);
     }
   }
 
@@ -620,8 +605,6 @@ async function main() {
 
   for (const item of ARTICLES) {
     const category = categoryBySlug.get(item.categorySlug)!;
-    const project = projectByCategorySlug.get(item.categorySlug);
-    const isNewsCategory = item.categorySlug === "actualites" || item.categorySlug === "formation";
     const author = users[item.authorIndex % users.length]!;
     const publishedAt = new Date(Date.now() - item.daysAgo * 86_400_000);
     const coverImageUrl = unsplash(item.coverPhotoId);
@@ -631,10 +614,6 @@ async function main() {
     if (existing) {
       skipped.push(slug);
       continue;
-    }
-
-    if (!isNewsCategory && !project) {
-      throw new Error(`Projet manquant pour la catégorie ${item.categorySlug}`);
     }
 
     const article = await prisma.article.create({
@@ -648,23 +627,13 @@ async function main() {
         status: ArticleStatus.PUBLISHED,
         publishedAt,
         authorId: author.id,
-        projectId: isNewsCategory ? null : project!.id,
-        ...(isNewsCategory
-          ? {
-              categories: {
-                create: [{ categoryId: category.id }],
-              },
-            }
-          : {}),
+        categories: { create: [{ categoryId: category.id }] },
       },
-      include: {
-        author: { select: { name: true, role: true } },
-        project: { select: { title: true } },
-      },
+      include: { author: { select: { name: true, role: true } } },
     });
 
     created.push(
-      `[${item.categorySlug}] ${article.title} — ${article.author.name} (${article.author.role}) → /a/${article.slug}${article.project ? ` · ${article.project.title}` : ""}`,
+      `[${item.categorySlug}] ${article.title} — ${article.author.name} (${article.author.role}) → /a/${article.slug}`,
     );
   }
 
@@ -680,7 +649,7 @@ async function main() {
     by: ["categoryId"],
     _count: true,
   });
-  console.log("\nTotaux par catégorie (tous articles) :");
+  console.log("\nTotaux par domaine (tous articles) :");
   for (const row of counts) {
     const cat = categories.find((c) => c.id === row.categoryId);
     console.log(`  ${cat?.name ?? row.categoryId}: ${row._count}`);

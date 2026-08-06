@@ -66,7 +66,6 @@ export async function ForumToolbar({
           {showSearch && facets ? (
             <ForumAdvancedSearch
               categories={facets.categories}
-              projects={facets.projects}
               authors={facets.authors}
               initialFilters={searchFilters}
             />

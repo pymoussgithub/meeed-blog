@@ -5,15 +5,9 @@ const documentVisibilityValues = ["PUBLIC", "CONTRIBUTOR", "ADMIN"] as const;
 /** Titre affiché en une ligne sur /documents. */
 export const DOCUMENT_TITLE_MAX_LENGTH = 200;
 
-/**
- * Descriptif affiché en 2 lignes max (`line-clamp-2`) sur /documents.
- * ~160 caractères = environ 2 lignes en text-sm sur desktop.
- */
-export const DOCUMENT_DESCRIPTION_MAX_LENGTH = 160;
-
 export const createDocumentSchema = z.object({
   title: z.string().min(2).max(DOCUMENT_TITLE_MAX_LENGTH),
-  description: z.string().max(DOCUMENT_DESCRIPTION_MAX_LENGTH).optional().nullable(),
+  description: z.string().optional().nullable(),
   fileUrl: z.string().url(),
   fileName: z.string().min(1).max(255),
   fileSize: z.number().int().positive().max(25 * 1024 * 1024),
@@ -22,7 +16,7 @@ export const createDocumentSchema = z.object({
   visibility: z.enum(documentVisibilityValues).default("PUBLIC"),
   isArchived: z.boolean().optional(),
   articleId: z.string().cuid().optional().nullable(),
-  projectId: z.string().cuid().optional().nullable(),
+  categoryId: z.string().cuid().optional().nullable(),
   uploadedById: z.string().cuid(),
 });
 
@@ -32,7 +26,6 @@ export const updateDocumentMetaSchema = z.object({
   title: z.string().min(2).max(DOCUMENT_TITLE_MAX_LENGTH),
   description: z
     .string()
-    .max(DOCUMENT_DESCRIPTION_MAX_LENGTH)
     .optional()
     .nullable()
     .transform((value) => {
@@ -42,7 +35,7 @@ export const updateDocumentMetaSchema = z.object({
     }),
   visibility: z.enum(documentVisibilityValues),
   articleId: z.string().cuid().optional().nullable(),
-  projectId: z.string().cuid().optional().nullable(),
+  categoryId: z.string().cuid().optional().nullable(),
   fileUrl: z.string().url().optional(),
   fileName: z.string().min(1).max(255).optional(),
   fileSize: z.number().int().positive().max(25 * 1024 * 1024).optional(),

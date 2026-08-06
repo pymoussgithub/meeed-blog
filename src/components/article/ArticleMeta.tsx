@@ -20,14 +20,6 @@ export function ArticleMeta({ article, shareTitle, shareUrl }: ArticleMetaProps)
           <span>{article.author.name}</span>
         </>
       ) : null}
-      {article.project ? (
-        <>
-          <span aria-hidden>·</span>
-          <Link href={`/actualites?project=${article.project.slug}`}>
-            <Badge color={article.project.color ?? undefined}>{article.project.title}</Badge>
-          </Link>
-        </>
-      ) : null}
       {article.categories.length > 0 ? (
         <>
           <span aria-hidden>·</span>

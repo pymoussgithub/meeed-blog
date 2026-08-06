@@ -42,7 +42,7 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 | `npm run lint` | ESLint |
 | `npm run db:migrate` | Migrations Prisma (dev) |
 | `npm run db:migrate:deploy` | Migrations Prisma (production) |
-| `npm run db:seed` | Peupler la base (admin + catégories) |
+| `npm run db:seed` | Peupler la base (admin + domaines) |
 
 ## Structure du projet
 

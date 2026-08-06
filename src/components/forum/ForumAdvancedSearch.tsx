@@ -16,12 +16,6 @@ type CategoryOption = {
   slug: string;
 };
 
-type ProjectOption = {
-  id: string;
-  title: string;
-  slug: string;
-};
-
 type AuthorOption = {
   id: string;
   name: string;
@@ -29,7 +23,6 @@ type AuthorOption = {
 
 type ForumAdvancedSearchProps = {
   categories: CategoryOption[];
-  projects: ProjectOption[];
   authors: AuthorOption[];
   initialFilters?: ForumSearchFilters;
   actionPath?: string;
@@ -43,7 +36,6 @@ type FilterDraft = {
   q: string;
   author: string;
   rubrique: string;
-  project: string;
   from: string;
   to: string;
 };
@@ -53,7 +45,6 @@ const emptyDraft: FilterDraft = {
   q: "",
   author: "",
   rubrique: "",
-  project: "",
   from: "",
   to: "",
 };
@@ -65,7 +56,6 @@ function draftFromFilters(filters?: ForumSearchFilters): FilterDraft {
     q: filters.q ?? "",
     author: filters.authorId ?? "",
     rubrique: filters.rubrique ?? "",
-    project: filters.project ?? "",
     from: filters.from ?? "",
     to: filters.to ?? "",
   };
@@ -112,7 +102,6 @@ function countDraftCriteria(draft: FilterDraft): number {
     q: draft.q.trim() || undefined,
     authorId: draft.author || undefined,
     rubrique: draft.rubrique || undefined,
-    project: draft.project || undefined,
     from: draft.from || undefined,
     to: draft.to || undefined,
   });
@@ -120,7 +109,6 @@ function countDraftCriteria(draft: FilterDraft): number {
 
 export function ForumAdvancedSearch({
   categories,
-  projects,
   authors,
   initialFilters,
   actionPath = "/forum/recherche",
@@ -149,7 +137,6 @@ export function ForumAdvancedSearch({
     if (draft.title.trim()) params.set("title", draft.title.trim());
     if (draft.author) params.set("author", draft.author);
     if (draft.rubrique) params.set("rubrique", draft.rubrique);
-    if (draft.project) params.set("project", draft.project);
     if (draft.from) params.set("from", draft.from);
     if (draft.to) params.set("to", draft.to);
 
@@ -314,22 +301,6 @@ export function ForumAdvancedSearch({
                 </select>
               </label>
             </div>
-
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-primary-dark">Projet</span>
-              <select
-                value={draft.project}
-                onChange={(event) => updateDraft("project", event.target.value)}
-                className={fieldClassName}
-              >
-                <option value="">Tous les projets</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.slug}>
-                    {project.title}
-                  </option>
-                ))}
-              </select>
-            </label>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">

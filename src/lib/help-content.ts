@@ -53,7 +53,7 @@ const SHARED_ARTICLES: HelpArticle[] = [
     category: "Articles",
     title: "Créer et publier un article",
     summary:
-      "Rédigez un article avec titre, extrait, image de couverture et contenu riche, puis publiez-le.",
+      "Rédigez un article avec titre, extrait, contenu riche et éventuellement une image de couverture, puis publiez-le.",
     keywords: [
       "article",
       "créer",
@@ -67,8 +67,8 @@ const SHARED_ARTICLES: HelpArticle[] = [
     ],
     steps: [
       "Allez dans Articles → « Nouvel article », ou utilisez le bouton du dashboard.",
-      "Renseignez le titre, choisissez au moins une catégorie, et rédigez un extrait court (idéal : 120–160 caractères).",
-      "Ajoutez une image de couverture (format paysage recommandé, ex. 1200×675 px).",
+      "Renseignez le titre, choisissez au moins un domaine, et rédigez un extrait court (idéal : 120–160 caractères).",
+      "Ajoutez une image de couverture si vous en avez une (format paysage recommandé, ex. 1200×675 px) — elle reste optionnelle.",
       "Rédigez le contenu dans l’éditeur : titres H2/H3, gras, listes, liens, images dans le texte.",
       "Si besoin, préparez une liaison avec le forum (sujet existant ou nouvelle discussion) — voir la fiche « Lier un article au forum ».",
       "Cliquez sur « Enregistrer brouillon » pour sauvegarder sans publier, ou « Publier » pour mettre en ligne.",
@@ -128,7 +128,7 @@ const SHARED_ARTICLES: HelpArticle[] = [
       "Retrouvez vos articles, changez leur statut, archivez-les ou supprimez définitivement un contenu déjà archivé.",
     keywords: ["modifier", "éditer", "archiver", "supprimer", "statut", "republier"],
     steps: [
-      "Ouvrez Articles pour voir la liste (filtrable par statut, catégorie ou recherche).",
+      "Ouvrez Articles pour voir la liste (filtrable par statut, domaine ou recherche).",
       "Cliquez sur un article pour l’éditer, puis enregistrez vos changements.",
       "Pour le retirer du site public : archivez-le. Vous pourrez le republier plus tard.",
       "La suppression définitive n’est possible que pour un article déjà archivé.",
@@ -144,14 +144,14 @@ const SHARED_ARTICLES: HelpArticle[] = [
     category: "Documents",
     title: "Ajouter un document PDF",
     summary:
-      "Uploadez un PDF, choisissez sa visibilité, puis associez-le éventuellement à un article ou un projet.",
+      "Uploadez un PDF, choisissez sa visibilité, puis associez-le éventuellement à un article ou un domaine.",
     keywords: ["document", "pdf", "upload", "téléverser", "fichier", "cloudinary"],
     steps: [
       "Ouvrez Documents.",
       "Renseignez le titre (et un descriptif optionnel).",
       "Choisissez le niveau de visibilité (voir la fiche « Qui peut voir un document »).",
       "Sélectionnez le fichier PDF (25 Mo max) et validez l’upload.",
-      "Si besoin, liez le document à un article et/ou un projet depuis la liste.",
+      "Si besoin, liez le document à un article et/ou un domaine depuis la liste.",
     ],
     tips: [
       "Un titre explicite facilite la recherche dans la bibliothèque publique.",
@@ -257,7 +257,7 @@ const ADMIN_ONLY_ARTICLES: HelpArticle[] = [
     keywords: ["tous", "auteurs", "modérer article", "éditer", "admin"],
     steps: [
       "Ouvrez Articles : la liste affiche tous les contenus, pas seulement les vôtres.",
-      "Filtrez par statut, catégorie ou recherche pour retrouver un article.",
+      "Filtrez par statut, domaine ou recherche pour retrouver un article.",
       "Éditez, archivez ou republiez n’importe quel article si nécessaire.",
     ],
     tips: [
@@ -269,41 +269,20 @@ const ADMIN_ONLY_ARTICLES: HelpArticle[] = [
   {
     id: "admin-categories",
     category: "Administration",
-    title: "Gérer les catégories",
+    title: "Gérer les domaines",
     summary:
-      "Créez et organisez les catégories utilisées pour classer les articles du magazine.",
-    keywords: ["catégorie", "thématique", "classer", "slug", "couleur", "ordre"],
+      "Créez et organisez les domaines utilisés pour classer les articles du magazine.",
+    keywords: ["domaine", "thématique", "classer", "slug", "couleur", "ordre", "catégorie"],
     steps: [
-      "Ouvrez Catégories dans le menu Contenu.",
-      "Ajoutez une catégorie (nom, description, couleur).",
+      "Ouvrez Domaines dans le menu Contenu.",
+      "Ajoutez un domaine (nom, description, couleur).",
       "Réordonnez l’apparition en glissant-déposant les lignes du tableau.",
     ],
     tips: [
-      "Évitez de supprimer une catégorie encore liée à des articles publiés.",
+      "Évitez de supprimer un domaine encore lié à des articles publiés.",
       "L’ordre du tableau correspond à l’ordre d’affichage sur le site public.",
     ],
-    links: [{ href: "/admin/categories", label: "Catégories" }],
-  },
-  {
-    id: "admin-projets",
-    category: "Administration",
-    title: "Gérer les projets",
-    summary:
-      "Créez et mettez à jour les projets MEEED (page dédiée, résumé, image, lien de don).",
-    keywords: ["projet", "tracteur", "arrosage", "énergie", "don", "helloasso", "ordre"],
-    steps: [
-      "Ouvrez Projets → créez un nouveau projet ou éditez un existant.",
-      "Renseignez titre, résumé, description, image de couverture et lien de don si besoin.",
-      "Associez le projet à une catégorie, activez-le, puis réordonnez-le par glisser-déposer dans le tableau.",
-    ],
-    tips: [
-      "Un projet inactif n’apparaît plus sur le site public.",
-      "L’ordre du tableau (sans filtres) correspond à l’ordre d’affichage sur le site public.",
-    ],
-    links: [
-      { href: "/admin/projets", label: "Projets" },
-      { href: "/admin/projets/nouveau", label: "Nouveau projet" },
-    ],
+    links: [{ href: "/admin/categories", label: "Domaines" }],
   },
   {
     id: "admin-utilisateurs",
@@ -393,6 +372,52 @@ const ADMIN_ONLY_ARTICLES: HelpArticle[] = [
       "Les contributeurs ne le verront ni dans Documents admin, ni sur le site public.",
     ],
     links: [{ href: "/admin/documents", label: "Documents" }],
+  },
+  {
+    id: "admin-cloudinary",
+    category: "Administration",
+    title: "Compte Cloudinary : accès et espace restant",
+    summary:
+      "Les images et PDF du site sont hébergés chez Cloudinary. Le quota (stockage, bande passante, transformations) se consulte dans la console Cloudinary, pas dans le back-office MEEED.",
+    keywords: [
+      "cloudinary",
+      "quota",
+      "espace",
+      "stockage",
+      "bande passante",
+      "crédits",
+      "console",
+      "dashboard",
+      "compte",
+      "plan",
+      "usage",
+      "limite",
+      "médias",
+    ],
+    steps: [
+      "Ouvrez la console Cloudinary : https://console.cloudinary.com — connectez-vous avec le compte association (identifiants partagés entre admins techniques, hors MEEED).",
+      "Sur le Dashboard (Home → Dashboard), consultez l’usage des 30 derniers jours : stockage utilisé, bande passante livrée et transformations (crédits du plan).",
+      "Pour le détail et l’historique : Home → Usage Reports. Pour le plan et les plafonds du mois : Settings → Billing / Plan details.",
+      "Vérifiez que vous êtes sur le bon « Product environment » (cloud de prod vs. cloud de dev) via le sélecteur en haut de la console — le cloud name correspond à CLOUDINARY_CLOUD_NAME côté serveur.",
+      "Si le quota approche la limite : libérez de l’espace (supprimer médias inutiles dans Media Library, ou contenus orphelins), ou envisagez un upgrade de plan depuis Billing.",
+    ],
+    tips: [
+      "L’espace restant n’apparaît pas dans /admin : seul le tableau de bord Cloudinary affiche le quota.",
+      "L’usage affiché sur 30 jours est une fenêtre glissante (pas un reset au 1er du mois).",
+      "Ne partagez jamais CLOUDINARY_API_SECRET hors des admins techniques ; les clés vivent dans les variables d’environnement (Heroku / .env local).",
+      "En production, le health check /api/health peut confirmer que Cloudinary répond, sans indiquer le quota restant.",
+    ],
+    links: [
+      {
+        href: "https://console.cloudinary.com/app/home/dashboard",
+        label: "Dashboard Cloudinary",
+      },
+      {
+        href: "https://console.cloudinary.com/app/home/usage-reports",
+        label: "Rapports d’usage",
+      },
+      { href: "/api/health", label: "Health check du site" },
+    ],
   },
 ];
 

@@ -15,7 +15,6 @@ type FilterOption = { id: string; label: string; slug?: string };
 
 type DocumentsAdvancedSearchProps = {
   params: DocumentsListingParams;
-  projects: FilterOption[];
   categories: FilterOption[];
   uploaders: FilterOption[];
   className?: string;
@@ -23,8 +22,7 @@ type DocumentsAdvancedSearchProps = {
 
 type FilterDraft = {
   q: string;
-  linked: "" | "article" | "project" | "no";
-  project: string;
+  linked: "" | "article" | "no";
   category: string;
   user: string;
   from: string;
@@ -34,7 +32,6 @@ type FilterDraft = {
 const emptyDraft: FilterDraft = {
   q: "",
   linked: "",
-  project: "",
   category: "",
   user: "",
   from: "",
@@ -45,7 +42,6 @@ function draftFromParams(params: DocumentsListingParams): FilterDraft {
   return {
     q: params.q ?? "",
     linked: params.linked ?? "",
-    project: params.projectSlug ?? "",
     category: params.categorySlug ?? "",
     user: params.uploaderId ?? "",
     from: params.dateFrom ?? "",
@@ -57,7 +53,6 @@ function draftToParams(draft: FilterDraft): DocumentsListingParams {
   return {
     q: draft.q.trim() || null,
     linked: draft.linked || null,
-    projectSlug: draft.project || null,
     categorySlug: draft.category || null,
     uploaderId: draft.user || null,
     dateFrom: draft.from || null,
@@ -102,7 +97,6 @@ function ClearIcon({ className }: { className?: string }) {
 
 export function DocumentsAdvancedSearch({
   params,
-  projects,
   categories,
   uploaders,
   className,
@@ -247,38 +241,21 @@ export function DocumentsAdvancedSearch({
               >
                 <option value="">Tous</option>
                 <option value="article">Liés à un article</option>
-                <option value="project">Liés à un projet</option>
                 <option value="no">Autonomes</option>
               </select>
             </label>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-semibold text-primary-dark">Projet</span>
-                <select
-                  value={draft.project}
-                  onChange={(event) => updateDraft("project", event.target.value)}
-                  className={fieldClassName}
-                >
-                  <option value="">Tous les projets</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.slug ?? ""}>
-                      {project.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-primary-dark">
-                  Catégorie
+                  Domaine
                 </span>
                 <select
                   value={draft.category}
                   onChange={(event) => updateDraft("category", event.target.value)}
                   className={fieldClassName}
                 >
-                  <option value="">Toutes les catégories</option>
+                  <option value="">Tous les domaines</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.slug ?? ""}>
                       {category.label}

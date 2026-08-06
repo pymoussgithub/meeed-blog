@@ -71,7 +71,7 @@ async function main() {
 
   const categories = await prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
   if (categories.length === 0) {
-    throw new Error("Aucune catégorie trouvée. Lancez d’abord le seed principal.");
+    throw new Error("Aucun domaine trouvé. Lancez d’abord le seed principal.");
   }
 
   const shuffledTitles = [...TITLES].sort(() => Math.random() - 0.5).slice(0, 10);

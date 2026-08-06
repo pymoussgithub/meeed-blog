@@ -39,10 +39,6 @@ export function buildImageFolder(purpose: "cover" | "inline", articleId?: string
     : `meeed/articles/inline/${id}`;
 }
 
-export function buildProjectImageFolder(projectId?: string) {
-  return `meeed/projects/covers/${projectId ?? "draft"}`;
-}
-
 export function buildDocumentFolder(documentId?: string) {
   return `meeed/documents/${documentId ?? "draft"}`;
 }
@@ -77,10 +73,19 @@ type TransformOptions = {
   format?: string;
 };
 
+/**
+ * URL de livraison publique — seul CLOUDINARY_CLOUD_NAME est requis.
+ * Ne pas appeler configureCloudinary() ici : les pages SSR ne doivent pas
+ * planter si API_KEY/SECRET manquent alors que le cloud name est présent.
+ */
 export function getCloudinaryUrl(publicId: string, options: TransformOptions = {}) {
-  configureCloudinary();
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    throw new Error("Variable Cloudinary manquante (CLOUDINARY_CLOUD_NAME).");
+  }
 
   return cloudinary.url(publicId, {
+    cloud_name: cloudName,
     secure: true,
     transformation: [
       {
@@ -111,8 +116,21 @@ export function getCoverHeroUrl(publicId: string) {
   return getCloudinaryUrl(publicId, { width: 1200, height: 675 });
 }
 
-export function getCoverProjectUrl(publicId: string) {
-  return getCloudinaryUrl(publicId, { width: 960, height: 600, crop: "fit" });
+/** Résout une URL de couverture sans faire planter le rendu RSC. */
+export function resolveCoverUrl(
+  publicId: string | null | undefined,
+  fallbackUrl: string | null | undefined,
+  variant: "card" | "hero" = "card",
+): string | null {
+  if (publicId) {
+    try {
+      if (variant === "hero") return getCoverHeroUrl(publicId);
+      return getCoverCardUrl(publicId);
+    } catch {
+      // Cloudinary indisponible / mal configuré — fallback éventuel
+    }
+  }
+  return fallbackUrl ?? null;
 }
 
 function normalizeDocumentFormat(format?: string) {

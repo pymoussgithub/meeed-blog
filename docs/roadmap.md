@@ -340,7 +340,7 @@
 
 - [ ] Créer `src/app/(public)/a-propos/page.tsx` (reprise contenu site actuel)
 - [ ] Créer `src/app/(public)/contact/page.tsx` (email, formulaire simple ou lien)
-- [ ] Créer `src/app/(public)/projets/page.tsx` (hub projets → liens catégories/articles)
+- [ ] Créer `src/app/(public)/domaines/page.tsx` (hub domaines → liens catégories/articles)
 
 ### 6.7 Recherche
 
@@ -395,7 +395,7 @@
 
 - [ ] Configurer les redirections 301 dans `next.config.ts` :
   - [ ] `/a-propos-de` → `/a-propos`
-  - [ ] `/nos-projets` → `/projets`
+  - [ ] `/nos-projets` → `/domaines`
   - [ ] `/contactez-nous` → `/contact`
   - [ ] `/tracteur-retrofit` → `/c/tracteur` (ou article dédié)
   - [ ] `/arrosage-etp` → `/c/arrosage`
@@ -465,12 +465,12 @@
 
 ### 9.1 Contenu initial
 
-- [ ] Rédiger et publier les 3 premiers articles (un par projet phare) :
+- [ ] Rédiger et publier les 3 premiers articles (un par domaine phare) :
   - [ ] Tracteur électrique en rétrofit
   - [ ] Arrosage automatique sur ETp
   - [ ] Chambre fraîche adiabatique
 - [ ] Migrer les textes des pages institutionnelles
-- [ ] Uploader les PDF existants (dossiers projets)
+- [ ] Uploader les PDF existants (dossiers domaines)
 - [ ] Vérifier toutes les images et liens
 
 ### 9.2 Tests utilisateur
@@ -517,7 +517,7 @@ Ces fonctionnalités sont notées pour une événuelle version ultérieure :
 - [ ] Commentaires modérés
 - [ ] Version anglaise
 - [ ] Export PDF d'un article
-- [ ] Galerie photos par projet
+- [ ] Galerie photos par domaine
 - [ ] Intégration vidéo (YouTube embed + hébergement)
 - [ ] PWA (installation sur mobile)
 - [ ] Mode hors-ligne (service worker)

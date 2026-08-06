@@ -14,7 +14,6 @@ import {
 } from "@/lib/articles-listing";
 import { toCarouselArticle } from "@/lib/article-carousel";
 import {
-  getCachedActiveProjectsForFilters,
   getCachedActualitesListing,
   getCachedAllCategories,
   getCachedPublishedArticleAuthors,
@@ -29,7 +28,6 @@ type PageProps = {
     page?: string;
     q?: string;
     category?: string;
-    project?: string;
     author?: string;
     from?: string;
     to?: string;
@@ -40,7 +38,7 @@ type PageProps = {
 export const metadata: Metadata = buildPageMetadata({
   title: "Nos articles",
   description:
-    "Actualités de l'association MEEED et articles liés à nos projets de transition agricole.",
+    "Actualités de l'association MEEED et articles liés à nos domaines de transition agricole.",
   path: "/actualites",
 });
 
@@ -52,21 +50,18 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
 
   let sections: ArticlesCategorySection[] = [];
   let categories: Awaited<ReturnType<typeof getCachedAllCategories>> = [];
-  let projects: Awaited<ReturnType<typeof getCachedActiveProjectsForFilters>> = [];
   let authors: Awaited<ReturnType<typeof getCachedPublishedArticleAuthors>> = [];
   let total = 0;
   let dbError = false;
 
   try {
-    const [categoryList, projectList, authorList, listing] = await Promise.all([
+    const [categoryList, authorList, listing] = await Promise.all([
       getCachedAllCategories(),
-      getCachedActiveProjectsForFilters(),
       getCachedPublishedArticleAuthors(),
       getCachedActualitesListing(filters),
     ]);
 
     categories = categoryList;
-    projects = projectList;
     authors = authorList;
     total = listing.total;
     const articleList = listing.articles;
@@ -78,9 +73,6 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
     sections = filteredCategories
       .map((category) => {
         const categoryArticles = articleList.filter((article) => {
-          if (article.project?.category?.id === category.id) {
-            return true;
-          }
           return article.categories.some(({ category: linked }) => linked.id === category.id);
         });
 
@@ -129,7 +121,6 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
           <Suspense fallback={<div className="mb-8 h-14 animate-pulse rounded-xl bg-gray-100" />}>
             <ArticlesToolbar
               categories={categories.map(({ id, name, slug }) => ({ id, name, slug }))}
-              projects={projects.map(({ id, title, slug }) => ({ id, title, slug }))}
               authors={authors.map(({ id, name }) => ({ id, name }))}
               total={total}
             />

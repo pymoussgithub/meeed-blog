@@ -42,14 +42,6 @@ type CategoryOption = {
   slug: string;
 };
 
-type ProjectOption = {
-  id: string;
-  title: string;
-  slug: string;
-  color: string | null;
-  categoryName: string;
-};
-
 type ForumCategoryOption = {
   id: string;
   name: string;
@@ -64,7 +56,6 @@ type PendingLinkedTopicDraft = {
 
 type ArticleFormProps = {
   categories: CategoryOption[];
-  projects: ProjectOption[];
   articleId?: string;
   initialData?: Partial<ArticleFormInput>;
   isNew?: boolean;
@@ -86,7 +77,6 @@ const defaultForm: ArticleFormInput = {
   coverImageUrl: null,
   coverImagePublicId: null,
   status: "DRAFT",
-  projectId: null,
   categoryIds: [],
 };
 
@@ -97,7 +87,6 @@ function hasMeaningfulDraftContent(form: ArticleFormInput) {
     form.slug.trim().length > 0 ||
     !isHtmlContentEmpty(form.content) ||
     Boolean(form.coverImageUrl) ||
-    Boolean(form.projectId) ||
     form.categoryIds.length > 0
   );
 }
@@ -130,7 +119,6 @@ function FormSection({
 
 export function ArticleForm({
   categories,
-  projects,
   articleId,
   initialData,
   isNew = false,
@@ -372,13 +360,6 @@ export function ArticleForm({
     }));
   };
 
-  const selectProject = (projectId: string) => {
-    setForm((current) => ({
-      ...current,
-      projectId: current.projectId === projectId ? null : projectId,
-    }));
-  };
-
   const handleSaveDraft = async () => {
     await persistDraft({ manual: true });
   };
@@ -407,7 +388,11 @@ export function ArticleForm({
     }
 
     emitTourSuccess({ target: "article.form.publish" });
-    setToast({ message: "Article publié !", variant: "success" });
+    const wasAlreadyPublished = form.status === "PUBLISHED";
+    setToast({
+      message: wasAlreadyPublished ? "Article mis à jour !" : "Article publié !",
+      variant: "success",
+    });
     if (!currentArticleId) {
       const linkError = await attachDeferredForumLinks(result.data.id);
       if (linkError) {
@@ -616,13 +601,8 @@ export function ArticleForm({
             tone: excerptLength > 0 && excerptLength <= 160 ? "accent" : "default",
           },
           {
-            label: "Projet",
-            value: form.projectId ? "Oui" : "—",
-            tone: form.projectId ? "accent" : "muted",
-          },
-          {
             label: "Visuel",
-            value: form.coverImageUrl ? "Ajouté" : "Manquant",
+            value: form.coverImageUrl ? "Ajouté" : "Optionnel",
             tone: form.coverImageUrl ? "accent" : "muted",
           },
         ]}
@@ -644,9 +624,9 @@ export function ArticleForm({
             helper: "Idéalement entre 120 et 160 caractères pour l'aperçu social.",
           },
           {
-            label: "Publication complète",
-            done: (Boolean(form.projectId) || form.categoryIds.length > 0) && Boolean(form.coverImageUrl),
-            helper: "Un projet ou une thématique, et une image de couverture.",
+            label: "Domaine associé",
+            done: form.categoryIds.length > 0,
+            helper: "Au moins un domaine est nécessaire pour classer l'article.",
           },
         ]}
         sidebar={
@@ -655,7 +635,7 @@ export function ArticleForm({
             <ul className="mt-3 space-y-2 text-xs leading-relaxed text-primary/60">
               <li>Commencez par une promesse claire dans le titre et le résumé.</li>
               <li>Structurez le corps avec des intertitres H2/H3 pour faciliter la lecture.</li>
-              <li>Associez un projet (ou une thématique) et l&apos;image avant publication.</li>
+              <li>Associez au moins un domaine avant publication. L&apos;image de couverture est optionnelle.</li>
             </ul>
           </div>
         }
@@ -684,35 +664,12 @@ export function ArticleForm({
 
           <div className="grid gap-4 md:grid-cols-2">
             <FormSection
-              title="Association"
-              description="Projet et/ou thématique — au moins un requis pour publier"
+              title="Domaines"
+              description="Au moins un domaine est requis pour publier"
               data-tour-id="article.form.categories"
             >
-              {projects.length > 0 ? (
-                <div className="mb-3">
-                  <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-primary/45">
-                    Projet
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {projects.map((project) => (
-                      <CategoryChip
-                        key={project.id}
-                        label={project.title}
-                        selected={form.projectId === project.id}
-                        onClick={() => selectProject(project.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
               {categories.length > 0 ? (
                 <div>
-                  {projects.length > 0 ? (
-                    <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-primary/45">
-                      Thématiques
-                    </p>
-                  ) : null}
                   <div className="flex flex-wrap gap-1.5">
                     {categories.map((category) => (
                       <CategoryChip
@@ -729,7 +686,7 @@ export function ArticleForm({
 
             <FormSection
               title="Image de couverture"
-              description="Obligatoire pour publier · format 16:9"
+              description="Optionnelle · upload ou bibliothèque libre · 16:9"
               data-tour-id="article.form.cover"
             >
               <ImageUpload
@@ -959,6 +916,36 @@ export function ArticleForm({
           ) : null}
 
           {forumLinksPanel}
+
+          <FormSection
+            title="Lier un document à cet article"
+            description="Les PDF se rattachent depuis la bibliothèque Documents, pas depuis ce formulaire."
+          >
+            <ol className="list-decimal space-y-2 pl-4 text-sm text-primary/75">
+              <li>
+                Enregistrez d&apos;abord cet article (brouillon ou publication) pour qu&apos;il
+                apparaisse dans la liste des associations.
+              </li>
+              <li>
+                Ouvrez{" "}
+                <Link
+                  href="/admin/documents/nouveau"
+                  className="font-medium text-accent-dark hover:underline"
+                >
+                  Documents → Nouveau document
+                </Link>{" "}
+                (ou l&apos;édition d&apos;un PDF déjà uploadé).
+              </li>
+              <li>
+                Dans la section <span className="font-medium text-primary-dark">Associations</span>,
+                choisissez cet article, puis validez.
+              </li>
+            </ol>
+            <p className="mt-3 text-xs text-primary/55">
+              Une fois lié, le document s&apos;affiche sur la page publique de l&apos;article
+              (selon sa visibilité).
+            </p>
+          </FormSection>
         </div>
       </ComposerPanel>
 

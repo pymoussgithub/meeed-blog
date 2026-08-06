@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 
-const ADMIN_ONLY_PREFIXES = ["/admin/utilisateurs", "/admin/categories", "/admin/projets"];
+const ADMIN_ONLY_PREFIXES = ["/admin/utilisateurs", "/admin/categories"];
 
 export const authConfig = {
   trustHost: true,

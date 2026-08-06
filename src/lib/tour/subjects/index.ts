@@ -4,7 +4,6 @@ import { adminDocSensible } from "./admin-doc-sensible";
 import { adminForumEpingler } from "./admin-forum-epingler";
 import { adminForumModeration } from "./admin-forum-moderation";
 import { adminForumRubriques } from "./admin-forum-rubriques";
-import { adminProjets } from "./admin-projets";
 import { adminTousArticles } from "./admin-tous-articles";
 import { adminUtilisateurs } from "./admin-utilisateurs";
 import { contribAide } from "./contrib-aide";
@@ -31,7 +30,6 @@ import { pubDocuments } from "./pub-documents";
 import { pubForumLire } from "./pub-forum-lire";
 import { pubForumRecherche } from "./pub-forum-recherche";
 import { pubLireArticle } from "./pub-lire-article";
-import { pubProjets } from "./pub-projets";
 
 /** Catalogue des sujets du tutoriel interactif. */
 export const ALL_SUBJECTS: TourSubject[] = [
@@ -40,7 +38,6 @@ export const ALL_SUBJECTS: TourSubject[] = [
   pubArticles,
   pubLireArticle,
   pubCategories,
-  pubProjets,
   pubDocuments,
   pubForumLire,
   pubForumRecherche,
@@ -65,7 +62,6 @@ export const ALL_SUBJECTS: TourSubject[] = [
   // Admin
   adminTousArticles,
   adminCategories,
-  adminProjets,
   adminUtilisateurs,
   adminForumRubriques,
   adminForumModeration,
@@ -113,14 +109,12 @@ export const CONTEXT_SUBJECTS: Record<string, string[]> = {
   "/actualites": ["pub-articles", "pub-lire-article", "pub-categories"],
   "/documents": ["pub-documents", "contrib-document"],
   "/forum": ["pub-forum-lire", "pub-forum-recherche", "contrib-forum-sujet"],
-  "/projets": ["pub-projets"],
   "/contact": ["pub-contact"],
   "/admin": ["contrib-dashboard", "contrib-publier-article"],
   "/admin/articles": ["contrib-publier-article", "contrib-brouillon", "admin-tous-articles"],
   "/admin/documents": ["contrib-document", "contrib-visibilite-doc", "admin-doc-sensible"],
   "/admin/documents/nouveau": ["contrib-document", "admin-doc-sensible"],
   "/admin/categories": ["admin-categories"],
-  "/admin/projets": ["admin-projets"],
   "/admin/utilisateurs": ["admin-utilisateurs"],
   "/admin/forum": ["admin-forum-moderation", "admin-forum-rubriques"],
 };

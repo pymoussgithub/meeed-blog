@@ -111,7 +111,6 @@ export default async function AdminDashboardPage({ searchParams }: PageProps) {
               visibilityLabel: getDocumentVisibilityLabel(document.visibility),
               createdAt: document.createdAt,
               article: document.article,
-              project: document.project,
               uploadedBy: { name: document.uploadedBy.name },
             }))}
           />

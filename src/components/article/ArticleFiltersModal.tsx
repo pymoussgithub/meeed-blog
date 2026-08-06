@@ -12,12 +12,6 @@ type Category = {
   slug: string;
 };
 
-type Project = {
-  id: string;
-  title: string;
-  slug: string;
-};
-
 type Author = {
   id: string;
   name: string;
@@ -27,7 +21,6 @@ type ArticleFiltersModalProps = {
   open: boolean;
   onClose: () => void;
   categories: Category[];
-  projects: Project[];
   authors: Author[];
   basePath?: string;
 };
@@ -36,7 +29,6 @@ type FilterDraft = {
   q: string;
   type: string;
   category: string;
-  project: string;
   author: string;
   from: string;
   to: string;
@@ -46,7 +38,6 @@ const emptyDraft: FilterDraft = {
   q: "",
   type: "",
   category: "",
-  project: "",
   author: "",
   from: "",
   to: "",
@@ -57,7 +48,6 @@ function draftFromParams(params: URLSearchParams): FilterDraft {
     q: params.get("q") ?? "",
     type: params.get("type") ?? "",
     category: params.get("category") ?? "",
-    project: params.get("project") ?? "",
     author: params.get("author") ?? "",
     from: params.get("from") ?? "",
     to: params.get("to") ?? "",
@@ -72,7 +62,6 @@ function countDraftCriteria(draft: FilterDraft): number {
   if (draft.q.trim()) count += 1;
   if (draft.type) count += 1;
   if (draft.category) count += 1;
-  if (draft.project) count += 1;
   if (draft.author) count += 1;
   if (draft.from) count += 1;
   if (draft.to) count += 1;
@@ -83,7 +72,6 @@ export function ArticleFiltersModal({
   open,
   onClose,
   categories,
-  projects,
   authors,
   basePath = "/actualites",
 }: ArticleFiltersModalProps) {
@@ -109,7 +97,6 @@ export function ArticleFiltersModal({
     if (draft.q.trim()) params.set("q", draft.q.trim());
     if (draft.type) params.set("type", draft.type);
     if (draft.category) params.set("category", draft.category);
-    if (draft.project) params.set("project", draft.project);
     if (draft.author) params.set("author", draft.author);
     if (draft.from) params.set("from", draft.from);
     if (draft.to) params.set("to", draft.to);
@@ -192,7 +179,6 @@ export function ArticleFiltersModal({
                 { value: "", label: "Tous" },
                 { value: "news", label: "Actualités" },
                 { value: "formation", label: "Formations" },
-                { value: "project", label: "Projets" },
               ].map((option) => (
                 <button
                   key={option.value || "all"}
@@ -214,14 +200,14 @@ export function ArticleFiltersModal({
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold text-primary-dark">
-                Catégorie
+                Domaine
               </span>
               <select
                 value={draft.category}
                 onChange={(event) => updateDraft("category", event.target.value)}
                 className={selectClassName}
               >
-                <option value="">Toutes les catégories</option>
+                <option value="">Tous les domaines</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.slug}>
                     {category.name}
@@ -230,21 +216,6 @@ export function ArticleFiltersModal({
               </select>
             </label>
 
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-primary-dark">Projet</span>
-              <select
-                value={draft.project}
-                onChange={(event) => updateDraft("project", event.target.value)}
-                className={selectClassName}
-              >
-                <option value="">Tous les projets</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.slug}>
-                    {project.title}
-                  </option>
-                ))}
-              </select>
-            </label>
           </div>
 
           <label className="block">

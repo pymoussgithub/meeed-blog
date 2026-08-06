@@ -20,7 +20,7 @@
 | Liste des articles (public) | `src/app/(public)/actualites/page.tsx`, `src/lib/articles-listing.ts` |
 | Page article individuel | `src/app/(public)/a/[slug]/page.tsx`, `src/components/article/*` |
 | Page catégorie | `src/app/(public)/c/[slug]/page.tsx` |
-| Page projets (public) | `src/app/(public)/projets/page.tsx`, `src/components/projects/*` |
+| Page domaines (public) | `src/app/(public)/domaines/page.tsx`, `src/components/domains/*` |
 | Page documents (public) | `src/app/(public)/documents/page.tsx`, `src/lib/documents-listing.ts`, `src/components/document/DocumentList.tsx` |
 | Page contact | `src/app/(public)/contact/page.tsx`, `src/components/contact/ContactForm.tsx` |
 | Page don | `src/app/(public)/don/page.tsx` |
@@ -34,7 +34,7 @@
 | Dashboard admin | `src/app/admin/(protected)/page.tsx` |
 | CRUD articles (admin) | `src/app/admin/(protected)/articles/*`, `src/components/admin/ArticleForm.tsx`, `src/actions/article.actions.ts`, `src/lib/services/article.service.ts` |
 | Éditeur riche (TipTap) | `src/components/admin/TipTapEditor.tsx`, `src/lib/editor-utils.ts`, `src/lib/sanitize.ts` |
-| CRUD projets (admin) | `src/app/admin/(protected)/projets/*`, `src/components/admin/ProjectForm.tsx`, `src/actions/project.actions.ts`, `src/lib/services/project.service.ts` |
+| CRUD domaines (admin) | `src/app/admin/(protected)/domaines/*`, `src/components/admin/DomainForm.tsx`, `src/actions/domain.actions.ts`, `src/lib/services/domain.service.ts` |
 | CRUD catégories (admin) | `src/app/admin/(protected)/categories/page.tsx`, `src/components/admin/CategoriesManager.tsx`, `src/actions/category.actions.ts` |
 | Gestion documents (admin) | `src/app/admin/(protected)/documents/page.tsx`, `src/components/admin/DocumentsManager.tsx`, `src/actions/document.actions.ts` |
 | Gestion utilisateurs (admin) | `src/app/admin/(protected)/utilisateurs/page.tsx`, `src/components/admin/UsersManager.tsx`, `src/actions/user.actions.ts` |
@@ -71,7 +71,7 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | `actualites/page.tsx` | Liste articles |
 | `a/[slug]/page.tsx` | Article détail |
 | `c/[slug]/page.tsx` | Articles par catégorie |
-| `projets/page.tsx` | Liste projets |
+| `domaines/page.tsx` | Liste domaines |
 | `documents/page.tsx` | Bibliothèque PDF |
 | `a-propos/page.tsx` | Présentation association |
 | `contact/page.tsx` | Formulaire contact |
@@ -90,9 +90,9 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | `(protected)/articles/page.tsx` | Liste articles |
 | `(protected)/articles/nouveau/page.tsx` | Créer article |
 | `(protected)/articles/[id]/page.tsx` | Éditer article |
-| `(protected)/projets/page.tsx` | Liste projets |
-| `(protected)/projets/nouveau/page.tsx` | Créer projet |
-| `(protected)/projets/[id]/page.tsx` | Éditer projet |
+| `(protected)/domaines/page.tsx` | Liste domaines |
+| `(protected)/domaines/nouveau/page.tsx` | Créer domaine |
+| `(protected)/domaines/[id]/page.tsx` | Éditer domaine |
 | `(protected)/categories/page.tsx` | Catégories |
 | `(protected)/documents/page.tsx` | Documents PDF |
 | `(protected)/utilisateurs/page.tsx` | Comptes admin/contributeur |
@@ -105,7 +105,7 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | Fichier | Rôle |
 |---------|------|
 | `article.actions.ts` | Créer/modifier/publier/supprimer articles |
-| `project.actions.ts` | CRUD projets |
+| `domain.actions.ts` | CRUD domaines |
 | `category.actions.ts` | CRUD catégories |
 | `document.actions.ts` | CRUD documents |
 | `user.actions.ts` | CRUD utilisateurs |
@@ -119,7 +119,7 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | Fichier | Rôle |
 |---------|------|
 | `article.service.ts` | Requêtes Prisma articles |
-| `project.service.ts` | Requêtes Prisma projets |
+| `domain.service.ts` | Requêtes Prisma domaines |
 | `category.service.ts` | Requêtes Prisma catégories |
 | `document.service.ts` | Requêtes Prisma documents |
 | `user.service.ts` | Requêtes Prisma utilisateurs |
@@ -159,7 +159,7 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | Fichier | Valide |
 |---------|--------|
 | `article.ts` | Formulaires articles |
-| `project.ts` | Formulaires projets |
+| `domain.ts` | Formulaires domaines |
 | `category.ts` | Formulaires catégories |
 | `document.ts` | Formulaires documents |
 | `user.ts` | Formulaires utilisateurs |
@@ -174,10 +174,10 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | `components/home/` | Sections accueil |
 | `components/article/` | Cartes, contenu, filtres articles |
 | `components/articles/` | Variantes liste (compact, sections) |
-| `components/projects/` | Cartes et liste projets |
+| `components/domains/` | Cartes et liste domaines |
 | `components/document/` | Liste documents public |
 | `components/admin/ArticleForm.tsx` | Formulaire article complet |
-| `components/admin/ProjectForm.tsx` | Formulaire projet |
+| `components/admin/DomainForm.tsx` | Formulaire domaine |
 | `components/admin/TipTapEditor.tsx` | Éditeur WYSIWYG |
 | `components/admin/CategoriesManager.tsx` | Gestion catégories |
 | `components/admin/DocumentsManager.tsx` | Gestion documents |
@@ -190,7 +190,7 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 
 | Fichier | Rôle |
 |---------|------|
-| `prisma/schema.prisma` | Modèles : User, Article, Category, Project, Document |
+| `prisma/schema.prisma` | Modèles : User, Article, Category, Domain, Document |
 | `prisma/seed.ts` | Admin par défaut + catégories initiales |
 | `src/lib/prisma.ts` | Client Prisma singleton |
 | `src/lib/content/site.ts` | Contact, liens HelloAsso |
@@ -214,8 +214,8 @@ Services (src/lib/services/) → logique métier + requêtes Prisma
 | **User** | email, rôle (ADMIN/CONTRIBUTEUR), mot de passe hashé |
 | **Article** | titre, slug, contenu HTML, statut (DRAFT/PUBLISHED/ARCHIVED), image couverture |
 | **Category** | nom, slug, couleur, ordre |
-| **Project** | titre, slug, résumé, lien don, image, lié à 1 catégorie |
-| **Document** | PDF Cloudinary, lié optionnellement à article ou projet |
+| **Domain** | titre, slug, résumé, lien don, image, lié à 1 catégorie |
+| **Document** | PDF Cloudinary, lié optionnellement à article ou domaine |
 
 ---
 

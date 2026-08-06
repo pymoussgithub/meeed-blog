@@ -1,20 +1,13 @@
 import Image from "next/image";
-import { getCoverHeroUrl } from "@/lib/cloudinary";
+import { resolveCoverUrl } from "@/lib/cloudinary";
 import type { ArticleWithRelations } from "@/lib/services/article.service";
 
 type ArticleHeroProps = {
   article: ArticleWithRelations;
 };
 
-function getCoverUrl(article: ArticleWithRelations) {
-  if (article.coverImagePublicId) {
-    return getCoverHeroUrl(article.coverImagePublicId);
-  }
-  return article.coverImageUrl;
-}
-
 export function ArticleHero({ article }: ArticleHeroProps) {
-  const coverUrl = getCoverUrl(article);
+  const coverUrl = resolveCoverUrl(article.coverImagePublicId, article.coverImageUrl, "hero");
 
   if (!coverUrl) {
     return null;
@@ -29,6 +22,7 @@ export function ArticleHero({ article }: ArticleHeroProps) {
         className="object-cover"
         sizes="(max-width: 768px) 100vw, 768px"
         priority
+        referrerPolicy="no-referrer"
       />
     </div>
   );

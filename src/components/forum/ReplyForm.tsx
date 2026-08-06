@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createReplyAction } from "@/actions/forum.actions";
 import { TipTapEditor } from "@/components/admin/TipTapEditor";
 import { ComposerPanel } from "@/components/editor/ComposerPanel";
+import { ForumComposerHelp } from "@/components/forum/ForumComposerHelp";
 import { Button } from "@/components/ui/Button";
 import { DialogProvider } from "@/components/ui/DialogProvider";
 import { Toast } from "@/components/ui/Toast";
@@ -95,16 +96,16 @@ function ReplyFormInner({ topicId }: { topicId: string }) {
           {
             label: "Mise en forme lisible",
             done: hasBody,
-            helper: "Utilisez paragraphes, listes ou liens pour rendre la lecture plus simple.",
+            helper: "Utilisez paragraphes, listes, liens ou un PDF joint pour rendre la lecture plus simple.",
           },
         ]}
         sidebar={
           <div className="rounded-2xl border border-primary/10 bg-bg-soft/35 p-4">
-            <h3 className="text-sm font-semibold text-primary-dark">Conseils de reponse</h3>
+            <h3 className="text-sm font-semibold text-primary-dark">Conseils de réponse</h3>
             <ul className="mt-3 space-y-2 text-xs leading-relaxed text-primary/60">
-              <li>Expliquez ce qui a fonctionne ou non, pas seulement la conclusion.</li>
-              <li>Si vous citez une ressource, ajoutez un lien ou un exemple.</li>
-              <li>Gardez un ton direct et bienveillant pour encourager l'echange.</li>
+              <li>Expliquez ce qui a fonctionné ou non, pas seulement la conclusion.</li>
+              <li>Joignez un PDF via l&apos;icône document de la barre d&apos;outils si utile.</li>
+              <li>Gardez un ton direct et bienveillant pour encourager l&apos;échange.</li>
             </ul>
           </div>
         }
@@ -115,17 +116,21 @@ function ReplyFormInner({ topicId }: { topicId: string }) {
         }
       >
         <div className="rounded-xl border border-gray-200 bg-white">
-          <div className="border-b border-gray-100 px-4 py-3">
-            <p className="text-sm font-semibold text-primary-dark">Contenu de la reponse</p>
-            <p className="mt-1 text-xs text-primary/55">
-              Structurez votre message avec quelques paragraphes ou une liste si vous detaillez des etapes.
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-primary-dark">Contenu de la réponse</p>
+              <p className="mt-1 text-xs text-primary/55">
+                Structurez le texte avec des paragraphes ou une liste. Pour joindre un PDF, utilisez
+                l&apos;icône document dans la barre d&apos;outils de l&apos;éditeur.
+              </p>
+            </div>
+            <ForumComposerHelp context="reply" />
           </div>
           <div className="overflow-hidden rounded-b-xl">
             <TipTapEditor
               content={body}
               onChange={setBody}
-              placeholder="Ecrire une reponse utile, detaillee si necessaire, avec les informations les plus importantes en premier..."
+              placeholder="Écrire une réponse utile, détaillée si nécessaire, avec les informations les plus importantes en premier..."
             />
           </div>
         </div>

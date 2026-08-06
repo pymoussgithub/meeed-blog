@@ -13,13 +13,11 @@ import {
   getAdminArticles,
 } from "@/lib/services/article.service";
 import { getAllCategories } from "@/lib/services/category.service";
-import { getAllProjectsForAdmin } from "@/lib/services/project.service";
 import { formatDate } from "@/lib/utils";
 
 type PageProps = {
   searchParams: Promise<{
     status?: string;
-    project?: string;
     category?: string;
     author?: string;
     q?: string;
@@ -39,19 +37,17 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
   const isAdmin = user.role === "ADMIN";
   const authorId = isAdmin ? params.author || undefined : user.id;
   const hasActiveFilters = Boolean(
-    params.q || params.status || params.project || params.category || params.author,
+    params.q || params.status || params.category || params.author,
   );
 
-  const [result, projects, categories, stats, authors] = await Promise.all([
+  const [result, categories, stats, authors] = await Promise.all([
     getAdminArticles({
       status,
-      projectId: params.project,
       categoryId: params.category,
       search: params.q,
       page,
       authorId,
     }),
-    getAllProjectsForAdmin(),
     getAllCategories(),
     getAdminArticleStats(authorId),
     isAdmin ? getAdminArticleAuthors() : Promise.resolve([]),
@@ -64,7 +60,6 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
 
   const paginationQuery = {
     status: params.status,
-    project: params.project,
     category: params.category,
     author: params.author,
     q: params.q,
@@ -90,10 +85,6 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
       <div className="mt-8" data-tour-id="admin.articles.filters">
         <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-gray-100" />}>
           <ArticlesAdminToolbar
-            projects={projects.map((project) => ({
-              id: project.id,
-              title: project.title,
-            }))}
             categories={categories.map((category) => ({
               id: category.id,
               name: category.name,
@@ -136,7 +127,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                   {isAdmin ? (
                     <th className="px-4 py-3 font-medium">Auteur</th>
                   ) : null}
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">Projet</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">Domaines</th>
                   <th className="px-4 py-3 font-medium">Modifié</th>
                   <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
@@ -182,10 +173,9 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                       <td className="px-4 py-3 text-primary/70">{article.author.name}</td>
                     ) : null}
                     <td className="hidden max-w-[180px] truncate px-4 py-3 text-primary/70 md:table-cell">
-                      {article.project?.title
-                        ?? (article.categories.length > 0
-                          ? article.categories.map((item) => item.category.name).join(", ")
-                          : "—")}
+                      {article.categories.length > 0
+                        ? article.categories.map((item) => item.category.name).join(", ")
+                        : "—"}
                     </td>
                     <td className="px-4 py-3 text-primary/70">{formatDate(article.updatedAt)}</td>
                     <td className="px-4 py-3">

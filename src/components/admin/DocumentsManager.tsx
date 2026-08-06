@@ -2,16 +2,12 @@
 
 import type { DocumentVisibility } from "@prisma/client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  linkDocumentToArticleAction,
-  linkDocumentToProjectAction,
-  setDocumentVisibilityAction,
-} from "@/actions/document.actions";
+import { setDocumentVisibilityAction } from "@/actions/document.actions";
 import { DocumentListActions } from "@/components/admin/DocumentListActions";
 import { DocumentStatusBadge } from "@/components/admin/DocumentStatusBadge";
 import { Toast } from "@/components/ui/Toast";
+import { getDocumentNewsCategories } from "@/lib/documents-listing";
 import { getDocumentVisibilityLabel } from "@/lib/document-visibility";
 
 type DocumentRow = {
@@ -19,31 +15,34 @@ type DocumentRow = {
   title: string;
   description: string | null;
   fileName: string;
-  fileSize: number;
   visibility: DocumentVisibility;
   isArchived: boolean;
   article: {
     id: string;
     title: string;
-    projectId: string | null;
-    project: { id: string; title: string } | null;
+    slug: string;
+    categories: Array<{
+      category: {
+        id: string;
+        name: string;
+        slug: string;
+      };
+    }>;
   } | null;
-  project: { id: string; title: string } | null;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
 };
-
-type ArticleOption = { id: string; title: string };
-type ProjectOption = { id: string; title: string };
 
 type DocumentsManagerProps = {
   documents: DocumentRow[];
-  articles: ArticleOption[];
-  projects: ProjectOption[];
 };
 
 const VISIBILITY_OPTIONS = ["PUBLIC", "CONTRIBUTOR", "ADMIN"] as const;
 
-export function DocumentsManager({ documents, articles, projects }: DocumentsManagerProps) {
-  const router = useRouter();
+export function DocumentsManager({ documents }: DocumentsManagerProps) {
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
@@ -69,33 +68,27 @@ export function DocumentsManager({ documents, articles, projects }: DocumentsMan
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-            <table className="w-max min-w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
-                  <th className="px-4 py-3">Titre</th>
-                  <th className="whitespace-nowrap px-4 py-3">Statut</th>
-                  <th className="whitespace-nowrap px-4 py-3">Taille</th>
-                  <th className="px-4 py-3">Article</th>
-                  <th className="px-4 py-3">Projet</th>
-                  <th className="px-4 py-3">Visibilité</th>
-                  <th className="px-4 py-3">Actions</th>
+                  <th className="w-[28%] px-3 py-3">Titre</th>
+                  <th className="w-[10%] whitespace-nowrap px-2 py-3">Statut</th>
+                  <th className="w-[16%] px-2 py-3">Domaine</th>
+                  <th className="w-[14%] px-2 py-3">Article</th>
+                  <th className="w-[14%] px-2 py-3">Visibilité</th>
+                  <th className="w-[18%] px-2 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {documents.map((document) => {
-                  const linkedToArticle = Boolean(document.article);
-                  const effectiveProjectId =
-                    document.article?.project?.id ??
-                    document.article?.projectId ??
-                    document.project?.id ??
-                    "";
+                  const domains = getDocumentNewsCategories(document);
 
                   return (
                     <tr
                       key={document.id}
                       className={document.isArchived ? "bg-gray-50/80" : undefined}
                     >
-                      <td className="max-w-[14rem] px-4 py-3">
+                      <td className="px-3 py-3">
                         <Link
                           href={`/admin/documents/${document.id}`}
                           className="font-medium break-words text-primary-dark hover:text-accent-dark"
@@ -109,72 +102,43 @@ export function DocumentsManager({ documents, articles, projects }: DocumentsMan
                           </p>
                         ) : null}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td className="whitespace-nowrap px-2 py-3">
                         <DocumentStatusBadge isArchived={document.isArchived} />
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-primary/70">
-                        {(document.fileSize / 1024).toFixed(1)} Ko
+                      <td className="px-2 py-3">
+                        {domains.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {domains.map((domain) => (
+                              <span
+                                key={domain.id}
+                                className="inline-flex rounded-full bg-bg-soft px-2 py-0.5 text-xs font-medium text-primary/70"
+                              >
+                                {domain.name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-primary/40">—</span>
+                        )}
                       </td>
-                      <td className="px-4 py-3">
-                        <select
-                          key={`article-${document.id}-${document.article?.id ?? ""}`}
-                          defaultValue={document.article?.id ?? ""}
-                          disabled={document.isArchived}
-                          className="w-36 max-w-full rounded border border-gray-300 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:bg-gray-100"
-                          onChange={async (event) => {
-                            const result = await linkDocumentToArticleAction(
-                              document.id,
-                              event.target.value || null,
-                            );
-                            if (!result.success) {
-                              setToast({ message: result.error, variant: "error" });
-                              return;
-                            }
-                            router.refresh();
-                          }}
-                        >
-                          <option value="">Aucun</option>
-                          {articles.map((article) => (
-                            <option key={article.id} value={article.id}>
-                              {article.title}
-                            </option>
-                          ))}
-                        </select>
+                      <td className="max-w-0 px-2 py-3">
+                        {document.article ? (
+                          <Link
+                            href={`/admin/articles/${document.article.id}`}
+                            className="line-clamp-3 text-xs font-medium text-accent-dark hover:underline"
+                            title={document.article.title}
+                          >
+                            {document.article.title}
+                          </Link>
+                        ) : (
+                          <span className="text-primary/40">—</span>
+                        )}
                       </td>
-                      <td className="px-4 py-3">
-                        <select
-                          key={`project-${document.id}-${effectiveProjectId}-${linkedToArticle}`}
-                          defaultValue={effectiveProjectId}
-                          disabled={linkedToArticle || document.isArchived}
-                          title={
-                            linkedToArticle ? "Projet hérité de l’article lié" : undefined
-                          }
-                          className="w-36 max-w-full rounded border border-gray-300 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-primary/60"
-                          onChange={async (event) => {
-                            const result = await linkDocumentToProjectAction(
-                              document.id,
-                              event.target.value || null,
-                            );
-                            if (!result.success) {
-                              setToast({ message: result.error, variant: "error" });
-                              return;
-                            }
-                            router.refresh();
-                          }}
-                        >
-                          <option value="">Aucun</option>
-                          {projects.map((project) => (
-                            <option key={project.id} value={project.id}>
-                              {project.title}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 py-3">
                         <select
                           defaultValue={document.visibility}
                           disabled={document.isArchived}
-                          className="w-40 max-w-full rounded border border-gray-300 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:bg-gray-100"
+                          className="w-full max-w-full truncate rounded border border-gray-300 px-1.5 py-1 text-xs disabled:cursor-not-allowed disabled:bg-gray-100"
                           data-tour-id="admin.documents.visibility"
                           onChange={async (event) => {
                             const result = await setDocumentVisibilityAction(
@@ -193,8 +157,8 @@ export function DocumentsManager({ documents, articles, projects }: DocumentsMan
                           ))}
                         </select>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <td className="px-2 py-3">
+                        <div className="flex flex-col items-stretch gap-2">
                           <Link
                             href={`/admin/documents/${document.id}`}
                             className={`${tableActionClassName} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}

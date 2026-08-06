@@ -21,7 +21,7 @@ type DiscussionDef = {
   slug: string;
   title: string;
   articleSlug: string;
-  categorySlug: "discussions-generales" | "projets" | "questions";
+  categorySlug: "discussions-generales" | "domaines" | "questions";
   authorIndex: number;
   /** Jours dans le passé pour le 1er message. */
   daysAgo: number;
@@ -55,7 +55,7 @@ const DISCUSSIONS: DiscussionDef[] = [
     slug: "demo-forum-batterie-pack-dimensionnement",
     title: "Pack batterie tracteur : autonomie réelle vs fiche technique",
     articleSlug: "demo-batterie-pack-tracteur",
-    categorySlug: "projets",
+    categorySlug: "domaines",
     authorIndex: 2,
     daysAgo: 16,
     body: `<p>Suite à l’article sur le pack batterie, on vise 3–4 h de travail discontinu. Vous calculez avec quel facteur de décharge pour rester confortable sur une journée maraîchère typique ?</p>`,
@@ -81,7 +81,7 @@ const DISCUSSIONS: DiscussionDef[] = [
     slug: "demo-forum-essais-transmission",
     title: "Essais transmission rétrofit : protocoles et points de vigilance",
     articleSlug: "demo-essais-transmission-retrofit",
-    categorySlug: "projets",
+    categorySlug: "domaines",
     authorIndex: 1,
     daysAgo: 14,
     body: `<p>On prépare une session d’essais transmission comme dans l’article. Vous notez quels indicateurs en priorité (température, bruit, jeu, vibrations) ?</p>`,
@@ -123,7 +123,7 @@ const DISCUSSIONS: DiscussionDef[] = [
     slug: "demo-forum-pilotage-vannes",
     title: "Pilotage vannes / relais : retours sur la fiabilité terrain",
     articleSlug: "demo-pilotage-vannes-relais",
-    categorySlug: "projets",
+    categorySlug: "domaines",
     authorIndex: 0,
     daysAgo: 10,
     body: `<p>Après lecture de l’article sur le pilotage des vannes, on part sur des relais DIN classiques. Vous avez eu des collages de contact ou des faux déclenchements avec l’humidité ?</p>`,
@@ -217,7 +217,7 @@ const DISCUSSIONS: DiscussionDef[] = [
     slug: "demo-forum-ferme-solaire-dimensionnement",
     title: "Ferme solaire : dimensionner sans surinvestir — vos retours",
     articleSlug: "design-ferme-solaire-dimensionnement",
-    categorySlug: "projets",
+    categorySlug: "domaines",
     authorIndex: 0,
     daysAgo: 2,
     body: `<p>L’approche « partir des usages » de l’article me parle. Vous avez surdimensionné au début, ou plutôt sous-dimensionné puis étendu ?</p>`,

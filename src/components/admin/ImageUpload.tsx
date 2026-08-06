@@ -1,15 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   FileUpload,
   type CloudinaryUploadResult,
+  type FileUploadHandle,
 } from "@/components/admin/FileUpload";
 import {
   useImageTransform,
   type ImageTransformConfig,
 } from "@/components/admin/ImageTransformModal";
+import { StockImagePickerModal } from "@/components/admin/StockImagePickerModal";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import { deleteUploadedImageAction } from "@/actions/upload.actions";
@@ -17,15 +19,16 @@ import { UPLOAD_LIMITS } from "@/lib/upload-constants";
 import { saveImageMetadata } from "@/lib/services/upload.service";
 
 type ImageUploadProps = {
-  purpose?: "cover" | "inline" | "project-cover";
+  purpose?: "cover" | "inline";
   articleId?: string;
-  projectId?: string;
   initialUrl?: string | null;
   initialPublicId?: string | null;
   onUploaded?: (metadata: ReturnType<typeof saveImageMetadata>) => void;
   onRemoved?: () => void;
   className?: string;
   hint?: string;
+  /** Affiche le bouton bibliothèque d'images libres (défaut : couvertures article). */
+  enableStockLibrary?: boolean;
 };
 
 const TRANSFORM_CONFIGS: Record<NonNullable<ImageUploadProps["purpose"]>, ImageTransformConfig> = {
@@ -35,43 +38,38 @@ const TRANSFORM_CONFIGS: Record<NonNullable<ImageUploadProps["purpose"]>, ImageT
     targetHeight: 900,
     title: "Ajuster l'image de couverture",
     description:
-      "Cadrez l'image telle qu'elle apparaîtra sur la couverture de l'article, puis envoyez la version préparée.",
-  },
-  "project-cover": {
-    aspectRatio: 16 / 10,
-    targetWidth: 1600,
-    targetHeight: 1000,
-    title: "Ajuster l'image du projet",
-    description:
-      "Positionnez l'image dans le format d'affichage du projet pour obtenir un rendu propre sur les cartes et la page Projets.",
+      "L'image est placée sur un cadre blanc 16:9. Zoomez pour l'agrandir si elle est trop petite, puis positionnez-la avant l'envoi.",
   },
   inline: {
     aspectRatio: 16 / 9,
     targetWidth: 1600,
     targetHeight: 900,
     title: "Ajuster l'image",
-    description: "Préparez l'image avec un cadrage simple avant son envoi.",
+    description:
+      "L'image est placée sur un cadre blanc 16:9. Zoomez si elle est trop petite, puis validez le cadrage.",
   },
 };
 
 export function ImageUpload({
   purpose = "cover",
   articleId,
-  projectId,
   initialUrl,
   initialPublicId,
   onUploaded,
   onRemoved,
   className,
   hint,
+  enableStockLibrary = purpose === "cover",
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialUrl ?? null);
   const [publicId, setPublicId] = useState<string | null>(initialPublicId ?? null);
   const [sessionPublicId, setSessionPublicId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
+  const uploadRef = useRef<FileUploadHandle>(null);
   const { openEditor, modal } = useImageTransform();
 
   const deleteSessionUpload = async (targetPublicId: string) => {
@@ -92,7 +90,6 @@ export function ImageUpload({
 
     const metadata = saveImageMetadata(result.public_id, result.secure_url, {
       articleId,
-      projectId,
       purpose,
     });
 
@@ -125,19 +122,41 @@ export function ImageUpload({
     }
   };
 
+  const handleStockFile = async (file: File) => {
+    // Les erreurs d'upload remontent via onError ; l'annulation du cadrage retourne false sans toast.
+    await uploadRef.current?.uploadFile(file);
+  };
+
   return (
     <div className={className}>
       <FileUpload
+        ref={uploadRef}
         accept={UPLOAD_LIMITS.imageMimeTypes.join(",")}
         maxBytes={UPLOAD_LIMITS.imageMaxBytes}
         allowedMimeTypes={UPLOAD_LIMITS.imageMimeTypes}
         signatureEndpoint="/api/upload/image"
-        getSignatureBody={() => ({ purpose, articleId, projectId })}
+        getSignatureBody={() => ({ purpose, articleId })}
         prepareFile={(file) => openEditor(file, TRANSFORM_CONFIGS[purpose])}
         resourceLabel="image"
         onUploaded={handleUploaded}
         onError={(message) => setToast({ message, variant: "error" })}
       />
+
+      {enableStockLibrary ? (
+        <div className="mt-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full !text-sm"
+            onClick={() => setLibraryOpen(true)}
+          >
+            Choisir dans la bibliothèque libre
+          </Button>
+          <p className="mt-1.5 text-xs text-primary/50">
+            Pas d&apos;image sous la main ? Parcourez des photos libres sur Pexels.
+          </p>
+        </div>
+      ) : null}
 
       <p className="mt-2 text-xs text-primary/50">
         {hint ??
@@ -146,13 +165,13 @@ export function ImageUpload({
 
       {previewUrl ? (
         <div className="mt-4 overflow-hidden rounded-xl border border-gray-200">
-          <div className="relative aspect-video w-full bg-gray-50">
+          <div className="relative aspect-video w-full bg-white">
             <Image
               src={previewUrl}
               alt="Aperçu upload"
               fill
               unoptimized
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 768px) 100vw, 600px"
             />
             <div className="absolute right-3 top-3">
@@ -182,6 +201,15 @@ export function ImageUpload({
         onClose={() => setToast(null)}
       />
       {modal}
+      {enableStockLibrary ? (
+        <StockImagePickerModal
+          open={libraryOpen}
+          onClose={() => setLibraryOpen(false)}
+          onSelect={(file) => {
+            void handleStockFile(file);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

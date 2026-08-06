@@ -249,15 +249,21 @@ export function HelpWiki({ title, description, articles, audienceLabel }: HelpWi
 
                           {article.links && article.links.length > 0 ? (
                             <div className="mt-4 flex flex-wrap gap-2">
-                              {article.links.map((link) => (
-                                <Link
-                                  key={link.href}
-                                  href={link.href}
-                                  className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-accent-dark transition-colors hover:border-accent hover:bg-bg-soft"
-                                >
-                                  {link.label} →
-                                </Link>
-                              ))}
+                              {article.links.map((link) => {
+                                const isExternal = /^https?:\/\//i.test(link.href);
+                                return (
+                                  <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    {...(isExternal
+                                      ? { target: "_blank", rel: "noopener noreferrer" }
+                                      : {})}
+                                    className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-accent-dark transition-colors hover:border-accent hover:bg-bg-soft"
+                                  >
+                                    {link.label} →
+                                  </Link>
+                                );
+                              })}
                             </div>
                           ) : null}
                         </div>

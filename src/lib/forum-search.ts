@@ -7,8 +7,6 @@ export type ForumSearchFilters = {
   authorId?: string;
   /** Slug de rubrique forum */
   rubrique?: string;
-  /** Slug de projet (via articles liés) */
-  project?: string;
   /** Date de création du sujet (inclusive), format YYYY-MM-DD */
   from?: string;
   /** Date de création du sujet (inclusive), format YYYY-MM-DD */
@@ -21,7 +19,6 @@ export function normalizeForumSearchFilters(raw: {
   author?: string;
   authorId?: string;
   rubrique?: string;
-  project?: string;
   from?: string;
   to?: string;
 }): ForumSearchFilters {
@@ -34,7 +31,6 @@ export function normalizeForumSearchFilters(raw: {
     title: title || undefined,
     authorId,
     rubrique: raw.rubrique?.trim() || undefined,
-    project: raw.project?.trim() || undefined,
     from: raw.from?.trim() || undefined,
     to: raw.to?.trim() || undefined,
   };
@@ -46,7 +42,6 @@ export function hasForumSearchCriteria(filters: ForumSearchFilters): boolean {
       filters.title ||
       filters.authorId ||
       filters.rubrique ||
-      filters.project ||
       filters.from ||
       filters.to,
   );
@@ -58,7 +53,6 @@ export function countForumSearchCriteria(filters: ForumSearchFilters): number {
   if (filters.title) count += 1;
   if (filters.authorId) count += 1;
   if (filters.rubrique) count += 1;
-  if (filters.project) count += 1;
   if (filters.from) count += 1;
   if (filters.to) count += 1;
   return count;
@@ -72,7 +66,6 @@ export function forumSearchFiltersToQuery(
     q: filters.q,
     author: filters.authorId,
     rubrique: filters.rubrique,
-    project: filters.project,
     from: filters.from,
     to: filters.to,
   };

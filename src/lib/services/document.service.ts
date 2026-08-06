@@ -10,12 +10,11 @@ export type DocumentAccessUser = {
 
 export type PublicDocumentFilters = {
   search?: string | null;
-  projectSlug?: string | null;
   categorySlug?: string | null;
   uploaderId?: string | null;
   dateFrom?: string | null;
   dateTo?: string | null;
-  linked?: "article" | "project" | "no" | null;
+  linked?: "article" | "no" | null;
 };
 
 export const publicDocumentInclude = {
@@ -24,15 +23,6 @@ export const publicDocumentInclude = {
       id: true,
       title: true,
       slug: true,
-      project: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          isActive: true,
-          category: { select: { slug: true } },
-        },
-      },
       categories: {
         select: {
           category: {
@@ -40,21 +30,17 @@ export const publicDocumentInclude = {
               id: true,
               name: true,
               slug: true,
-              projects: {
-                select: { id: true },
-              },
             },
           },
         },
       },
     },
   },
-  project: {
+  category: {
     select: {
       id: true,
-      title: true,
+      name: true,
       slug: true,
-      category: { select: { slug: true } },
     },
   },
   uploadedBy: { select: { id: true, name: true } },
@@ -115,11 +101,8 @@ function buildAccessibleDocumentWhere(
 
   if (filters.linked === "article") {
     where.articleId = { not: null };
-  } else if (filters.linked === "project") {
-    where.projectId = { not: null };
   } else if (filters.linked === "no") {
     where.articleId = null;
-    where.projectId = null;
   }
 
   if (filters.uploaderId) {
@@ -139,38 +122,14 @@ function buildAccessibleDocumentWhere(
     where.createdAt = createdAt;
   }
 
-  if (filters.projectSlug) {
-    appendAnd(where, {
-      OR: [
-        { project: { slug: filters.projectSlug, isActive: true } },
-        {
-          article: {
-            project: { slug: filters.projectSlug, isActive: true },
-          },
-        },
-      ],
-    });
-  }
-
   if (filters.categorySlug) {
     appendAnd(where, {
       OR: [
+        { category: { slug: filters.categorySlug } },
         {
           article: {
-            categories: {
-              some: {
-                category: { slug: filters.categorySlug, projects: { none: {} } },
-              },
-            },
+            categories: { some: { category: { slug: filters.categorySlug } } },
           },
-        },
-        {
-          article: {
-            project: { category: { slug: filters.categorySlug } },
-          },
-        },
-        {
-          project: { category: { slug: filters.categorySlug } },
         },
       ],
     });
@@ -214,35 +173,13 @@ export async function getPublicDocumentNewsCategories(user?: DocumentAccessUser 
 
   return prisma.category.findMany({
     where: {
-      projects: { none: {} },
-      articles: {
-        some: {
-          article: {
-            documents: { some: accessibleDocumentsWhere },
-          },
-        },
-      },
-    },
-    orderBy: { sortOrder: "asc" },
-    select: { id: true, name: true, slug: true },
-  });
-}
-
-export async function getPublicDocumentProjects(user?: DocumentAccessUser | null) {
-  const accessibleDocumentsWhere = buildDocumentAccessWhere(user);
-
-  return prisma.project.findMany({
-    where: {
-      isActive: true,
       OR: [
         { documents: { some: accessibleDocumentsWhere } },
         {
-          category: {
-            articles: {
-              some: {
-                article: {
-                  documents: { some: accessibleDocumentsWhere },
-                },
+          articles: {
+            some: {
+              article: {
+                documents: { some: accessibleDocumentsWhere },
               },
             },
           },
@@ -250,26 +187,13 @@ export async function getPublicDocumentProjects(user?: DocumentAccessUser | null
       ],
     },
     orderBy: { sortOrder: "asc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      category: { select: { slug: true } },
-    },
+    select: { id: true, name: true, slug: true },
   });
 }
 
 export async function getDocumentsByArticle(articleId: string, user?: DocumentAccessUser | null) {
   return prisma.document.findMany({
     where: { articleId, ...buildDocumentAccessWhere(user) },
-    include: publicDocumentInclude,
-    orderBy: { createdAt: "desc" },
-  });
-}
-
-export async function getDocumentsByProject(projectId: string, user?: DocumentAccessUser | null) {
-  return prisma.document.findMany({
-    where: { projectId, ...buildDocumentAccessWhere(user) },
     include: publicDocumentInclude,
     orderBy: { createdAt: "desc" },
   });
@@ -296,16 +220,24 @@ export async function getAllDocuments(userId?: string, isAdmin = true) {
           id: true,
           title: true,
           slug: true,
-          projectId: true,
-          project: { select: { id: true, title: true } },
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
         },
       },
-      project: {
+      category: {
         select: {
           id: true,
-          title: true,
+          name: true,
           slug: true,
-          category: { select: { slug: true } },
         },
       },
       uploadedBy: { select: { id: true, name: true } },
@@ -326,14 +258,12 @@ export async function getDocumentByIdForAdmin(id: string) {
           id: true,
           title: true,
           slug: true,
-          projectId: true,
-          project: { select: { id: true, title: true } },
         },
       },
-      project: {
+      category: {
         select: {
           id: true,
-          title: true,
+          name: true,
           slug: true,
         },
       },

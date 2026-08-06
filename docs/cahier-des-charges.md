@@ -55,7 +55,7 @@ Slogan produit : *Publier, partager.*
 |------|-------------|--------|
 | **Lecteur (public / anonyme)** | Maraîcher, agriculteur, partenaire, grand public | Front-office uniquement |
 | **Contributeur** | Rédacteur interne ou externe autorisé | Back-office limité à ses contenus et à son profil |
-| **Administrateur** | Responsable communication / direction | Back-office complet (utilisateurs, catégories, projets, tous les contenus) |
+| **Administrateur** | Responsable communication / direction | Back-office complet (utilisateurs, catégories, domaines, tous les contenus) |
 
 ---
 
@@ -87,7 +87,7 @@ Les services suivants sont des **prestataires externes** nécessaires au fonctio
 |---------|--------|
 | **Prestataire** | **Neon** ([neon.tech](https://neon.tech)) |
 | **Service** | Hébergement **PostgreSQL** managé (cloud) |
-| **Usage dans le projet** | Stockage de l’ensemble des données structurées : utilisateurs, articles, catégories, projets, métadonnées des documents |
+| **Usage dans le projet** | Stockage de l’ensemble des données structurées : utilisateurs, articles, catégories, domaines, métadonnées des documents |
 | **Mode de connexion** | Chaîne de connexion standard PostgreSQL via la variable d’environnement `DATABASE_URL` |
 | **Données stockées chez Neon** | Données textuelles et métadonnées uniquement (pas les fichiers binaires images/PDF) |
 
@@ -99,7 +99,7 @@ Le prestataire **Neon** est le fournisseur retenu pour l’hébergement de la ba
 |---------|--------|
 | **Prestataire** | **Cloudinary** ([cloudinary.com](https://cloudinary.com)) |
 | **Service** | Stockage, transformation et livraison de médias (CDN) |
-| **Usage dans le projet** | Stockage des **photos / images** (couvertures d’articles et de projets, images inline dans le contenu) et des **documents PDF** |
+| **Usage dans le projet** | Stockage des **photos / images** (couvertures d’articles et de domaines, images inline dans le contenu) et des **documents PDF** |
 | **Variables associées** | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
 | **Limites applicatives** | Images : 10 Mo max ; PDF : 25 Mo max ; type PDF uniquement pour les documents |
 
@@ -120,7 +120,7 @@ Navigateur (public / admin)
         ▼
 Application Next.js (hébergeur applicatif)
         │
-        ├──► Neon (PostgreSQL)     → comptes, articles, catégories, projets, métadonnées
+        ├──► Neon (PostgreSQL)     → comptes, articles, catégories, domaines, métadonnées
         └──► Cloudinary            → images / photos + PDF
 ```
 
@@ -147,8 +147,8 @@ Entités principales gérées par l’application (stockées chez **Neon**) :
 | **Article** | Contenu éditorial (titre, slug, extrait, HTML, image de couverture Cloudinary, statut `DRAFT` / `PUBLISHED` / `ARCHIVED`, date de publication, auteur) |
 | **Category** | Thématique (nom, slug, description, couleur, ordre) |
 | **ArticleCategory** | Liaison many-to-many articles ↔ catégories |
-| **Project** | Projet association (titre, slug, résumé, description, cover Cloudinary, lien de don, actif, lié à une catégorie) |
-| **Document** | Métadonnées d’un PDF hébergé sur Cloudinary (titre, description, URL, taille, public/privé, lien optionnel vers article et/ou projet) |
+| **Domain** | Domaine association (titre, slug, résumé, description, cover Cloudinary, lien de don, actif, lié à une catégorie) |
+| **Document** | Métadonnées d’un PDF hébergé sur Cloudinary (titre, description, URL, taille, public/privé, lien optionnel vers article et/ou domaine) |
 
 Les fichiers binaires (images, PDF) sont hébergés chez **Cloudinary** ; Neon ne stocke pas ces binaires.
 
@@ -162,7 +162,7 @@ Les fonctionnalités ci-dessous sont **déjà présentes** et accessibles sans a
 
 | N° | Fonctionnalité | Description |
 |----|----------------|-------------|
-| F-01 | En-tête et menu | Navigation : Accueil, Articles, Projets, Documents, À propos, Contact, Faire un don |
+| F-01 | En-tête et menu | Navigation : Accueil, Articles, Domaines, Documents, À propos, Contact, Faire un don |
 | F-02 | Menu mobile | Navigation adaptée aux écrans mobiles |
 | F-03 | Recherche (header) | Accès au formulaire de recherche vers `/recherche` |
 | F-04 | Pied de page | Coordonnées de l’association, liens utiles, accès HelloAsso |
@@ -173,11 +173,11 @@ Les fonctionnalités ci-dessous sont **déjà présentes** et accessibles sans a
 | N° | Fonctionnalité | Description |
 |----|----------------|-------------|
 | F-06 | Page d’accueil magazine | Hero, présentation, carrousel d’actualités |
-| F-07 | Liste des articles | Page `/actualites` avec pagination et filtres (recherche, catégorie, projet, auteur, dates, type) |
+| F-07 | Liste des articles | Page `/actualites` avec pagination et filtres (recherche, catégorie, domaine, auteur, dates, type) |
 | F-08 | Page article | URL `/a/{slug}` : titre, métadonnées, image de couverture, contenu HTML, documents associés, articles similaires, partage |
 | F-09 | Page catégorie | URL `/c/{slug}` : liste des articles de la catégorie |
-| F-10 | Page projets | Vitrine des projets actifs, avec éventuel lien de don HelloAsso |
-| F-11 | Bibliothèque de documents | Page `/documents` : liste des PDF publics, filtres (recherche, projet, catégorie, uploader, dates, liaison) |
+| F-10 | Page domaines | Vitrine des domaines actifs, avec éventuel lien de don HelloAsso |
+| F-11 | Bibliothèque de documents | Page `/documents` : liste des PDF publics, filtres (recherche, domaine, catégorie, uploader, dates, liaison) |
 | F-12 | Consultation / téléchargement PDF | Visualisation et téléchargement des documents publics via les routes API dédiées |
 | F-13 | Recherche full-text | Page `/recherche?q=` sur titres, extraits et contenus d’articles |
 | F-14 | Page À propos | Contenu institutionnel |
@@ -205,7 +205,7 @@ Les fonctionnalités ci-dessous sont **déjà présentes** et accessibles sans a
 | F-24 | Inscription contributeur | Public | Création d’un compte au rôle `CONTRIBUTEUR` depuis l’écran de connexion |
 | F-25 | Déconnexion | Membre | Fin de session |
 | F-26 | Protection des routes | Système | Accès `/admin/*` et `/api/upload/*` réservé aux utilisateurs authentifiés |
-| F-27 | Restriction admin | Système | Pages utilisateurs, catégories et projets réservées au rôle `ADMIN` |
+| F-27 | Restriction admin | Système | Pages utilisateurs, catégories et domaines réservées au rôle `ADMIN` |
 | F-28 | Mon profil | Membre | Modification du nom affiché |
 | F-29 | Changement de mot de passe | Membre | Avec vérification de l’ancien mot de passe |
 | F-30 | Guide contributeur | Membre | Aide pas-à-pas (`/admin/aide`) |
@@ -234,7 +234,7 @@ Les fonctionnalités ci-dessous sont **déjà présentes** et accessibles sans a
 |----|----------------|-----|-------------|
 | F-40 | Upload d’images | Membre | Couverture et images inline via upload signé vers **Cloudinary** (max 10 Mo) |
 | F-41 | Upload de PDF | Membre | Stockage **Cloudinary** en ressource `raw` (max 25 Mo) |
-| F-42 | Gestion des documents | Membre | Création, métadonnées, visibilité public/privé, liaison article et/ou projet, suppression (propriétaire ou admin) |
+| F-42 | Gestion des documents | Membre | Création, métadonnées, visibilité public/privé, liaison article et/ou domaine, suppression (propriétaire ou admin) |
 | F-43 | Suppression d’image Cloudinary | Membre | Action dédiée de nettoyage côté Cloudinary |
 | F-44 | Page de test upload | Membre | Outil technique `/admin/upload-test` |
 
@@ -243,7 +243,7 @@ Les fonctionnalités ci-dessous sont **déjà présentes** et accessibles sans a
 | N° | Fonctionnalité | Description |
 |----|----------------|-------------|
 | F-45 | CRUD catégories | Nom, slug, description, couleur, ordre ; garde-fous en cas d’articles publiés liés |
-| F-46 | CRUD projets | Titre, slug, résumé, description, cover Cloudinary, couleur, ordre, actif, URL de don, lien 1:1 avec une catégorie |
+| F-46 | CRUD domaines | Titre, slug, résumé, description, cover Cloudinary, couleur, ordre, actif, URL de don, lien 1:1 avec une catégorie |
 | F-47 | Gestion des utilisateurs | Liste, filtres, création, changement de rôle, activation/désactivation, réinitialisation de mot de passe |
 
 ### 8.4 Exploitation technique
@@ -264,7 +264,7 @@ Les fonctionnalités ci-dessous sont **déjà présentes** et accessibles sans a
 | Dashboard, articles (siens), documents (siens), profil, aide | Non | Oui | Oui |
 | Modifier / archiver / supprimer les contenus d’autrui | Non | Non | Oui |
 | Voir tous les articles et documents en admin | Non | Non | Oui |
-| Gérer catégories, projets, utilisateurs | Non | Non | Oui |
+| Gérer catégories, domaines, utilisateurs | Non | Non | Oui |
 | Uploader images / PDF (Cloudinary) | Non | Oui | Oui |
 | Accéder aux documents privés | Non | Propriétaire | Oui |
 

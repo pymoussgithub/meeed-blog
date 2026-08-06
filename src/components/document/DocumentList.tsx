@@ -5,7 +5,6 @@ import { getDocumentVisibilityLabel } from "@/lib/document-visibility";
 import {
   getDocumentLinkLabel,
   getDocumentNewsCategories,
-  getDocumentProject,
   isDocumentLinked,
   type DocumentWithArticleRelations,
 } from "@/lib/documents-listing";
@@ -20,7 +19,6 @@ type DocumentItem = {
   visibility?: DocumentVisibility;
   createdAt?: Date | string;
   uploadedBy?: { id: string; name: string } | null;
-  project?: DocumentWithArticleRelations["project"];
   article?: DocumentWithArticleRelations["article"];
 };
 
@@ -108,12 +106,9 @@ function DocumentMeta({
   hideArticleLink?: boolean;
   showLinkBadge?: boolean;
 }) {
-  const project = getDocumentProject(document);
-  const directProject = document.project;
   const categories = getDocumentNewsCategories(document);
   const isLinked = isDocumentLinked(document);
   const linkLabel = getDocumentLinkLabel(document);
-  const resolvedProject = directProject ?? project;
 
   return (
     <div className="min-w-0 flex-1">
@@ -154,21 +149,10 @@ function DocumentMeta({
           </MetaField>
         ) : null}
 
-        {resolvedProject ? (
-          <MetaField label="Projet">
-            <Link
-              href={`/c/${resolvedProject.category.slug}`}
-              className="font-medium text-accent-dark hover:text-accent hover:underline"
-            >
-              {resolvedProject.title}
-            </Link>
-          </MetaField>
-        ) : null}
-
         {categories.length > 0 ? (
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wide text-primary/45">
-              {categories.length > 1 ? "Catégories" : "Catégorie"}
+              {categories.length > 1 ? "Domaines" : "Domaine"}
             </dt>
             <dd className="mt-1 flex flex-wrap gap-1.5">
               {categories.map((category) => (

@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        // Miniatures Pexels (bibliothèque d'images libres)
+        protocol: "https",
+        hostname: "images.pexels.com",
+        pathname: "/**",
+      },
     ],
   },
   async headers() {
@@ -52,7 +58,21 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/a-propos-de", destination: "/a-propos", permanent: true },
-      { source: "/nos-projets", destination: "/projets", permanent: true },
+      { source: "/domaines", destination: "/categories", permanent: true },
+      { source: "/nos-projets", destination: "/categories", permanent: true },
+      { source: "/projets", destination: "/categories", permanent: true },
+      { source: "/admin/projets", destination: "/admin/categories", permanent: true },
+      {
+        source: "/admin/projets/:path*",
+        destination: "/admin/categories",
+        permanent: true,
+      },
+      { source: "/admin/domaines", destination: "/admin/categories", permanent: true },
+      {
+        source: "/admin/domaines/:path*",
+        destination: "/admin/categories",
+        permanent: true,
+      },
       { source: "/contactez-nous", destination: "/contact", permanent: true },
       { source: "/tracteur-retrofit", destination: "/c/tracteur", permanent: true },
       { source: "/arrosage-etp", destination: "/c/arrosage", permanent: true },

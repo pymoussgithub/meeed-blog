@@ -1,9 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { DocumentForm } from "@/components/admin/DocumentForm";
+import { Button } from "@/components/ui/Button";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { toDocumentAssociableArticles } from "@/lib/document-article-options";
 import { getAdminArticles } from "@/lib/services/article.service";
+import { getCategoriesForArticleForm } from "@/lib/services/category.service";
 import { getDocumentByIdForAdmin } from "@/lib/services/document.service";
-import { getActiveProjects } from "@/lib/services/project.service";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -22,16 +24,20 @@ export default async function AdminEditDocumentPage({ params }: PageProps) {
     redirect("/admin/documents");
   }
 
-  const [articlesResult, projects] = await Promise.all([
+  const [articlesResult, categories] = await Promise.all([
     getAdminArticles({
       authorId: user?.role === "ADMIN" ? undefined : user?.id,
-      pageSize: 100,
+      pageSize: 500,
     }),
-    getActiveProjects(),
+    getCategoriesForArticleForm(),
   ]);
 
   return (
     <div className="container-meeed py-6">
+      <Button href="/admin/documents" variant="outline" className="mb-4 gap-2 !px-4 !py-2 text-xs">
+        <span aria-hidden="true">←</span>
+        Retour aux documents
+      </Button>
       <div className="mb-4">
         <p className="text-xs font-medium text-accent-dark">Gestion</p>
         <h1 className="mt-0.5 text-xl font-bold text-primary-dark">Éditer le document</h1>
@@ -39,15 +45,8 @@ export default async function AdminEditDocumentPage({ params }: PageProps) {
       </div>
       <DocumentForm
         documentId={document.id}
-        articles={articlesResult.articles.map((article) => ({
-          id: article.id,
-          title: article.title,
-          projectId: article.projectId,
-        }))}
-        projects={projects.map((project) => ({
-          id: project.id,
-          title: project.title,
-        }))}
+        articles={toDocumentAssociableArticles(articlesResult.articles)}
+        categories={categories}
         initialData={{
           title: document.title,
           description: document.description,
@@ -56,7 +55,7 @@ export default async function AdminEditDocumentPage({ params }: PageProps) {
           fileName: document.fileName,
           fileSize: document.fileSize,
           articleId: document.articleId,
-          projectId: document.projectId,
+          categoryId: document.categoryId,
         }}
       />
     </div>

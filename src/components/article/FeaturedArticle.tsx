@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
-import { getCoverHeroUrl } from "@/lib/cloudinary";
+import { resolveCoverUrl } from "@/lib/cloudinary";
 import type { ArticleWithRelations } from "@/lib/services/article.service";
 import { formatDate } from "@/lib/utils";
 
@@ -10,10 +10,7 @@ type FeaturedArticleProps = {
 };
 
 function getCoverUrl(article: ArticleWithRelations) {
-  if (article.coverImagePublicId) {
-    return getCoverHeroUrl(article.coverImagePublicId);
-  }
-  return article.coverImageUrl;
+  return resolveCoverUrl(article.coverImagePublicId, article.coverImageUrl, "hero");
 }
 
 export function FeaturedArticle({ article }: FeaturedArticleProps) {
@@ -32,6 +29,7 @@ export function FeaturedArticle({ article }: FeaturedArticleProps) {
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
+              referrerPolicy="no-referrer"
             />
           ) : null}
         </Link>

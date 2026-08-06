@@ -17,8 +17,20 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+function resolveMetadataBase(): URL {
+  const raw = process.env.NEXTAUTH_URL?.trim();
+  if (raw) {
+    try {
+      return new URL(raw);
+    } catch {
+      // NEXTAUTH_URL mal formée en prod → fallback plutôt que crash RSC global
+    }
+  }
+  return new URL("https://meeed.fr");
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL ?? "https://meeed.fr"),
+  metadataBase: resolveMetadataBase(),
   title: {
     default: `${SITE_NAME} — Maraichage Efficient en Eau et en Energie Décarbonée`,
     template: `%s — ${SITE_NAME}`,

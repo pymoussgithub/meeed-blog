@@ -116,7 +116,7 @@ MEEED/
 │   │   │   │   └── page.tsx
 │   │   │   ├── contact/
 │   │   │   │   └── page.tsx
-│   │   │   ├── projets/
+│   │   │   ├── domaines/
 │   │   │   │   └── page.tsx
 │   │   │   └── recherche/
 │   │   │       └── page.tsx
@@ -586,7 +586,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: '/a-propos-de', destination: '/a-propos', permanent: true },
-      { source: '/nos-projets', destination: '/projets', permanent: true },
+      { source: '/nos-projets', destination: '/domaines', permanent: true },
       { source: '/contactez-nous', destination: '/contact', permanent: true },
       { source: '/tracteur-retrofit', destination: '/c/tracteur', permanent: true },
       { source: '/arrosage-etp', destination: '/c/arrosage', permanent: true },

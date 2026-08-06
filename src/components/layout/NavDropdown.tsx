@@ -10,12 +10,11 @@ type NavDropdownProps = {
 };
 
 const DROPDOWN_TOUR_IDS: Record<string, string> = {
-  "/categories": "nav.header.categories",
+  "/categories": "nav.header.domaines",
   "/contact": "nav.header.contact",
   "/actualites": "nav.header.articles",
   "/documents": "nav.header.documents",
   "/forum": "nav.header.forum",
-  "/projets": "nav.header.projets",
 };
 
 export function NavDropdown({ links }: NavDropdownProps) {

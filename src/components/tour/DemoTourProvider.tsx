@@ -383,7 +383,7 @@ export function DemoTourProvider({ children, sessionRole = null }: Props) {
         window.setTimeout(() => nextStep(), 0);
         return;
       }
-      // Sélection catégorie / chips : clic dans une cible `input` sans champ texte
+      // Sélection domaine / chips : clic dans une cible `input` sans champ texte
       if (currentStep.action === "input") {
         const field = el.closest("input, textarea, [contenteditable='true']");
         if (!field) {

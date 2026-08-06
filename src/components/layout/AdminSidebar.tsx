@@ -18,8 +18,7 @@ type NavItem = {
 const SIDEBAR_TOUR_IDS: Record<string, string> = {
   "/admin/articles": "admin.sidebar.articles",
   "/admin/documents": "admin.sidebar.documents",
-  "/admin/categories": "admin.sidebar.categories",
-  "/admin/projets": "admin.sidebar.projets",
+  "/admin/categories": "admin.sidebar.domaines",
   "/admin/utilisateurs": "admin.sidebar.utilisateurs",
   "/admin/forum": "admin.sidebar.forum",
   "/admin/forum/rubriques": "admin.sidebar.forum-rubriques",
@@ -48,8 +47,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/admin/articles", label: "Articles" },
       { href: "/admin/documents", label: "Documents" },
-      { href: "/admin/projets", label: "Projets", adminOnly: true },
-      { href: "/admin/categories", label: "Catégories", adminOnly: true },
+      { href: "/admin/categories", label: "Domaines", adminOnly: true },
     ],
   },
   {

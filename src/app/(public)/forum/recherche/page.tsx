@@ -18,7 +18,7 @@ type PageProps = {
     title?: string;
     author?: string;
     rubrique?: string;
-    project?: string;
+    domain?: string;
     from?: string;
     to?: string;
     page?: string;
@@ -77,7 +77,7 @@ export default async function ForumSearchPage({ searchParams }: PageProps) {
       {!active ? (
         <p className="text-sm text-primary/60">
           Utilisez « Recherche avancée » pour filtrer par mot-clé (titres et réponses),
-          titre, contributeur, rubrique, projet ou date.
+          titre, contributeur, rubrique, domaine ou date.
         </p>
       ) : null}
 

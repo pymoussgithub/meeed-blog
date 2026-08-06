@@ -1,15 +1,11 @@
 import { ArticleForm } from "@/components/admin/ArticleForm";
 import { listForumTopicsForLinking } from "@/lib/services/article-forum.service";
-import {
-  getCategoriesForArticleForm,
-  getProjectsForArticleForm,
-} from "@/lib/services/category.service";
+import { getCategoriesForArticleForm } from "@/lib/services/category.service";
 import { getActiveForumCategories } from "@/lib/services/forum-category.service";
 
 export default async function AdminNewArticlePage() {
-  const [categories, projects, forumCategories, browsableTopics] = await Promise.all([
+  const [categories, forumCategories, browsableTopics] = await Promise.all([
     getCategoriesForArticleForm(),
-    getProjectsForArticleForm(),
     getActiveForumCategories(),
     listForumTopicsForLinking(),
   ]);
@@ -22,13 +18,6 @@ export default async function AdminNewArticlePage() {
       </div>
       <ArticleForm
         categories={categories}
-        projects={projects.map((project) => ({
-          id: project.id,
-          title: project.title,
-          slug: project.slug,
-          color: project.color,
-          categoryName: project.category.name,
-        }))}
         isNew
         forumLinkOptions={{
           categories: forumCategories.map((category) => ({

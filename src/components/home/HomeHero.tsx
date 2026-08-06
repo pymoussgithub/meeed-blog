@@ -32,15 +32,15 @@ export function HomeHero({ articles }: HomeHeroProps) {
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-primary/70 sm:mt-4 sm:text-base lg:text-lg">
               Solutions innovantes pour un maraîchage efficient en eau et en énergie
-              décarbonée. Retrouvez nos actualités, projets et documents pour la transition
+              décarbonée. Retrouvez nos actualités, domaines et documents pour la transition
               agricole.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
               <Button href="/actualites" variant="accent">
                 Nos articles
               </Button>
-              <Button href="/projets" variant="outline">
-                Nos projets
+              <Button href="/categories" variant="outline">
+                Domaines
               </Button>
             </div>
           </div>

@@ -5,21 +5,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createDocumentAction } from "@/actions/document.actions";
+import {
+  DocumentArticlePicker,
+  type DocumentAssociableArticle,
+  type DocumentAssociableCategory,
+} from "@/components/admin/DocumentArticlePicker";
+import { DocumentDomainPicker } from "@/components/admin/DocumentDomainPicker";
 import { DocumentUpload } from "@/components/admin/DocumentUpload";
 import { Toast } from "@/components/ui/Toast";
 import { getDocumentVisibilityLabel } from "@/lib/document-visibility";
 import { emitTourSuccess } from "@/lib/tour/validation";
-import {
-  DOCUMENT_DESCRIPTION_MAX_LENGTH,
-  DOCUMENT_TITLE_MAX_LENGTH,
-} from "@/lib/validations/document";
-
-type ArticleOption = { id: string; title: string; projectId: string | null };
-type ProjectOption = { id: string; title: string };
+import { DOCUMENT_TITLE_MAX_LENGTH } from "@/lib/validations/document";
 
 type DocumentCreateFormProps = {
-  articles: ArticleOption[];
-  projects: ProjectOption[];
+  articles: DocumentAssociableArticle[];
+  categories: DocumentAssociableCategory[];
 };
 
 const VISIBILITY_OPTIONS = ["PUBLIC", "CONTRIBUTOR", "ADMIN"] as const;
@@ -27,28 +27,24 @@ const VISIBILITY_OPTIONS = ["PUBLIC", "CONTRIBUTOR", "ADMIN"] as const;
 const fieldClassName =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
-export function DocumentCreateForm({ articles, projects }: DocumentCreateFormProps) {
+export function DocumentCreateForm({ articles, categories }: DocumentCreateFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<DocumentVisibility>("PUBLIC");
   const [articleId, setArticleId] = useState("");
-  const [projectId, setProjectId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const metaRef = useRef({
     title: "",
     description: "",
     visibility: "PUBLIC" as DocumentVisibility,
     articleId: "",
-    projectId: "",
+    categoryId: "",
   });
-  metaRef.current = { title, description, visibility, articleId, projectId };
+  metaRef.current = { title, description, visibility, articleId, categoryId };
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
     null,
   );
-
-  const linkedArticle = articles.find((article) => article.id === articleId);
-  const linkedToArticle = Boolean(linkedArticle);
-  const displayProjectId = linkedArticle?.projectId ?? projectId;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6" data-tour-id="admin.documents.upload">
@@ -74,15 +70,10 @@ export function DocumentCreateForm({ articles, projects }: DocumentCreateFormPro
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="Court descriptif du document"
-            maxLength={DOCUMENT_DESCRIPTION_MAX_LENGTH}
-            rows={3}
+            placeholder="Descriptif du document"
+            rows={4}
             className={fieldClassName}
           />
-          <span className="mt-1 block text-xs text-primary/45">
-            {description.length}/{DOCUMENT_DESCRIPTION_MAX_LENGTH} — affiché sur 2 lignes max dans
-            la bibliothèque
-          </span>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-primary-dark">Visibilité</span>
@@ -101,48 +92,20 @@ export function DocumentCreateForm({ articles, projects }: DocumentCreateFormPro
         </label>
       </section>
 
-      <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
         <h3 className="text-sm font-semibold text-primary-dark">Associations</h3>
         <p className="text-xs text-primary/50">Optionnel — vous pourrez aussi les modifier plus tard.</p>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium text-primary-dark">Article</span>
-          <select
-            value={articleId}
-            onChange={(event) => {
-              const nextArticleId = event.target.value;
-              setArticleId(nextArticleId);
-              const article = articles.find((item) => item.id === nextArticleId);
-              if (article?.projectId) {
-                setProjectId(article.projectId);
-              }
-            }}
-            className={fieldClassName}
-          >
-            <option value="">Aucun</option>
-            {articles.map((article) => (
-              <option key={article.id} value={article.id}>
-                {article.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium text-primary-dark">Projet</span>
-          <select
-            value={displayProjectId}
-            disabled={linkedToArticle}
-            title={linkedToArticle ? "Projet hérité de l’article lié" : undefined}
-            onChange={(event) => setProjectId(event.target.value)}
-            className={`${fieldClassName} disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-primary/60`}
-          >
-            <option value="">Aucun</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.title}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DocumentArticlePicker
+          articles={articles}
+          categories={categories}
+          value={articleId}
+          onChange={setArticleId}
+        />
+        <DocumentDomainPicker
+          categories={categories}
+          value={categoryId}
+          onChange={setCategoryId}
+        />
       </section>
 
       <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
@@ -157,19 +120,12 @@ export function DocumentCreateForm({ articles, projects }: DocumentCreateFormPro
             if (metaRef.current.title.trim().length < 2) {
               return "Indiquez un titre d’au moins 2 caractères avant de valider.";
             }
-            if (
-              metaRef.current.description.trim().length > DOCUMENT_DESCRIPTION_MAX_LENGTH
-            ) {
-              return `Le descriptif ne peut pas dépasser ${DOCUMENT_DESCRIPTION_MAX_LENGTH} caractères.`;
-            }
             return true;
           }}
           onUploaded={async (metadata) => {
             const meta = metaRef.current;
             const trimmedTitle = meta.title.trim();
             const trimmedDescription = meta.description.trim();
-            const linked = articles.find((article) => article.id === meta.articleId);
-
             const result = await createDocumentAction({
               title: trimmedTitle,
               description: trimmedDescription || undefined,
@@ -180,7 +136,7 @@ export function DocumentCreateForm({ articles, projects }: DocumentCreateFormPro
               cloudinaryPublicId: metadata.publicId,
               visibility: meta.visibility,
               articleId: meta.articleId || null,
-              projectId: linked?.projectId ?? (meta.projectId || null),
+              categoryId: meta.categoryId || null,
             });
 
             if (!result.success) {

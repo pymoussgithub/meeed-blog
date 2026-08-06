@@ -9,6 +9,7 @@ import {
   AssociateArticlePicker,
   type AssociableArticle,
 } from "@/components/forum/AssociateArticlePicker";
+import { ForumComposerHelp } from "@/components/forum/ForumComposerHelp";
 import { Button } from "@/components/ui/Button";
 import { DialogProvider } from "@/components/ui/DialogProvider";
 import { Input } from "@/components/ui/Input";
@@ -211,17 +212,21 @@ function NewTopicFormInner({
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white">
-            <div className="border-b border-gray-100 px-4 py-3">
-              <p className="text-sm font-semibold text-primary-dark">Message initial</p>
-              <p className="mt-1 text-xs text-primary/55">
-                Presentez le contexte, les contraintes, les observations et le resultat attendu pour obtenir des reponses plus utiles.
-              </p>
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-primary-dark">Message initial</p>
+                <p className="mt-1 text-xs text-primary/55">
+                  Présentez le contexte et le résultat attendu. Pour joindre un PDF, utilisez
+                  l&apos;icône document dans la barre d&apos;outils.
+                </p>
+              </div>
+              <ForumComposerHelp context="topic" />
             </div>
             <div className="overflow-hidden rounded-b-xl" data-tour-id="forum.topic.body">
               <TipTapEditor
                 content={body}
                 onChange={setBody}
-                placeholder="Decrivez votre sujet, ce que vous avez deja essaye, et les points sur lesquels vous attendez de l'aide..."
+                placeholder="Décrivez votre sujet, ce que vous avez déjà essayé, et les points sur lesquels vous attendez de l'aide..."
               />
             </div>
           </div>

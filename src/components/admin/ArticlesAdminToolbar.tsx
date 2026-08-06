@@ -6,11 +6,6 @@ import { useCallback } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-type ProjectOption = {
-  id: string;
-  title: string;
-};
-
 type CategoryOption = {
   id: string;
   name: string;
@@ -22,7 +17,6 @@ type AuthorOption = {
 };
 
 type ArticlesAdminToolbarProps = {
-  projects: ProjectOption[];
   categories: CategoryOption[];
   authors?: AuthorOption[];
   currentUserId?: string;
@@ -43,7 +37,6 @@ const STATUS_TABS = [
 ];
 
 export function ArticlesAdminToolbar({
-  projects,
   categories,
   authors = [],
   currentUserId,
@@ -54,7 +47,6 @@ export function ArticlesAdminToolbar({
   const searchParams = useSearchParams();
 
   const currentStatus = searchParams.get("status") ?? "";
-  const currentProject = searchParams.get("project") ?? "";
   const currentCategory = searchParams.get("category") ?? "";
   const currentAuthor = searchParams.get("author") ?? "";
   const currentQuery = searchParams.get("q") ?? "";
@@ -77,7 +69,7 @@ export function ArticlesAdminToolbar({
   );
 
   const hasActiveFilters = Boolean(
-    currentStatus || currentProject || currentCategory || currentAuthor || currentQuery,
+    currentStatus || currentCategory || currentAuthor || currentQuery,
   );
 
   const sortedAuthors = [...authors].sort((a, b) => {
@@ -123,7 +115,6 @@ export function ArticlesAdminToolbar({
             buildUrl({
               q: (formData.get("q") as string) || null,
               status: (formData.get("status") as string) || null,
-              project: (formData.get("project") as string) || null,
               category: (formData.get("category") as string) || null,
               author: (formData.get("author") as string) || null,
             }),
@@ -162,25 +153,6 @@ export function ArticlesAdminToolbar({
             </select>
           </div>
 
-          <div className="w-full lg:w-52">
-            <label htmlFor="article-project" className="mb-1.5 block text-xs font-medium text-primary/70">
-              Projet
-            </label>
-            <select
-              id="article-project"
-              name="project"
-              defaultValue={currentProject}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-            >
-              <option value="">Tous les projets</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {isAdmin ? (
             <div className="w-full lg:w-52">
               <label htmlFor="article-author" className="mb-1.5 block text-xs font-medium text-primary/70">
@@ -204,7 +176,7 @@ export function ArticlesAdminToolbar({
 
           <div className="w-full lg:w-52">
             <label htmlFor="article-category" className="mb-1.5 block text-xs font-medium text-primary/70">
-              Catégories
+              Domaines
             </label>
             <select
               id="article-category"
@@ -212,7 +184,7 @@ export function ArticlesAdminToolbar({
               defaultValue={currentCategory}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             >
-              <option value="">Toutes les catégories</option>
+              <option value="">Tous les domaines</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -246,15 +218,9 @@ export function ArticlesAdminToolbar({
               href={buildUrl({ status: null })}
             />
           ) : null}
-          {currentProject ? (
-            <FilterChip
-              label={projects.find((p) => p.id === currentProject)?.title ?? "Projet"}
-              href={buildUrl({ project: null })}
-            />
-          ) : null}
           {currentCategory ? (
             <FilterChip
-              label={categories.find((c) => c.id === currentCategory)?.name ?? "Catégorie"}
+              label={categories.find((c) => c.id === currentCategory)?.name ?? "Domaine"}
               href={buildUrl({ category: null })}
             />
           ) : null}

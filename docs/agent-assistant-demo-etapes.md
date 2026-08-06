@@ -67,7 +67,7 @@ Après chaque étape : `npx tsc --noEmit` (ou lint ciblé) doit passer ; pas de 
 
 ### 0.7 Convention `data-tour-id`
 
-Format : `{domaine}.{zone}.{élément}` en kebab-case segments :
+Format : `{projet}.{zone}.{élément}` en kebab-case segments :
 
 ```
 nav.header.articles
@@ -296,7 +296,7 @@ type TourSubject = {
 
 Ajouter `data-tour-id` (via constantes `targets.ts`) sur les composants concernés, **sans changer le comportement métier** :
 
-| Domaine | Fichiers typiques à inspecter / annoter |
+| Projet | Fichiers typiques à inspecter / annoter |
 |---------|----------------------------------------|
 | Header / nav | `HeaderNav.tsx`, `MobileMenu.tsx`, `Header.tsx` |
 | Accueil | `HomeHero.tsx`, `NewsArticlesCarousel.tsx` |
@@ -364,7 +364,7 @@ Ajouter `data-tour-id` (via constantes `targets.ts`) sur les composants concern�
 - [x] Ajouter un fichier subject par ID (`pub-articles`, `pub-lire-article`, … `admin-doc-sensible`) dans `src/lib/tour/subjects/`
 - [x] Contenu strictement dérivé des tableaux §3–§5 de `tutoriel-interactif-demo.md`
 - [x] Activer les boutons hub (plus de placeholders)
-- [x] Instrumentation `data-tour-id` restante (forum, documents, projets, catégories, modération, profil, aide, etc.)
+- [x] Instrumentation `data-tour-id` restante (forum, documents, domaines, catégories, modération, profil, aide, etc.)
 - [x] Prioriser la qualité des parcours de la chaîne §7 si le temps presse ; les autres peuvent rester avec plus de `confirm`
 
 ### Critères d’acceptation
@@ -460,7 +460,7 @@ Modifications ciblées existantes (instrumentation) :
 | `pub-articles` | 8 | [ ] |
 | `pub-lire-article` | 8 | [ ] |
 | `pub-categories` | 8 | [ ] |
-| `pub-projets` | 8 | [ ] |
+| `pub-domaines` | 8 | [ ] |
 | `pub-documents` | 8 | [ ] |
 | `pub-forum-lire` | 8 | [ ] |
 | `pub-forum-recherche` | 8 | [ ] |
@@ -493,7 +493,7 @@ Modifications ciblées existantes (instrumentation) :
 |----|----------------|------|
 | `admin-tous-articles` | 8 | [ ] |
 | `admin-categories` | 8 | [ ] |
-| `admin-projets` | 8 | [ ] |
+| `admin-domaines` | 8 | [ ] |
 | `admin-utilisateurs` | 8 | [ ] |
 | `admin-forum-rubriques` | 8 | [ ] |
 | `admin-forum-moderation` | 8 | [ ] |

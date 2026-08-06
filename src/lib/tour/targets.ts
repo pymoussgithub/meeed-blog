@@ -6,7 +6,7 @@ export const TOUR_TARGETS = {
   // Nav
   "nav.header.articles": "nav.header.articles",
   "nav.header.forum": "nav.header.forum",
-  "nav.header.projets": "nav.header.projets",
+  "nav.header.domaines": "nav.header.domaines",
   "nav.header.documents": "nav.header.documents",
   "nav.header.contact": "nav.header.contact",
   "nav.header.categories": "nav.header.categories",
@@ -41,10 +41,10 @@ export const TOUR_TARGETS = {
   "documents.view": "documents.view",
   "documents.download": "documents.download",
 
-  // Projets
-  "projets.grid": "projets.grid",
-  "projets.card": "projets.card",
-  "projets.donate": "projets.donate",
+  // Domaines
+  "domaines.grid": "domaines.grid",
+  "domaines.card": "domaines.card",
+  "domaines.donate": "domaines.donate",
 
   // Forum
   "forum.categories.table": "forum.categories.table",
@@ -85,7 +85,7 @@ export const TOUR_TARGETS = {
   "admin.sidebar.articles": "admin.sidebar.articles",
   "admin.sidebar.documents": "admin.sidebar.documents",
   "admin.sidebar.categories": "admin.sidebar.categories",
-  "admin.sidebar.projets": "admin.sidebar.projets",
+  "admin.sidebar.domaines": "admin.sidebar.domaines",
   "admin.sidebar.utilisateurs": "admin.sidebar.utilisateurs",
   "admin.sidebar.forum": "admin.sidebar.forum",
   "admin.sidebar.forum-rubriques": "admin.sidebar.forum-rubriques",
@@ -125,12 +125,12 @@ export const TOUR_TARGETS = {
   "admin.documents.visibility": "admin.documents.visibility",
   "admin.documents.list": "admin.documents.list",
 
-  // Categories / projets / users admin
+  // Categories / domaines / users admin
   "admin.categories.form": "admin.categories.form",
   "admin.categories.list": "admin.categories.list",
-  "admin.projets.new-button": "admin.projets.new-button",
-  "admin.projets.form": "admin.projets.form",
-  "admin.projets.save": "admin.projets.save",
+  "admin.domaines.new-button": "admin.domaines.new-button",
+  "admin.domaines.form": "admin.domaines.form",
+  "admin.domaines.save": "admin.domaines.save",
   "admin.utilisateurs.form": "admin.utilisateurs.form",
   "admin.utilisateurs.list": "admin.utilisateurs.list",
 

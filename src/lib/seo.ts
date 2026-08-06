@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getOgImageUrl } from "@/lib/cloudinary";
+import { toDateTimeAttr } from "@/lib/utils";
 
 export const SITE_NAME = "MEEED";
 export const SITE_DESCRIPTION =
@@ -8,7 +9,8 @@ export const SITE_DESCRIPTION =
 export const DEFAULT_OG_IMAGE = "/og-default.svg";
 
 export function getSiteUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://meeed.fr";
+  const raw = process.env.NEXTAUTH_URL?.trim();
+  return raw || "https://meeed.fr";
 }
 
 export function absoluteUrl(path: string) {
@@ -105,8 +107,8 @@ type ArticleJsonLdInput = {
   slug: string;
   coverImageUrl?: string | null;
   coverImagePublicId?: string | null;
-  publishedAt: Date | null;
-  updatedAt: Date;
+  publishedAt: Date | string | null;
+  updatedAt: Date | string;
   authorName: string;
 };
 
@@ -119,8 +121,8 @@ export function buildArticleJsonLd(article: ArticleJsonLdInput) {
     headline: article.title,
     description: article.excerpt,
     image: [image],
-    datePublished: article.publishedAt?.toISOString(),
-    dateModified: article.updatedAt.toISOString(),
+    datePublished: toDateTimeAttr(article.publishedAt),
+    dateModified: toDateTimeAttr(article.updatedAt),
     author: {
       "@type": "Person",
       name: article.authorName,

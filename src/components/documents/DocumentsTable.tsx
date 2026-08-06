@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import {
   getDocumentLinkLabel,
-  getDocumentProject,
+  getDocumentNewsCategories,
   isDocumentLinked,
   type DocumentWithArticleRelations,
 } from "@/lib/documents-listing";
@@ -19,8 +20,8 @@ type DocumentRow = {
   fileSize: number;
   createdAt?: Date | string;
   uploadedBy?: { id: string; name: string } | null;
-  project?: DocumentWithArticleRelations["project"];
   article?: DocumentWithArticleRelations["article"];
+  category?: DocumentWithArticleRelations["category"];
 };
 
 type DocumentsTableProps = {
@@ -62,7 +63,7 @@ function DocumentRowActions({ documentId }: { documentId: string }) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-1.5">
+      <div className="flex flex-col items-stretch gap-1.5 sm:items-end">
         <a
           href={viewPath}
           target="_blank"
@@ -95,10 +96,167 @@ function DocumentRowActions({ documentId }: { documentId: string }) {
   );
 }
 
-function DocumentRowItem({ document }: { document: DocumentRow }) {
-  const project = getDocumentProject(document);
+function DetailField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-primary/45">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm text-primary/80">{children}</dd>
+    </div>
+  );
+}
+
+function DocumentDescriptionModal({
+  document,
+  open,
+  onClose,
+}: {
+  document: DocumentRow;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const categories = getDocumentNewsCategories(document);
   const isLinked = isDocumentLinked(document);
   const linkLabel = getDocumentLinkLabel(document);
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      className="flex max-h-[min(90dvh,36rem)] max-w-lg flex-col overflow-hidden rounded-3xl p-0"
+    >
+      <h2
+        id="modal-title"
+        className="shrink-0 px-6 pb-2 pr-14 pt-6 text-lg font-bold text-primary-dark"
+      >
+        {document.title}
+      </h2>
+      <div className="scrollbar-meeed min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 pb-6 pt-1">
+        <span
+          className={cn(
+            "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
+            isLinked ? "bg-accent/10 text-accent-dark" : "bg-gray-100 text-primary/60",
+          )}
+        >
+          {linkLabel}
+        </span>
+
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-primary/45">
+            Description
+          </h3>
+          {document.description ? (
+            <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-primary/75">
+              {document.description}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-sm italic text-primary/45">
+              Aucune description pour ce document.
+            </p>
+          )}
+        </div>
+
+        <dl className="grid gap-4 sm:grid-cols-2">
+          <DetailField label="Fichier">
+            <span className="break-all">{document.fileName}</span>
+          </DetailField>
+          <DetailField label="Taille">{formatFileSize(document.fileSize)}</DetailField>
+          <DetailField label="Format">PDF</DetailField>
+          {document.createdAt ? (
+            <DetailField label="Ajouté le">{formatDate(document.createdAt)}</DetailField>
+          ) : null}
+          {document.uploadedBy ? (
+            <DetailField label="Contributeur">{document.uploadedBy.name}</DetailField>
+          ) : null}
+          {document.article ? (
+            <DetailField label="Article lié">
+              <Link
+                href={`/a/${document.article.slug}`}
+                className="font-medium text-accent-dark hover:underline"
+                onClick={onClose}
+              >
+                {document.article.title}
+              </Link>
+            </DetailField>
+          ) : null}
+          {categories.length > 0 ? (
+            <div className="sm:col-span-2">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-primary/45">
+                {categories.length > 1 ? "Domaines" : "Domaine"}
+              </dt>
+              <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                {categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/c/${category.slug}`}
+                    className="inline-flex rounded-full bg-bg-soft px-2.5 py-0.5 text-xs font-medium text-primary/70 transition-colors hover:bg-accent/10 hover:text-accent-dark"
+                    onClick={onClose}
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+
+        <div className="flex flex-wrap gap-2 border-t border-primary/10 pt-4">
+          <a
+            href={`/api/documents/${document.id}/view`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={actionButtonClassName}
+          >
+            Consulter
+          </a>
+          <a
+            href={`/api/documents/${document.id}/download`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={primaryActionClassName}
+          >
+            Télécharger
+          </a>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function DocumentDomainsCell({ document }: { document: DocumentRow }) {
+  const domains = getDocumentNewsCategories(document);
+
+  if (domains.length === 0) {
+    return <span className="text-primary/40">—</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap justify-center gap-1.5">
+      {domains.map((domain) => (
+        <Link
+          key={domain.id}
+          href={`/c/${domain.slug}`}
+          className="inline-flex rounded-full bg-bg-soft px-2.5 py-0.5 text-xs font-medium text-primary/70 transition-colors hover:bg-accent/10 hover:text-accent-dark"
+        >
+          {domain.name}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function DocumentRowItem({ document }: { document: DocumentRow }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const isLinked = isDocumentLinked(document);
+  const linkLabel = getDocumentLinkLabel(document);
+  const domains = getDocumentNewsCategories(document);
 
   return (
     <tr className="transition-colors hover:bg-bg-soft/40">
@@ -116,16 +274,34 @@ function DocumentRowItem({ document }: { document: DocumentRow }) {
             {linkLabel}
           </span>
         </div>
-        {document.description ? (
-          <p className="mt-1 line-clamp-2 break-all text-xs text-primary/55 sm:text-sm">
-            {document.description}
-          </p>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => setDetailsOpen(true)}
+          className={cn(actionButtonClassName, "mt-2")}
+        >
+          Description du document
+        </button>
         <p className="mt-1.5 text-xs text-primary/40">
           {document.fileName} · {formatFileSize(document.fileSize)} · PDF
         </p>
 
         <div className="mt-2 space-y-1 text-xs text-primary/55 lg:hidden">
+          {domains.length > 0 ? (
+            <p className="md:hidden">
+              Domaine{domains.length > 1 ? "s" : ""} :{" "}
+              {domains.map((domain, index) => (
+                <span key={domain.id}>
+                  {index > 0 ? ", " : null}
+                  <Link
+                    href={`/c/${domain.slug}`}
+                    className="font-medium text-accent-dark hover:underline"
+                  >
+                    {domain.name}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          ) : null}
           {document.article ? (
             <p className="md:hidden">
               Article :{" "}
@@ -134,17 +310,6 @@ function DocumentRowItem({ document }: { document: DocumentRow }) {
                 className="font-medium text-accent-dark hover:underline"
               >
                 {document.article.title}
-              </Link>
-            </p>
-          ) : null}
-          {project ? (
-            <p className="sm:hidden">
-              Projet :{" "}
-              <Link
-                href={`/c/${project.category.slug}`}
-                className="font-medium text-accent-dark hover:underline"
-              >
-                {project.title}
               </Link>
             </p>
           ) : null}
@@ -158,6 +323,16 @@ function DocumentRowItem({ document }: { document: DocumentRow }) {
             <DocumentRowActions documentId={document.id} />
           </div>
         </div>
+
+        <DocumentDescriptionModal
+          document={document}
+          open={detailsOpen}
+          onClose={() => setDetailsOpen(false)}
+        />
+      </td>
+
+      <td className="hidden px-3 py-3 text-center align-middle md:table-cell">
+        <DocumentDomainsCell document={document} />
       </td>
 
       <td className="hidden px-3 py-3 text-center align-middle md:table-cell">
@@ -167,19 +342,6 @@ function DocumentRowItem({ document }: { document: DocumentRow }) {
             className="line-clamp-2 font-medium text-accent-dark hover:underline"
           >
             {document.article.title}
-          </Link>
-        ) : (
-          <span className="text-primary/40">—</span>
-        )}
-      </td>
-
-      <td className="hidden px-3 py-3 text-center align-middle sm:table-cell">
-        {project ? (
-          <Link
-            href={`/c/${project.category.slug}`}
-            className="line-clamp-2 font-medium text-accent-dark hover:underline"
-          >
-            {project.title}
           </Link>
         ) : (
           <span className="text-primary/40">—</span>
@@ -219,11 +381,11 @@ export function DocumentsTable({
             <th className="min-w-[14rem] px-4 py-2.5 text-left font-heading font-semibold text-primary-dark">
               Document
             </th>
+            <th className="hidden min-w-[7rem] px-3 py-2.5 text-center font-heading font-semibold text-primary-dark md:table-cell">
+              Domaine
+            </th>
             <th className="hidden min-w-[8rem] px-3 py-2.5 text-center font-heading font-semibold text-primary-dark md:table-cell">
               Article lié
-            </th>
-            <th className="hidden min-w-[7rem] px-3 py-2.5 text-center font-heading font-semibold text-primary-dark sm:table-cell">
-              Projet
             </th>
             <th className="hidden whitespace-nowrap px-3 py-2.5 text-center font-heading font-semibold text-primary-dark sm:table-cell">
               Contributeur

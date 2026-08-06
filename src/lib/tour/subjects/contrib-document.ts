@@ -44,7 +44,7 @@ export const contribDocument: TourSubject = {
     },
     {
       id: "contrib-document-6",
-      message: "Liez-le éventuellement à un article ou un projet.",
+      message: "Liez-le éventuellement à un article ou un domaine.",
       target: T["admin.documents.list"],
       action: "confirm",
       optional: true,

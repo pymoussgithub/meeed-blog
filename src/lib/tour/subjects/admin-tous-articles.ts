@@ -17,7 +17,7 @@ export const adminTousArticles: TourSubject = {
     },
     {
       id: "admin-tous-articles-2",
-      message: "Filtrez par statut, catégorie ou recherche.",
+      message: "Filtrez par statut, domaine ou recherche.",
       target: T["admin.articles.filters"],
       action: "confirm",
     },

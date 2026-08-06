@@ -1,28 +1,27 @@
 "use client";
 
 import type { DocumentVisibility } from "@prisma/client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { updateDocumentAction } from "@/actions/document.actions";
+import {
+  DocumentArticlePicker,
+  type DocumentAssociableArticle,
+  type DocumentAssociableCategory,
+} from "@/components/admin/DocumentArticlePicker";
+import { DocumentDomainPicker } from "@/components/admin/DocumentDomainPicker";
 import { DocumentListActions } from "@/components/admin/DocumentListActions";
 import { DocumentStatusBadge } from "@/components/admin/DocumentStatusBadge";
 import { DocumentUpload } from "@/components/admin/DocumentUpload";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import { getDocumentVisibilityLabel } from "@/lib/document-visibility";
-import {
-  DOCUMENT_DESCRIPTION_MAX_LENGTH,
-  DOCUMENT_TITLE_MAX_LENGTH,
-} from "@/lib/validations/document";
-
-type ArticleOption = { id: string; title: string; projectId: string | null };
-type ProjectOption = { id: string; title: string };
+import { DOCUMENT_TITLE_MAX_LENGTH } from "@/lib/validations/document";
 
 type DocumentFormProps = {
   documentId: string;
-  articles: ArticleOption[];
-  projects: ProjectOption[];
+  articles: DocumentAssociableArticle[];
+  categories: DocumentAssociableCategory[];
   initialData: {
     title: string;
     description: string | null;
@@ -31,7 +30,7 @@ type DocumentFormProps = {
     fileName: string;
     fileSize: number;
     articleId: string | null;
-    projectId: string | null;
+    categoryId: string | null;
   };
 };
 
@@ -46,7 +45,7 @@ const tableActionClassName =
 export function DocumentForm({
   documentId,
   articles,
-  projects,
+  categories,
   initialData,
 }: DocumentFormProps) {
   const router = useRouter();
@@ -54,7 +53,7 @@ export function DocumentForm({
   const [description, setDescription] = useState(initialData.description ?? "");
   const [visibility, setVisibility] = useState<DocumentVisibility>(initialData.visibility);
   const [articleId, setArticleId] = useState(initialData.articleId ?? "");
-  const [projectId, setProjectId] = useState(initialData.projectId ?? "");
+  const [categoryId, setCategoryId] = useState(initialData.categoryId ?? "");
   const [fileMeta, setFileMeta] = useState<{
     fileUrl: string;
     fileName: string;
@@ -67,10 +66,6 @@ export function DocumentForm({
     null,
   );
 
-  const linkedArticle = articles.find((article) => article.id === articleId);
-  const linkedToArticle = Boolean(linkedArticle);
-  const displayProjectId = linkedArticle?.projectId ?? projectId;
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -79,7 +74,7 @@ export function DocumentForm({
         description: description.trim() || null,
         visibility,
         articleId: articleId || null,
-        projectId: linkedToArticle ? null : projectId || null,
+        categoryId: categoryId || null,
         ...(fileMeta ?? {}),
       });
 
@@ -101,6 +96,15 @@ export function DocumentForm({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <DocumentStatusBadge isArchived={initialData.isArchived} />
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="accent"
+            disabled={saving}
+            onClick={() => void handleSave()}
+            className="rounded-full px-3 py-1.5 text-xs"
+          >
+            {saving ? "Enregistrement…" : "Enregistrer"}
+          </Button>
           {!initialData.isArchived ? (
             <a
               href={`/api/documents/${documentId}/view`}
@@ -140,13 +144,9 @@ export function DocumentForm({
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            maxLength={DOCUMENT_DESCRIPTION_MAX_LENGTH}
-            rows={3}
+            rows={4}
             className={fieldClassName}
           />
-          <span className="mt-1 block text-xs text-primary/45">
-            {description.length}/{DOCUMENT_DESCRIPTION_MAX_LENGTH}
-          </span>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-primary-dark">Visibilité</span>
@@ -164,47 +164,19 @@ export function DocumentForm({
         </label>
       </section>
 
-      <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
         <h3 className="text-sm font-semibold text-primary-dark">Associations</h3>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium text-primary-dark">Article</span>
-          <select
-            value={articleId}
-            onChange={(event) => {
-              const nextArticleId = event.target.value;
-              setArticleId(nextArticleId);
-              const article = articles.find((item) => item.id === nextArticleId);
-              if (article?.projectId) {
-                setProjectId(article.projectId);
-              }
-            }}
-            className={fieldClassName}
-          >
-            <option value="">Aucun</option>
-            {articles.map((article) => (
-              <option key={article.id} value={article.id}>
-                {article.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium text-primary-dark">Projet</span>
-          <select
-            value={displayProjectId}
-            disabled={linkedToArticle}
-            title={linkedToArticle ? "Projet hérité de l’article lié" : undefined}
-            onChange={(event) => setProjectId(event.target.value)}
-            className={`${fieldClassName} disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-primary/60`}
-          >
-            <option value="">Aucun</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.title}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DocumentArticlePicker
+          articles={articles}
+          categories={categories}
+          value={articleId}
+          onChange={setArticleId}
+        />
+        <DocumentDomainPicker
+          categories={categories}
+          value={categoryId}
+          onChange={setCategoryId}
+        />
       </section>
 
       <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
@@ -239,12 +211,10 @@ export function DocumentForm({
         <Button type="button" variant="accent" disabled={saving} onClick={() => void handleSave()}>
           {saving ? "Enregistrement…" : "Enregistrer"}
         </Button>
-        <Link
-          href="/admin/documents"
-          className="text-sm font-medium text-primary/60 hover:text-accent-dark"
-        >
-          Retour à la liste
-        </Link>
+        <Button href="/admin/documents" variant="outline" className="gap-2">
+          <span aria-hidden="true">←</span>
+          Retour aux documents
+        </Button>
       </div>
 
       <Toast

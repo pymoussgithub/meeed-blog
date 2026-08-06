@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", label: "Accueil", match: "accueil" as const },
   { href: "/actualites", label: "Nos articles", match: "articles" as const },
-  { href: "/projets", label: "Nos projets", match: "projets" as const },
+  { href: "/categories", label: "Domaines", match: "domaines" as const },
   { href: "/documents", label: "Documents", match: "documents" as const },
   { href: "/forum", label: "Forum", match: "forum" as const },
 ] as const;
@@ -25,8 +25,12 @@ function isNavItemActive(
     return pathname === "/forum" || pathname.startsWith("/forum/");
   }
 
-  if (match === "projets") {
-    return pathname === "/projets" || pathname.startsWith("/projets/");
+  if (match === "domaines") {
+    return (
+      pathname === "/categories" ||
+      pathname.startsWith("/categories/") ||
+      pathname.startsWith("/c/")
+    );
   }
 
   if (match === "documents") {
@@ -36,11 +40,9 @@ function isNavItemActive(
   return (
     (pathname === "/actualites" &&
       contentType !== "news" &&
-      contentType !== "project" &&
+      contentType !== "domain" &&
       contentType !== "formation") ||
-    pathname.startsWith("/a/") ||
-    pathname.startsWith("/c/") ||
-    pathname === "/categories"
+    pathname.startsWith("/a/")
   );
 }
 
@@ -52,7 +54,7 @@ export function HeaderNav() {
   const tourIdByMatch: Record<(typeof NAV_ITEMS)[number]["match"], string | undefined> = {
     accueil: undefined,
     articles: "nav.header.articles",
-    projets: "nav.header.projets",
+    domaines: "nav.header.domaines",
     documents: "nav.header.documents",
     forum: "nav.header.forum",
   };

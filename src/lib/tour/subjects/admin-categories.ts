@@ -3,25 +3,25 @@ import type { TourSubject } from "@/lib/tour/types";
 
 export const adminCategories: TourSubject = {
   id: "admin-categories",
-  label: "Créer / ordonner les catégories",
-  description: "Ajouter une catégorie et réordonner la liste.",
+  label: "Créer / ordonner les domaines",
+  description: "Ajouter un domaine et réordonner la liste.",
   audience: ["ADMIN"],
-  nextSuggested: ["admin-projets", "pub-categories"],
+  nextSuggested: ["pub-categories"],
   steps: [
     {
       id: "admin-categories-1",
-      message: "Ouvrez Catégories.",
-      target: T["admin.sidebar.categories"],
+      message: "Ouvrez Domaines.",
+      target: T["admin.sidebar.domaines"],
       action: "navigate",
       routeHint: "/admin/categories",
     },
     {
       id: "admin-categories-2",
-      message: "Ajoutez une catégorie (nom, description, couleur).",
+      message: "Ajoutez un domaine (nom, description, couleur).",
       target: T["admin.categories.form"],
       action: "input",
       fillDemo: {
-        [T["admin.categories.form"]]: "Catégorie démo",
+        [T["admin.categories.form"]]: "Domaine démo",
       },
     },
     {
@@ -33,7 +33,7 @@ export const adminCategories: TourSubject = {
     {
       id: "admin-categories-4",
       message: "Vérifiez l’ordre sur le site public.",
-      target: T["nav.header.categories"],
+      target: T["nav.header.domaines"],
       action: "confirm",
       optional: true,
     },

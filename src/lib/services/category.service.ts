@@ -15,18 +15,26 @@ export async function getAllCategories() {
   });
 }
 
+/** Domaines publics avec le nombre d’articles publiés par domaine. */
+export async function getCategoriesWithPublishedCounts() {
+  return prisma.category.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: {
+      _count: {
+        select: {
+          articles: {
+            where: { article: publishedArticleWhere() },
+          },
+        },
+      },
+    },
+  });
+}
+
 export async function getCategoriesForAdmin() {
   return prisma.category.findMany({
     orderBy: { sortOrder: "asc" },
     include: {
-      projects: {
-        select: {
-          id: true,
-          title: true,
-          _count: { select: { articles: true } },
-        },
-        orderBy: { sortOrder: "asc" },
-      },
       articles: {
         where: { article: publishedArticleWhere() },
         select: { articleId: true },
@@ -39,86 +47,27 @@ export async function getCategoriesForAdmin() {
 export async function getPublishedCategories() {
   return prisma.category.findMany({
     where: {
-      OR: [
-        {
-          articles: {
-            some: {
-              article: publishedArticleWhere(),
-            },
-          },
-        },
-        {
-          projects: {
-            some: {
-              articles: {
-                some: publishedArticleWhere(),
-              },
-            },
-          },
-        },
-      ],
+      articles: { some: { article: publishedArticleWhere() } },
     },
     orderBy: { sortOrder: "asc" },
-    include: {
-      projects: { select: { slug: true, isActive: true }, orderBy: { sortOrder: "asc" } },
-    },
   });
 }
 
-export async function getCategoriesForArticleForm(selectedCategoryIds: string[] = []) {
+export async function getCategoriesForArticleForm() {
   const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
-    include: {
-      projects: { select: { id: true } },
-    },
-  });
-
-  return categories
-    .filter(
-      (category) =>
-        category.projects.length === 0 || selectedCategoryIds.includes(category.id),
-    )
-    .map(({ projects: _projects, ...category }) => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-    }));
-}
-
-export async function getProjectsForArticleForm(selectedProjectId?: string | null) {
-  return prisma.project.findMany({
-    where: {
-      OR: [{ isActive: true }, ...(selectedProjectId ? [{ id: selectedProjectId }] : [])],
-    },
     orderBy: { sortOrder: "asc" },
     select: {
       id: true,
-      title: true,
+      name: true,
       slug: true,
-      color: true,
-      isActive: true,
-      category: { select: { name: true } },
     },
   });
+  return categories;
 }
 
 export async function getCategoryBySlug(slug: string) {
   return prisma.category.findUnique({
     where: { slug },
-    include: {
-      projects: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          summary: true,
-          color: true,
-          isActive: true,
-          sortOrder: true,
-        },
-        orderBy: { sortOrder: "asc" },
-      },
-    },
   });
 }
 
@@ -150,7 +99,7 @@ export async function reorderCategories(orderedIds: string[]) {
     orderedIds.length !== existing.length ||
     orderedIds.some((id) => !existingIds.has(id))
   ) {
-    throw new Error("Liste de catégories invalide pour le réordonnancement");
+    throw new Error("Liste de domaines invalide pour le réordonnancement");
   }
 
   await prisma.$transaction(
@@ -167,7 +116,6 @@ export async function deleteCategory(id: string) {
   const category = await prisma.category.findUnique({
     where: { id },
     include: {
-      projects: { select: { id: true } },
       articles: {
         where: { article: publishedArticleWhere() },
         select: { articleId: true },
@@ -176,15 +124,11 @@ export async function deleteCategory(id: string) {
   });
 
   if (!category) {
-    throw new Error("Catégorie introuvable");
-  }
-
-  if (category.projects.length > 0) {
-    throw new Error("Supprimez d'abord les projets associés à cette catégorie");
+    throw new Error("Domaine introuvable");
   }
 
   if (category.articles.length > 0) {
-    throw new Error("Impossible de supprimer une catégorie contenant des articles publiés");
+    throw new Error("Impossible de supprimer un domaine contenant des articles publiés");
   }
 
   return prisma.category.delete({ where: { id } });

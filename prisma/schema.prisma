@@ -72,8 +72,6 @@ model Article {
   publishedAt        DateTime?
   authorId           String
   author             User                @relation(fields: [authorId], references: [id])
-  projectId          String?
-  project            Project?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
   categories         ArticleCategory[]
   documents          Document[]
   forumTopics        ArticleForumTopic[]
@@ -82,7 +80,6 @@ model Article {
 
   @@index([status, publishedAt])
   @@index([authorId])
-  @@index([projectId])
 }
 
 model Category {
@@ -93,31 +90,8 @@ model Category {
   color       String?           @default("#4ecdc4")
   sortOrder   Int               @default(0)
   articles    ArticleCategory[]
-  projects    Project[]
-  createdAt   DateTime          @default(now())
-}
-
-model Project {
-  id                 String   @id @default(cuid())
-  title              String
-  slug               String   @unique
-  summary            String
-  description        String?  @db.Text
-  donationUrl        String?
-  coverImageUrl      String?
-  coverImagePublicId String?
-  color              String?  @default("#4ecdc4")
-  sortOrder          Int      @default(0)
-  isActive           Boolean  @default(true)
-  categoryId         String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  articles    Article[]
   documents   Document[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([categoryId])
-  @@index([isActive, sortOrder])
+  createdAt   DateTime          @default(now())
 }
 
 model ArticleCategory {
@@ -142,15 +116,15 @@ model Document {
   isArchived         Boolean  @default(false)
   articleId          String?
   article            Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
-  projectId          String?
-  project            Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  categoryId         String?
+  category           Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   uploadedById       String
   uploadedBy         User     @relation(fields: [uploadedById], references: [id])
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
   @@index([articleId])
-  @@index([projectId])
+  @@index([categoryId])
   @@index([visibility])
   @@index([isArchived])
 }

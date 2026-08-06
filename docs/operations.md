@@ -69,7 +69,7 @@ heroku config:set NEXTAUTH_URL=https://meeed.fr -a votre-app
 - [ ] Tester `https://meeed.fr` et `https://www.meeed.fr`
 - [ ] Tester login admin en HTTPS
 - [ ] Tester partage WhatsApp d'un article (titre + image + description)
-- [ ] Vérifier les redirections : `/a-propos-de`, `/nos-projets`, `/tracteur-retrofit`, etc.
+- [ ] Vérifier les redirections : `/a-propos-de`, `/nos-domaines`, `/tracteur-retrofit`, etc.
 - [ ] Communiquer la date de bascule aux contributeurs
 - [ ] Garder l'ancien site Infomaniak actif 2–4 semaines en parallèle, puis le désactiver
 
@@ -91,7 +91,7 @@ heroku config:set NEXTAUTH_URL=https://meeed.fr -a votre-app
 - [ ] Navigation mobile (menu hamburger, recherche)
 - [ ] Lecture article + téléchargement PDF
 - [ ] Recherche par mot-clé
-- [ ] Pages institutionnelles (à propos, contact, projets)
+- [ ] Pages institutionnelles (à propos, contact, domaines)
 - [ ] Formulaire contact (ouverture client mail)
 
 ### Accessibilité (rapide)
@@ -140,11 +140,11 @@ Conception des parcours : `docs/tutoriel-interactif-demo.md`. Playbook agent : `
 
 Ces éléments ne peuvent pas être entièrement automatisés :
 
-1. **PDF existants** — uploader via Admin → Documents depuis les dossiers projets
+1. **PDF existants** — uploader via Admin → Documents depuis les dossiers domaines
 2. **Images de couverture** — uploader via l'éditeur d'articles (Cloudinary)
 3. **Logo officiel** — remplacer `public/logo-meeed.svg` par le PNG du site actuel
 4. **Email contact** — vérifier que `contact@meeed.fr` dans `src/lib/content/site.ts` est correct
-5. **Vidéos HelloAsso** — liens déjà présents sur la page Projets (tracteur)
+5. **Vidéos HelloAsso** — liens déjà présents sur la page Domaines (tracteur)
 
 ---
 

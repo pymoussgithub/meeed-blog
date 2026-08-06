@@ -9,7 +9,7 @@ import {
   reorderForumCategoriesAction,
   updateForumCategoryAction,
 } from "@/actions/forum-moderation.actions";
-import { ProjectStatusBadge } from "@/components/admin/ProjectStatusBadge";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { useDialog } from "@/components/ui/DialogProvider";
 import { Input } from "@/components/ui/Input";
@@ -513,7 +513,7 @@ export function ForumCategoriesManager({
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <ProjectStatusBadge isActive={category.isActive} />
+                        <StatusBadge isActive={category.isActive} />
                       </td>
                       <td className="hidden px-4 py-3 text-primary/70 sm:table-cell">
                         {category._count.topics}

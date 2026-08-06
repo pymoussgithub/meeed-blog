@@ -12,7 +12,7 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: "/forum", changeFrequency: "daily", priority: 0.85 },
   { url: "/forum/importants", changeFrequency: "daily", priority: 0.7 },
   { url: "/forum/recherche", changeFrequency: "monthly", priority: 0.4 },
-  { url: "/projets", changeFrequency: "monthly", priority: 0.8 },
+  { url: "/domaines", changeFrequency: "monthly", priority: 0.8 },
   { url: "/documents", changeFrequency: "weekly", priority: 0.7 },
   { url: "/recherche", changeFrequency: "monthly", priority: 0.5 },
   { url: "/a-propos", changeFrequency: "yearly", priority: 0.6 },

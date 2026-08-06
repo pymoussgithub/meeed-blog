@@ -9,8 +9,7 @@ const FIELD_LABELS: Record<string, string> = {
   excerpt: "L'extrait",
   content: "Le contenu",
   coverImageUrl: "L'image de couverture",
-  projectId: "Le projet",
-  categoryIds: "Les thématiques",
+  categoryIds: "Les domaines",
 };
 
 function requiredText(message: string) {
@@ -38,15 +37,14 @@ export function getFirstZodErrorMessage(error: z.ZodError): string {
   return issue.message;
 }
 
-function withClassificationRefine<T extends z.ZodTypeAny>(schema: T) {
+function withCategoriesRefine<T extends z.ZodTypeAny>(schema: T) {
   return schema.superRefine((data: z.infer<T>, ctx) => {
-    const projectId = (data as { projectId?: string | null }).projectId;
     const categoryIds = (data as { categoryIds?: string[] }).categoryIds ?? [];
-    if (!projectId && categoryIds.length === 0) {
+    if (categoryIds.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Sélectionnez un projet ou au moins une thématique",
-        path: ["projectId"],
+        message: "Sélectionnez au moins un domaine",
+        path: ["categoryIds"],
       });
     }
   });
@@ -73,10 +71,6 @@ const articleFields = {
   coverImageUrl: z.string().url().nullish(),
   coverImagePublicId: z.string().nullish(),
   status: articleStatusSchema.default("DRAFT"),
-  projectId: z.preprocess(
-    (value) => (value === "" || value == null ? null : value),
-    z.string().cuid().nullable(),
-  ),
   categoryIds: z.preprocess(
     (value) => (value == null ? [] : value),
     z.array(z.string().cuid()),
@@ -85,9 +79,9 @@ const articleFields = {
 
 const articleFormObjectSchema = z.object(articleFields);
 
-export const articleFormSchema = withClassificationRefine(articleFormObjectSchema);
+export const articleFormSchema = withCategoriesRefine(articleFormObjectSchema);
 
-/** Brouillon : champs optionnels — la publication reste stricte via publishArticleSchema. */
+/** Brouillon : champs optionnels — la publication reste stricte via publishArticleSchema (hors couverture). */
 export const draftArticleSchema = z.object({
   title: z.preprocess((value) => (value == null ? "" : value), z.string().max(200)),
   slug: z.preprocess(
@@ -105,26 +99,15 @@ export const draftArticleSchema = z.object({
   coverImageUrl: z.string().url().nullish(),
   coverImagePublicId: z.string().nullish(),
   status: articleStatusSchema.default("DRAFT"),
-  projectId: z.preprocess(
-    (value) => (value === "" || value == null ? null : value),
-    z.string().cuid().nullable(),
-  ),
   categoryIds: z.preprocess(
     (value) => (value == null ? [] : value),
     z.array(z.string().cuid()),
   ),
 });
 
-export const publishArticleSchema = withClassificationRefine(
+export const publishArticleSchema = withCategoriesRefine(
   z.object({
     ...articleFields,
-    coverImageUrl: z.preprocess(
-      (value) => value ?? "",
-      z
-        .string()
-        .min(1, "L'image de couverture est obligatoire pour publier")
-        .url("L'URL de l'image de couverture est invalide"),
-    ),
     excerpt: requiredText("L'extrait est requis").pipe(
       z
         .string()
@@ -134,7 +117,7 @@ export const publishArticleSchema = withClassificationRefine(
   }),
 );
 
-export const createArticleSchema = withClassificationRefine(
+export const createArticleSchema = withCategoriesRefine(
   z.object({
     ...articleFields,
     authorId: z.string().cuid(),
@@ -169,7 +152,6 @@ export function normalizeArticleFormInput(
     status: input.status === "DRAFT" || input.status === "PUBLISHED" || input.status === "ARCHIVED"
       ? input.status
       : "DRAFT",
-    projectId: typeof input.projectId === "string" && input.projectId ? input.projectId : null,
     categoryIds: Array.isArray(input.categoryIds)
       ? input.categoryIds.filter((id): id is string => typeof id === "string")
       : [],

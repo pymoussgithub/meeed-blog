@@ -23,7 +23,6 @@ export type CategoryRow = {
   description: string | null;
   color: string | null;
   sortOrder: number;
-  projects: { id: string; title: string; _count: { articles: number } }[];
   articles: { articleId: string }[];
   _count: { articles: number };
 };
@@ -46,15 +45,9 @@ function buildCategoriesUrl(
 }
 
 function categoryStats(category: CategoryRow) {
-  const projectArticleCount = category.projects.reduce(
-    (sum, project) => sum + project._count.articles,
-    0,
-  );
-  const publishedCount =
-    category.projects.length > 0 ? projectArticleCount : category.articles.length;
-  const draftCount =
-    category.projects.length > 0 ? 0 : category._count.articles - category.articles.length;
-  const canDelete = category.projects.length === 0 && publishedCount === 0;
+  const publishedCount = category.articles.length;
+  const draftCount = category._count.articles - category.articles.length;
+  const canDelete = publishedCount === 0;
 
   return { publishedCount, draftCount, canDelete };
 }
@@ -141,7 +134,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
     setCreateSlug("");
     setCreateDescription("");
     setCreateColor("#4ecdc4");
-    setToast({ message: "Catégorie créée.", variant: "success" });
+    setToast({ message: "Domaine créé.", variant: "success" });
     router.push(buildCategoriesUrl(searchParams, { new: null, edit: null }));
     router.refresh();
   };
@@ -164,7 +157,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
       return;
     }
 
-    setToast({ message: "Catégorie mise à jour.", variant: "success" });
+    setToast({ message: "Domaine mis à jour.", variant: "success" });
     router.push(buildCategoriesUrl(searchParams, { new: null, edit: null }));
     router.refresh();
   };
@@ -174,9 +167,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
 
     if (!canDelete) {
       await alert(
-        category.projects.length > 0
-          ? `Impossible de supprimer « ${category.name} » : supprimez d’abord les projets associés.`
-          : `Impossible de supprimer « ${category.name} » : des articles publiés utilisent encore cette catégorie.`,
+        `Impossible de supprimer « ${category.name} » : des articles publiés utilisent encore ce domaine.`,
         { variant: "error", title: "Suppression impossible" },
       );
       return;
@@ -184,12 +175,12 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
 
     const draftWarning =
       draftCount > 0
-        ? `\n\n${draftCount} brouillon${draftCount > 1 ? "s" : ""} ne ser${draftCount > 1 ? "ont" : "a"} plus catégorisé${draftCount > 1 ? "s" : ""}.`
+        ? `\n\n${draftCount} brouillon${draftCount > 1 ? "s" : ""} ne ser${draftCount > 1 ? "ont" : "a"} plus rattaché${draftCount > 1 ? "s" : ""}.`
         : "";
 
     const ok = await confirm(
-      `Supprimer la catégorie « ${category.name} » ? Cette action est irréversible.${draftWarning}`,
-      { title: "Supprimer la catégorie ?", variant: "danger", confirmLabel: "Supprimer" },
+      `Supprimer le domaine « ${category.name} » ? Cette action est irréversible.${draftWarning}`,
+      { title: "Supprimer le domaine ?", variant: "danger", confirmLabel: "Supprimer" },
     );
     if (!ok) return;
 
@@ -199,7 +190,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
       return;
     }
 
-    setToast({ message: "Catégorie supprimée.", variant: "success" });
+    setToast({ message: "Domaine supprimé.", variant: "success" });
     if (editingId === category.id) {
       router.push(buildCategoriesUrl(searchParams, { edit: null, new: null }));
     }
@@ -247,7 +238,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-primary-dark">Nouvelle catégorie</h2>
+              <h2 className="text-lg font-semibold text-primary-dark">Nouveau domaine</h2>
               <p className="mt-1 text-sm text-primary/60">
                 Le slug sert d’URL publique : /c/…
               </p>
@@ -278,7 +269,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
               label="Slug"
               value={createSlug}
               onChange={(e) => setCreateSlug(slugify(e.target.value))}
-              placeholder={slugify(createName) || "ma-categorie"}
+              placeholder={slugify(createName) || "mon-domaine"}
               required
             />
             <Input
@@ -299,7 +290,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <Button type="submit" variant="accent" disabled={saving}>
-              {saving ? "Création…" : "Créer la catégorie"}
+              {saving ? "Création…" : "Créer le domaine"}
             </Button>
             <Button type="button" variant="outline" onClick={closePanels}>
               Annuler
@@ -320,9 +311,6 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
               </h2>
               <p className="mt-1 text-sm text-primary/60">
                 /c/{editingCategory.slug}
-                {editingCategory.projects.length > 0
-                  ? ` · ${editingCategory.projects.length} projet${editingCategory.projects.length > 1 ? "s" : ""}`
-                  : ""}
               </p>
             </div>
             <button
@@ -376,16 +364,16 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
 
       {ordered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
-          <p className="text-lg font-medium text-primary-dark">Aucune catégorie</p>
+          <p className="text-lg font-medium text-primary-dark">Aucun domaine</p>
           <p className="mt-2 text-sm text-primary/60">
-            Commencez par créer votre première catégorie éditoriale.
+            Commencez par créer votre premier domaine éditorial.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button
               href={buildCategoriesUrl(searchParams, { new: "1", edit: null })}
               variant="accent"
             >
-              Créer une catégorie
+              Créer un domaine
             </Button>
           </div>
         </div>
@@ -400,7 +388,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
                   <th className="w-10 px-2 py-3" aria-label="Réordonner" />
-                  <th className="px-4 py-3 font-medium">Catégorie</th>
+                  <th className="px-4 py-3 font-medium">Domaine</th>
                   <th className="hidden px-4 py-3 font-medium sm:table-cell">Contenu</th>
                   <th className="hidden px-4 py-3 font-medium md:table-cell">Ordre</th>
                   <th className="px-4 py-3 font-medium">Actions</th>
@@ -489,12 +477,6 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
                                 {category.description}
                               </p>
                             ) : null}
-                            {category.projects.length > 0 ? (
-                              <p className="mt-0.5 line-clamp-1 text-xs text-primary/50">
-                                Projet{category.projects.length > 1 ? "s" : ""} :{" "}
-                                {category.projects.map((project) => project.title).join(", ")}
-                              </p>
-                            ) : null}
                           </div>
                         </div>
                       </td>
@@ -540,11 +522,9 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
                             }`}
                             disabled={!canDelete}
                             title={
-                              category.projects.length > 0
-                                ? "Supprimez d’abord les projets associés"
-                                : publishedCount > 0
-                                  ? "Des articles publiés utilisent cette catégorie"
-                                  : undefined
+                              publishedCount > 0
+                                ? "Des articles publiés utilisent ce domaine"
+                                : undefined
                             }
                             onClick={() => handleDelete(category)}
                           >

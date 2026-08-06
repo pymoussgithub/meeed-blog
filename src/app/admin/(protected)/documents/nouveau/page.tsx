@@ -1,16 +1,17 @@
 import { DocumentCreateForm } from "@/components/admin/DocumentCreateForm";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { toDocumentAssociableArticles } from "@/lib/document-article-options";
 import { getAdminArticles } from "@/lib/services/article.service";
-import { getActiveProjects } from "@/lib/services/project.service";
+import { getCategoriesForArticleForm } from "@/lib/services/category.service";
 
 export default async function AdminNewDocumentPage() {
   const user = await getCurrentUser();
-  const [articlesResult, projects] = await Promise.all([
+  const [articlesResult, categories] = await Promise.all([
     getAdminArticles({
       authorId: user?.role === "ADMIN" ? undefined : user?.id,
-      pageSize: 100,
+      pageSize: 500,
     }),
-    getActiveProjects(),
+    getCategoriesForArticleForm(),
   ]);
 
   return (
@@ -23,15 +24,8 @@ export default async function AdminNewDocumentPage() {
         </p>
       </div>
       <DocumentCreateForm
-        articles={articlesResult.articles.map((article) => ({
-          id: article.id,
-          title: article.title,
-          projectId: article.projectId,
-        }))}
-        projects={projects.map((project) => ({
-          id: project.id,
-          title: project.title,
-        }))}
+        articles={toDocumentAssociableArticles(articlesResult.articles)}
+        categories={categories}
       />
     </div>
   );

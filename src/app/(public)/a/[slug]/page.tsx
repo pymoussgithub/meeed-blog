@@ -88,7 +88,6 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
     getSimilarArticles(
       article.id,
       {
-        projectId: article.projectId,
         categoryIds: article.categories.map((item) => item.categoryId),
       },
       3,
@@ -96,17 +95,12 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
     getForumTopicsForArticleSlug(article.slug),
   ]);
   const articleUrl = absoluteUrl(`/a/${article.slug}`);
-  const primaryCategory =
-    article.project?.category ?? article.categories[0]?.category;
+  const primaryCategory = article.categories[0]?.category;
   const backHref = resolveArticlesReturnHref(returnTo);
 
   const breadcrumb = buildBreadcrumbJsonLd([
     { name: "Accueil", path: "/" },
-    ...(article.project
-      ? [{ name: article.project.title, path: `/actualites?project=${article.project.slug}` }]
-      : primaryCategory
-        ? [{ name: primaryCategory.name, path: `/c/${primaryCategory.slug}` }]
-        : []),
+    ...(primaryCategory ? [{ name: primaryCategory.name, path: `/c/${primaryCategory.slug}` }] : []),
     { name: article.title, path: `/a/${article.slug}` },
   ]);
 

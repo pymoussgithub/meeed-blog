@@ -12,12 +12,6 @@ type Category = {
   slug: string;
 };
 
-type Project = {
-  id: string;
-  title: string;
-  slug: string;
-};
-
 type Author = {
   id: string;
   name: string;
@@ -25,7 +19,6 @@ type Author = {
 
 type ArticlesToolbarProps = {
   categories: Category[];
-  projects: Project[];
   authors: Author[];
   total: number;
   newArticleHref?: string | null;
@@ -35,7 +28,6 @@ function countActiveFilters(params: URLSearchParams) {
   let count = 0;
   if (params.get("q")) count += 1;
   if (params.get("category")) count += 1;
-  if (params.get("project")) count += 1;
   if (params.get("author")) count += 1;
   if (params.get("from")) count += 1;
   if (params.get("to")) count += 1;
@@ -59,7 +51,6 @@ function FilterIcon({ className }: { className?: string }) {
 
 export function ArticlesToolbar({
   categories,
-  projects,
   authors,
   total,
   newArticleHref = null,
@@ -170,7 +161,6 @@ export function ArticlesToolbar({
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
         categories={categories}
-        projects={projects}
         authors={authors}
       />
     </>

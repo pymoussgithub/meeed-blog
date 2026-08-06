@@ -23,7 +23,7 @@ export const pubArticles: TourSubject = {
     },
     {
       id: "pub-articles-3",
-      message: "Filtrez par mot-clé, catégorie, projet ou dates.",
+      message: "Filtrez par mot-clé, domaine ou dates.",
       target: T["articles.filters.panel"],
       action: "confirm",
     },

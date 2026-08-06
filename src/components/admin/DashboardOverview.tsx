@@ -23,7 +23,6 @@ type DashboardDocument = {
   visibilityLabel: string;
   createdAt: string | Date;
   article: { id: string; title: string } | null;
-  project: { id: string; title: string } | null;
   uploadedBy: { name: string };
 };
 
@@ -326,7 +325,7 @@ function DocumentsTable({
                   {(document.fileSize / 1024).toFixed(1)} Ko
                 </td>
                 <td className="hidden px-4 py-3 text-primary/65 md:table-cell">
-                  {document.article?.title ?? document.project?.title ?? "—"}
+                  {document.article?.title ?? "—"}
                 </td>
                 {isAdmin ? (
                   <td className="hidden px-4 py-3 text-primary/65 lg:table-cell">

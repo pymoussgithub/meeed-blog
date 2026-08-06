@@ -1,19 +1,11 @@
 import type { PublicArticleFilters } from "@/lib/services/article.service";
 
 type ArticleListingSource = {
-  projectId?: string | null;
-  project?: {
-    title: string;
-    slug: string;
-    color: string | null;
-  } | null;
   categories: Array<{
     category: {
       id?: string;
       name: string;
       slug?: string;
-      /** Absent sur le select listing allégé. */
-      projects?: { length: number };
     };
   }>;
 };
@@ -27,14 +19,13 @@ export function parseArticlesListingParams(
   params: Record<string, string | undefined>,
 ): ArticlesListingParams {
   const contentType =
-    params.type === "project" || params.type === "news" || params.type === "formation"
+    params.type === "news" || params.type === "formation"
       ? params.type
       : null;
 
   return {
     q: params.q?.trim() || null,
     categorySlug: params.category?.trim() || null,
-    projectSlug: params.project?.trim() || null,
     authorId: params.author?.trim() || null,
     dateFrom: params.from?.trim() || null,
     dateTo: params.to?.trim() || null,
@@ -52,7 +43,6 @@ export function buildArticlesUrl(
   const search = new URLSearchParams();
   if (next.q) search.set("q", next.q);
   if (next.contentType) search.set("type", next.contentType);
-  if (next.projectSlug) search.set("project", next.projectSlug);
   if (next.categorySlug) search.set("category", next.categorySlug);
   if (next.authorId) search.set("author", next.authorId);
   if (next.dateFrom) search.set("from", next.dateFrom);
@@ -67,7 +57,6 @@ export function buildArticlesCurrentUrl(params: ArticlesListingParams): string {
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
   if (params.contentType) search.set("type", params.contentType);
-  if (params.projectSlug) search.set("project", params.projectSlug);
   if (params.categorySlug) search.set("category", params.categorySlug);
   if (params.authorId) search.set("author", params.authorId);
   if (params.dateFrom) search.set("from", params.dateFrom);
@@ -82,7 +71,6 @@ export function hasActiveListingFilters(params: ArticlesListingParams): boolean 
   return Boolean(
     params.q ||
       params.categorySlug ||
-      params.projectSlug ||
       params.authorId ||
       params.dateFrom ||
       params.dateTo ||
@@ -96,7 +84,6 @@ export function listingParamsToPublicFilters(
   return {
     search: params.q,
     categorySlug: params.categorySlug,
-    projectSlug: params.projectSlug,
     authorId: params.authorId,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
@@ -108,7 +95,6 @@ export function listingParamsToPaginationQuery(params: ArticlesListingParams) {
   return {
     q: params.q ?? undefined,
     type: params.contentType ?? undefined,
-    project: params.projectSlug ?? undefined,
     category: params.categorySlug ?? undefined,
     author: params.authorId ?? undefined,
     from: params.dateFrom ?? undefined,
@@ -116,28 +102,14 @@ export function listingParamsToPaginationQuery(params: ArticlesListingParams) {
   };
 }
 
-export type ArticleKind = "news" | "project" | "mixed";
+export type ArticleKind = "news";
 
-export function getLinkedProject(article: ArticleListingSource) {
-  if (article.project) {
-    return article.project;
-  }
-  return null;
-}
-
-export function getArticleKind(article: ArticleListingSource): ArticleKind {
-  const hasProject = Boolean(article.projectId);
-  const hasNews = article.categories.some(
-    ({ category }) => !category.projects || category.projects.length === 0,
-  );
-
-  if (hasProject && hasNews) return "mixed";
-  if (hasProject) return "project";
+export function getArticleKind(_article: ArticleListingSource): ArticleKind {
   return "news";
 }
 
 export function getNewsCategories(article: ArticleListingSource) {
   return article.categories
     .map(({ category }) => category)
-    .filter((category) => !category.projects || category.projects.length === 0);
+    ;
 }

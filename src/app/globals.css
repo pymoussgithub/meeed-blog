@@ -114,4 +114,34 @@
   .article-editor-surface .ProseMirror:focus {
     @apply outline-none;
   }
+
+  /* Ascenseur discret (modales, panneaux) */
+  .scrollbar-meeed {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-accent) 50%, transparent) transparent;
+  }
+
+  .scrollbar-meeed::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-meeed::-webkit-scrollbar-track {
+    background: transparent;
+    margin-block: 0.75rem;
+  }
+
+  .scrollbar-meeed::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-meeed::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--color-accent-dark) 70%, transparent);
+  }
+
+  .scrollbar-meeed::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
 }

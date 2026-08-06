@@ -10,33 +10,12 @@ import type { CreateArticleInput, UpdateArticleInput } from "@/lib/validations/a
 
 const articleWithRelations = {
   author: { select: { id: true, name: true } },
-  project: {
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      color: true,
-      isActive: true,
-      category: {
-        select: { id: true, name: true, slug: true, color: true },
-      },
-    },
-  },
   categories: {
-    include: {
-      category: {
-        include: {
-          projects: {
-            select: { id: true, title: true, slug: true, color: true, isActive: true },
-            orderBy: { sortOrder: "asc" as const },
-          },
-        },
-      },
-    },
+    include: { category: true },
   },
 } satisfies Prisma.ArticleInclude;
 
-/** Champs carte/liste uniquement — pas de `content` ni de projets imbriqués. */
+/** Champs carte/liste uniquement — pas de `content` imbriqué. */
 const articleListingSelect = {
   id: true,
   slug: true,
@@ -45,17 +24,7 @@ const articleListingSelect = {
   coverImageUrl: true,
   coverImagePublicId: true,
   publishedAt: true,
-  projectId: true,
   author: { select: { id: true, name: true } },
-  project: {
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      color: true,
-      category: { select: { id: true, name: true, slug: true } },
-    },
-  },
   categories: {
     select: {
       category: { select: { id: true, name: true, slug: true } },
@@ -94,15 +63,12 @@ export async function countPublishedArticles() {
 
 export async function getSimilarArticles(
   articleId: string,
-  options: { projectId?: string | null; categoryIds?: string[] } = {},
+  options: { categoryIds?: string[] } = {},
   limit = 3,
 ) {
-  const { projectId, categoryIds = [] } = options;
+  const { categoryIds = [] } = options;
   const relatedFilter: Prisma.ArticleWhereInput[] = [];
 
-  if (projectId) {
-    relatedFilter.push({ projectId });
-  }
   if (categoryIds.length > 0) {
     relatedFilter.push({ categories: { some: { categoryId: { in: categoryIds } } } });
   }
@@ -150,21 +116,11 @@ export async function getArticleById(id: string) {
 }
 
 function categorySlugWhere(slug: string): Prisma.ArticleWhereInput {
-  return {
-    OR: [
-      { project: { category: { slug } } },
-      { categories: { some: { category: { slug } } } },
-    ],
-  };
+  return { categories: { some: { category: { slug } } } };
 }
 
 function categoryIdWhere(categoryId: string): Prisma.ArticleWhereInput {
-  return {
-    OR: [
-      { project: { categoryId } },
-      { categories: { some: { categoryId } } },
-    ],
-  };
+  return { categories: { some: { categoryId } } };
 }
 
 export async function getArticlesByCategorySlug(slug: string, limit = 12, offset = 0) {
@@ -192,11 +148,10 @@ export async function countArticlesByCategorySlug(slug: string) {
 export type PublicArticleFilters = {
   search?: string | null;
   categorySlug?: string | null;
-  projectSlug?: string | null;
   authorId?: string | null;
   dateFrom?: string | null;
   dateTo?: string | null;
-  contentType?: "project" | "news" | "formation" | null;
+  contentType?: "news" | "formation" | null;
   excludeArticleIds?: string[];
 };
 
@@ -209,17 +164,11 @@ export function buildPublicArticleWhere(
     conditions.push(categorySlugWhere(filters.categorySlug));
   }
 
-  if (filters.projectSlug) {
-    conditions.push({ project: { slug: filters.projectSlug } });
-  }
-
   if (filters.authorId) {
     conditions.push({ authorId: filters.authorId });
   }
 
-  if (filters.contentType === "project") {
-    conditions.push({ projectId: { not: null } });
-  } else if (filters.contentType === "news") {
+  if (filters.contentType === "news") {
     conditions.push({
       categories: { some: { category: { slug: "actualites" } } },
     });
@@ -259,42 +208,19 @@ export function buildPublicArticleWhere(
   return conditions.length === 1 ? conditions[0] : { AND: conditions };
 }
 
-function isNewsArticle(article: ArticleWithRelations) {
-  return !article.projectId;
-}
-
-function sortArticlesNewsFirst(articles: ArticleWithRelations[]) {
-  return [...articles].sort((a, b) => {
-    const aNews = isNewsArticle(a) ? 0 : 1;
-    const bNews = isNewsArticle(b) ? 0 : 1;
-    if (aNews !== bNews) return aNews - bNews;
-    return (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0);
-  });
-}
-
 export async function getFilteredPublishedArticles(
   filters: PublicArticleFilters,
   limit = 12,
   offset = 0,
-  options?: { newsFirst?: boolean },
+  _options?: { newsFirst?: boolean },
 ) {
-  if (!options?.newsFirst) {
-    return prisma.article.findMany({
-      where: buildPublicArticleWhere(filters),
-      include: articleWithRelations,
-      orderBy: { publishedAt: "desc" },
-      take: limit,
-      skip: offset,
-    });
-  }
-
-  const all = await prisma.article.findMany({
+  return prisma.article.findMany({
     where: buildPublicArticleWhere(filters),
     include: articleWithRelations,
     orderBy: { publishedAt: "desc" },
+    take: limit,
+    skip: offset,
   });
-
-  return sortArticlesNewsFirst(all).slice(offset, offset + limit);
 }
 
 /** Liste publique légère (actualités, carrousels) — sans HTML `content`. */
@@ -363,12 +289,11 @@ export async function countSearchResults(query: string) {
 }
 
 export async function createArticle(data: CreateArticleInput) {
-  const { categoryIds, projectId, ...articleData } = data;
+  const { categoryIds, ...articleData } = data;
 
   return prisma.article.create({
     data: {
       ...articleData,
-      projectId: projectId ?? null,
       categories: {
         create: categoryIds.map((categoryId) => ({ categoryId })),
       },
@@ -378,7 +303,7 @@ export async function createArticle(data: CreateArticleInput) {
 }
 
 export async function updateArticle(id: string, data: UpdateArticleInput) {
-  const { categoryIds, projectId, ...articleData } = data;
+  const { categoryIds, ...articleData } = data;
 
   if (categoryIds) {
     await prisma.articleCategory.deleteMany({ where: { articleId: id } });
@@ -388,7 +313,6 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     where: { id },
     data: {
       ...articleData,
-      ...(projectId !== undefined ? { projectId } : {}),
       ...(categoryIds
         ? {
             categories: {
@@ -400,28 +324,42 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     include: articleWithRelations,
   });
 
-  // Documents liés à l'article héritent du projet de l'article.
-  if (projectId !== undefined) {
-    await prisma.document.updateMany({
-      where: { articleId: id },
-      data: { projectId: projectId ?? null },
-    });
-  }
-
   return article;
 }
 
 export async function archiveArticle(id: string) {
+  const existing = await prisma.article.findUnique({
+    where: { id },
+    select: { updatedAt: true },
+  });
+  if (!existing) {
+    throw new Error("Article introuvable");
+  }
+
+  // Keep updatedAt so a status-only change does not reorder the admin table
+  // (sorted by "Modifié" / updatedAt desc).
   return prisma.article.update({
     where: { id },
-    data: { status: ArticleStatus.ARCHIVED },
+    data: { status: ArticleStatus.ARCHIVED, updatedAt: existing.updatedAt },
   });
 }
 
 export async function republishArticle(id: string) {
+  const existing = await prisma.article.findUnique({
+    where: { id },
+    select: { updatedAt: true },
+  });
+  if (!existing) {
+    throw new Error("Article introuvable");
+  }
+
   return prisma.article.update({
     where: { id },
-    data: { status: ArticleStatus.PUBLISHED, publishedAt: new Date() },
+    data: {
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: new Date(),
+      updatedAt: existing.updatedAt,
+    },
   });
 }
 
@@ -444,7 +382,6 @@ export async function deleteArticle(id: string) {
 
 export type AdminArticleFilters = {
   status?: ArticleStatus;
-  projectId?: string;
   categoryId?: string;
   search?: string;
   authorId?: string;
@@ -461,7 +398,6 @@ export async function getAdminArticles(filters: AdminArticleFilters = {}) {
 
   if (filters.status) conditions.push({ status: filters.status });
   if (filters.authorId) conditions.push({ authorId: filters.authorId });
-  if (filters.projectId) conditions.push({ projectId: filters.projectId });
   if (filters.categoryId) conditions.push(categoryIdWhere(filters.categoryId));
   if (filters.search) {
     conditions.push({
@@ -549,7 +485,6 @@ export async function getDashboardStats(userId: string, isAdmin: boolean) {
       take: listTake,
       include: {
         article: { select: { id: true, title: true } },
-        project: { select: { id: true, title: true } },
         uploadedBy: { select: { id: true, name: true } },
       },
     }),

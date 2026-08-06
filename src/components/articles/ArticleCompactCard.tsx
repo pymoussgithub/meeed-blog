@@ -1,13 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getCoverCardUrl } from "@/lib/cloudinary";
-import {
-  getArticleKind,
-  getLinkedProject,
-  getNewsCategories,
-} from "@/lib/articles-listing";
+import { resolveCoverUrl } from "@/lib/cloudinary";
+import { getNewsCategories } from "@/lib/articles-listing";
 import type { ArticleWithRelations } from "@/lib/services/article.service";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, toDateTimeAttr } from "@/lib/utils";
 
 type ArticleCompactCardProps = {
   article: ArticleWithRelations;
@@ -15,26 +11,11 @@ type ArticleCompactCardProps = {
 };
 
 function getCoverUrl(article: ArticleWithRelations) {
-  if (article.coverImagePublicId) {
-    return getCoverCardUrl(article.coverImagePublicId);
-  }
-  return article.coverImageUrl;
+  return resolveCoverUrl(article.coverImagePublicId, article.coverImageUrl, "card");
 }
 
 function CategoryBadge({ article }: { article: ArticleWithRelations }) {
-  const project = getLinkedProject(article);
   const newsCategory = getNewsCategories(article)[0];
-
-  if (project) {
-    return (
-      <span
-        className="inline-flex max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
-        style={{ backgroundColor: project.color ?? "var(--color-accent-dark)" }}
-      >
-        {project.title}
-      </span>
-    );
-  }
 
   return (
     <span className="inline-flex max-w-full truncate rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
@@ -48,14 +29,13 @@ export function ArticleCompactCard({ article, returnTo }: ArticleCompactCardProp
   const href = returnTo
     ? `/a/${article.slug}?returnTo=${encodeURIComponent(returnTo)}`
     : `/a/${article.slug}`;
-  const isNews = getArticleKind(article) !== "project";
 
   return (
     <article
       data-tour-id="articles.list.card"
       className={cn(
         "group flex h-full flex-col overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md",
-        isNews ? "border-accent/25 ring-1 ring-accent/10" : "border-gray-200",
+        "border-accent/25 ring-1 ring-accent/10",
       )}
     >
       <Link
@@ -69,6 +49,7 @@ export function ArticleCompactCard({ article, returnTo }: ArticleCompactCardProp
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            referrerPolicy="no-referrer"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-xs font-semibold text-primary/25">
@@ -83,7 +64,7 @@ export function ArticleCompactCard({ article, returnTo }: ArticleCompactCardProp
       <div className="flex flex-1 flex-col p-3">
         {article.publishedAt ? (
           <time
-            dateTime={article.publishedAt.toISOString()}
+            dateTime={toDateTimeAttr(article.publishedAt)}
             className="text-[11px] text-primary/45"
           >
             {formatDate(article.publishedAt)}

@@ -137,9 +137,9 @@ Exemples :
 |------|--------------|--------|
 | À propos | `/a-propos` | Reprise contenu actuel |
 | Contact | `/contact` | Formulaire simple ou lien email |
-| Nos projets | `/projets` | Page hub listant les projets (peut pointer vers des catégories ou articles) |
+| Nos domaines | `/domaines` | Page hub listant les domaines (peut pointer vers des catégories ou articles) |
 
-> **Note migration** : Des redirections 301 seront configurées depuis les anciennes URLs (`/a-propos-de` → `/a-propos`, `/nos-projets` → `/projets`, etc.).
+> **Note migration** : Des redirections 301 seront configurées depuis les anciennes URLs (`/a-propos-de` → `/a-propos`, `/nos-projets` → `/domaines`, etc.).
 
 ### 3.6 Recherche
 

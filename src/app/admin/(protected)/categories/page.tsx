@@ -18,14 +18,14 @@ export default async function AdminCategoriesPage() {
     <div className="container-meeed py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary-dark">Catégories</h1>
+          <h1 className="text-2xl font-bold text-primary-dark">Domaines</h1>
           <p className="mt-1 text-sm text-primary/60">
-            {categories.length} catégorie{categories.length > 1 ? "s" : ""} · organisez
+            {categories.length} domaine{categories.length > 1 ? "s" : ""} · organisez
             l’ordre par glisser-déposer
           </p>
         </div>
-        <Button href="/admin/categories?new=1" variant="accent">
-          + Nouvelle catégorie
+        <Button href="/admin/categories?new=1" variant="accent" data-tour-id="admin.domaines.new-button">
+          + Nouveau domaine
         </Button>
       </div>
 

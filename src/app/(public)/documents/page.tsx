@@ -13,7 +13,6 @@ import {
 import {
   countPublicDocuments,
   getPublicDocumentNewsCategories,
-  getPublicDocumentProjects,
   getPublicDocuments,
   getPublicDocumentUploaders,
 } from "@/lib/services/document.service";
@@ -22,7 +21,6 @@ import { buildBreadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
 type PageProps = {
   searchParams: Promise<{
     q?: string;
-    project?: string;
     category?: string;
     user?: string;
     from?: string;
@@ -55,21 +53,18 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
   const isFiltered = hasActiveDocumentFilters(params);
 
   let documents: Awaited<ReturnType<typeof getPublicDocuments>> = [];
-  let projects: Awaited<ReturnType<typeof getPublicDocumentProjects>> = [];
   let categories: Awaited<ReturnType<typeof getPublicDocumentNewsCategories>> = [];
   let uploaders: Awaited<ReturnType<typeof getPublicDocumentUploaders>> = [];
   let dbError = false;
 
   try {
-    const [documentList, projectList, categoryList, uploaderList] = await Promise.all([
+    const [documentList, categoryList, uploaderList] = await Promise.all([
       getPublicDocuments(filters, user),
-      getPublicDocumentProjects(user),
       getPublicDocumentNewsCategories(user),
       getPublicDocumentUploaders(user),
     ]);
 
     documents = documentList;
-    projects = projectList;
     categories = categoryList;
     uploaders = uploaderList;
   } catch {
@@ -82,11 +77,6 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
   ]);
 
   const filterOptions = {
-    projects: projects.map(({ id, title, slug }) => ({
-      id,
-      label: title,
-      slug,
-    })),
     categories: categories.map(({ id, name, slug }) => ({
       id,
       label: name,
@@ -102,7 +92,6 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
 
       <DocumentsToolbar
         params={params}
-        projects={filterOptions.projects}
         categories={filterOptions.categories}
         uploaders={filterOptions.uploaders}
         canAddDocument={Boolean(user)}

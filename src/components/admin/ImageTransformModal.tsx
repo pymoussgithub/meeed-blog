@@ -32,11 +32,18 @@ type TransformPreview = {
 };
 
 const PREVIEW_WIDTH_UNITS = 100;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * Place the image inside a fixed frame using "contain" as the base scale.
+ * Zoom 1 = entire image visible (white bars if aspect differs or image is small).
+ * Zoom > 1 = enlarge within the frame (can fill / crop).
+ */
 function getPreviewMetrics(
   image: ImageMetrics,
   aspectRatio: number,
@@ -45,18 +52,16 @@ function getPreviewMetrics(
   offsetY: number,
 ): TransformPreview {
   const previewHeightUnits = PREVIEW_WIDTH_UNITS / aspectRatio;
-  const coverScale = Math.max(
+  const fitScale = Math.min(
     PREVIEW_WIDTH_UNITS / image.width,
     previewHeightUnits / image.height,
   );
 
-  const renderedWidth = image.width * coverScale * zoom;
-  const renderedHeight = image.height * coverScale * zoom;
-  const overflowX = Math.max(0, renderedWidth - PREVIEW_WIDTH_UNITS);
-  const overflowY = Math.max(0, renderedHeight - previewHeightUnits);
+  const renderedWidth = image.width * fitScale * zoom;
+  const renderedHeight = image.height * fitScale * zoom;
 
   return {
-    backgroundSizeX: renderedWidth,
+    backgroundSizeX: (renderedWidth / PREVIEW_WIDTH_UNITS) * 100,
     backgroundSizeY: (renderedHeight / previewHeightUnits) * 100,
     backgroundPositionX: (offsetX + 100) / 2,
     backgroundPositionY: (offsetY + 100) / 2,
@@ -92,40 +97,23 @@ async function renderTransformedFile(
       throw new Error("Le navigateur ne permet pas de préparer l'image.");
     }
 
-    const sourceAspectRatio = image.naturalWidth / image.naturalHeight;
+    // White 16:9 (or configured) frame behind the image
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, config.targetWidth, config.targetHeight);
 
-    let baseCropWidth = image.naturalWidth;
-    let baseCropHeight = image.naturalHeight;
-    let baseCropX = 0;
-    let baseCropY = 0;
-
-    if (sourceAspectRatio > config.aspectRatio) {
-      baseCropWidth = image.naturalHeight * config.aspectRatio;
-      baseCropX = (image.naturalWidth - baseCropWidth) / 2;
-    } else {
-      baseCropHeight = image.naturalWidth / config.aspectRatio;
-      baseCropY = (image.naturalHeight - baseCropHeight) / 2;
-    }
-
-    const cropWidth = baseCropWidth / zoom;
-    const cropHeight = baseCropHeight / zoom;
-    const availableX = baseCropWidth - cropWidth;
-    const availableY = baseCropHeight - cropHeight;
-
-    const cropX = baseCropX + (availableX * (offsetX + 100)) / 200;
-    const cropY = baseCropY + (availableY * (offsetY + 100)) / 200;
-
-    ctx.drawImage(
-      image,
-      cropX,
-      cropY,
-      cropWidth,
-      cropHeight,
-      0,
-      0,
-      config.targetWidth,
-      config.targetHeight,
+    const fitScale = Math.min(
+      config.targetWidth / image.naturalWidth,
+      config.targetHeight / image.naturalHeight,
     );
+
+    const drawWidth = image.naturalWidth * fitScale * zoom;
+    const drawHeight = image.naturalHeight * fitScale * zoom;
+
+    // Matches CSS background-position % for both letterbox and overflow cases
+    const destX = ((config.targetWidth - drawWidth) * (offsetX + 100)) / 200;
+    const destY = ((config.targetHeight - drawHeight) * (offsetY + 100)) / 200;
+
+    ctx.drawImage(image, destX, destY, drawWidth, drawHeight);
 
     const mimeType = config.outputMimeType ?? "image/jpeg";
     const quality = config.quality ?? 0.92;
@@ -155,7 +143,7 @@ export function useImageTransform() {
   const [request, setRequest] = useState<ImageTransformRequest | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [image, setImage] = useState<ImageMetrics | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(MIN_ZOOM);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -178,7 +166,7 @@ export function useImageTransform() {
       URL.revokeObjectURL(url);
       setPreviewUrl(null);
       setImage(null);
-      setZoom(1);
+      setZoom(MIN_ZOOM);
       setOffsetX(0);
       setOffsetY(0);
       setIsConfirming(false);
@@ -238,9 +226,9 @@ export function useImageTransform() {
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
             <div className="space-y-3">
-              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-950">
+              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
                 <div
-                  className="relative w-full bg-center bg-no-repeat"
+                  className="relative w-full bg-white bg-center bg-no-repeat"
                   style={{
                     aspectRatio: `${request.config.aspectRatio}`,
                     backgroundImage: previewUrl ? `url("${previewUrl}")` : undefined,
@@ -256,7 +244,9 @@ export function useImageTransform() {
 
               <div className="flex flex-wrap gap-2 text-xs text-primary/55">
                 {image ? <span>Source: {image.width} x {image.height}px</span> : null}
-                <span>Export: {request.config.targetWidth} x {request.config.targetHeight}px</span>
+                <span>
+                  Export: {request.config.targetWidth} x {request.config.targetHeight}px (cadre blanc)
+                </span>
               </div>
             </div>
 
@@ -265,14 +255,16 @@ export function useImageTransform() {
                 Zoom
                 <input
                   type="range"
-                  min={1}
-                  max={3}
+                  min={MIN_ZOOM}
+                  max={MAX_ZOOM}
                   step={0.01}
                   value={zoom}
                   onChange={(event) => setZoom(Number(event.target.value))}
                   className="mt-2 w-full"
                 />
-                <span className="mt-1 block text-xs text-primary/55">{zoom.toFixed(2)}x</span>
+                <span className="mt-1 block text-xs text-primary/55">
+                  {zoom.toFixed(2)}x — agrandissez si l&apos;image est trop petite dans le cadre
+                </span>
               </label>
 
               <label className="block text-sm font-medium text-primary-dark">
@@ -312,7 +304,7 @@ export function useImageTransform() {
                 variant="ghost"
                 className="!px-0 text-sm"
                 onClick={() => {
-                  setZoom(1);
+                  setZoom(MIN_ZOOM);
                   setOffsetX(0);
                   setOffsetY(0);
                 }}

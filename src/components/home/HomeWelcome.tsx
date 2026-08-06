@@ -45,8 +45,8 @@ export function HomeWelcome() {
             ce savoir-faire en France et dans l&apos;espace francophone.
           </p>
           <p className="mt-4 text-base leading-relaxed text-primary/75">
-            Notre équipe de bénévoles imagine des projets pragmatiques et réplicables pour
-            apporter à la culture maraîchère des solutions innovantes. Une fois nos projets
+            Notre équipe de bénévoles imagine des domaines pragmatiques et réplicables pour
+            apporter à la culture maraîchère des solutions innovantes. Une fois nos domaines
             testés, les documents de création sont mis à disposition.
           </p>
         </div>

@@ -7,7 +7,7 @@ import { Spinner } from "@/components/ui/Spinner";
 
 /**
  * Destinations lourdes (auth + requêtes BDD) — articles inclus (toujours lents).
- * Catégories seules : assez rapides pour ne pas mériter l’overlay.
+ * Domaines seuls : assez rapides pour ne pas mériter l’overlay.
  */
 function isSlowPath(pathname: string): boolean {
   if (pathname === "/documents" || pathname.startsWith("/documents/")) return true;

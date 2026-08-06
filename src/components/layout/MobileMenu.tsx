@@ -11,10 +11,9 @@ type MobileMenuProps = {
 
 const MOBILE_TOUR_IDS: Record<string, string> = {
   "/actualites": "nav.header.articles",
-  "/projets": "nav.header.projets",
   "/documents": "nav.header.documents",
   "/forum": "nav.header.forum",
-  "/categories": "nav.header.categories",
+  "/categories": "nav.header.domaines",
   "/contact": "nav.header.contact",
 };
 

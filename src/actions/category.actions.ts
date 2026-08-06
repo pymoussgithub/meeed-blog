@@ -47,7 +47,7 @@ export async function updateCategoryAction(
     const existing = await getCategoryById(id);
 
     if (!existing) {
-      return actionError("Catégorie introuvable");
+      return actionError("Domaine introuvable");
     }
 
     const parsed = updateCategorySchema.safeParse(input);
@@ -95,7 +95,7 @@ export async function deleteCategoryAction(id: string): Promise<ActionResult> {
     const existing = await getCategoryById(id);
 
     if (!existing) {
-      return actionError("Catégorie introuvable");
+      return actionError("Domaine introuvable");
     }
 
     await deleteCategory(id);

@@ -5,11 +5,10 @@ import {
   getPublishedArticleAuthors,
   type PublicArticleFilters,
 } from "@/lib/services/article.service";
-import { getAllCategories } from "@/lib/services/category.service";
 import {
-  getActiveProjects,
-  getActiveProjectsForFilters,
-} from "@/lib/services/project.service";
+  getAllCategories,
+  getCategoriesWithPublishedCounts,
+} from "@/lib/services/category.service";
 
 /** TTL court pour les listes publiques (navigation soft quasi instantanée). */
 export const PUBLIC_REVALIDATE_SECONDS = 60;
@@ -20,7 +19,6 @@ function filtersCacheKey(filters: PublicArticleFilters): string {
   return JSON.stringify({
     search: filters.search ?? null,
     categorySlug: filters.categorySlug ?? null,
-    projectSlug: filters.projectSlug ?? null,
     authorId: filters.authorId ?? null,
     dateFrom: filters.dateFrom ?? null,
     dateTo: filters.dateTo ?? null,
@@ -30,14 +28,8 @@ function filtersCacheKey(filters: PublicArticleFilters): string {
 }
 
 export const getCachedHomeNews = unstable_cache(
-  async () => getFilteredPublishedArticlesForListing({ contentType: "news" }, 5, 0),
+  async () => getFilteredPublishedArticlesForListing({ contentType: "news" }, 6, 0),
   ["public-home-news"],
-  { revalidate: PUBLIC_REVALIDATE_SECONDS },
-);
-
-export const getCachedActiveProjects = unstable_cache(
-  async () => getActiveProjects(),
-  ["public-active-projects"],
   { revalidate: PUBLIC_REVALIDATE_SECONDS },
 );
 
@@ -47,9 +39,9 @@ export const getCachedAllCategories = unstable_cache(
   { revalidate: PUBLIC_REVALIDATE_SECONDS },
 );
 
-export const getCachedActiveProjectsForFilters = unstable_cache(
-  async () => getActiveProjectsForFilters(),
-  ["public-active-projects-filters"],
+export const getCachedCategoriesWithPublishedCounts = unstable_cache(
+  async () => getCategoriesWithPublishedCounts(),
+  ["public-categories-with-counts"],
   { revalidate: PUBLIC_REVALIDATE_SECONDS },
 );
 

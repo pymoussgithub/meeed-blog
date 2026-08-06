@@ -31,10 +31,10 @@ export const contribPublierArticle: TourSubject = {
     },
     {
       id: "contrib-publier-4",
-      message: "Choisissez au moins une catégorie.",
+      message: "Choisissez au moins un domaine.",
       target: T["article.form.categories"],
       action: "input",
-      fallbackMessage: "Aucune catégorie disponible. Créez-en une via le parcours admin catégories.",
+      fallbackMessage: "Aucun domaine disponible. Créez-en un via le parcours admin domaines.",
     },
     {
       id: "contrib-publier-5",
