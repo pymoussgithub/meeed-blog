@@ -119,24 +119,26 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
       ) : (
         <>
           <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white" data-tour-id="admin.articles.list">
-            <table className="min-w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Article</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
+                  <th className={`${isAdmin ? "w-[30%]" : "w-[36%]"} px-3 py-3 font-medium`}>
+                    Article
+                  </th>
+                  <th className="w-[10%] whitespace-nowrap px-2 py-3 font-medium">Statut</th>
                   {isAdmin ? (
-                    <th className="px-4 py-3 font-medium">Auteur</th>
+                    <th className="w-[12%] px-2 py-3 font-medium">Auteur</th>
                   ) : null}
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">Domaines</th>
-                  <th className="px-4 py-3 font-medium">Modifié</th>
-                  <th className="px-4 py-3 font-medium">Actions</th>
+                  <th className="hidden w-[14%] px-2 py-3 font-medium md:table-cell">Domaines</th>
+                  <th className="w-[12%] whitespace-nowrap px-2 py-3 font-medium">Modifié</th>
+                  <th className="w-[18%] px-2 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {result.articles.map((article) => (
                   <tr key={article.id} className="group hover:bg-gray-50/60">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                    <td className="px-3 py-3">
+                      <div className="flex items-start gap-3">
                         <div className="hidden h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:block">
                           {article.coverImageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -154,32 +156,46 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                         <div className="min-w-0">
                           <Link
                             href={`/admin/articles/${article.id}`}
-                            className="font-medium text-primary-dark hover:text-accent-dark"
+                            className="font-medium break-words text-primary-dark hover:text-accent-dark"
+                            title={article.title}
                           >
                             {article.title}
                           </Link>
                           {article.excerpt ? (
-                            <p className="mt-0.5 line-clamp-1 text-xs text-primary/50">
+                            <p className="mt-0.5 break-words text-xs text-primary/50">
                               {article.excerpt}
                             </p>
                           ) : null}
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="whitespace-nowrap px-2 py-3">
                       <ArticleStatusBadge status={article.status} />
                     </td>
                     {isAdmin ? (
-                      <td className="px-4 py-3 text-primary/70">{article.author.name}</td>
+                      <td className="px-2 py-3 break-words text-primary/70">{article.author.name}</td>
                     ) : null}
-                    <td className="hidden max-w-[180px] truncate px-4 py-3 text-primary/70 md:table-cell">
-                      {article.categories.length > 0
-                        ? article.categories.map((item) => item.category.name).join(", ")
-                        : "—"}
+                    <td className="hidden px-2 py-3 text-primary/70 md:table-cell">
+                      {article.categories.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {article.categories.map((item) => (
+                            <span
+                              key={item.category.id}
+                              className="inline-flex rounded-full bg-bg-soft px-2 py-0.5 text-xs font-medium text-primary/70"
+                            >
+                              {item.category.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </td>
-                    <td className="px-4 py-3 text-primary/70">{formatDate(article.updatedAt)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <td className="whitespace-nowrap px-2 py-3 text-primary/70">
+                      {formatDate(article.updatedAt)}
+                    </td>
+                    <td className="px-2 py-3">
+                      <div className="flex flex-col items-stretch gap-2">
                         <Link
                           href={`/admin/articles/${article.id}`}
                           className={`${tableActionClassName} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}
