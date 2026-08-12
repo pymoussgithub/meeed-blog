@@ -122,16 +122,16 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
             <table className="w-full table-fixed text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
-                  <th className={`${isAdmin ? "w-[30%]" : "w-[36%]"} px-3 py-3 font-medium`}>
+                  <th className={`${isAdmin ? "w-[30%] md:w-[30%]" : "w-[50%] md:w-[36%]"} px-3 py-3 font-medium`}>
                     Article
                   </th>
                   <th className="w-[10%] whitespace-nowrap px-2 py-3 font-medium">Statut</th>
                   {isAdmin ? (
-                    <th className="w-[12%] px-2 py-3 font-medium">Auteur</th>
+                    <th className="hidden w-[12%] px-2 py-3 font-medium md:table-cell">Auteur</th>
                   ) : null}
                   <th className="hidden w-[14%] px-2 py-3 font-medium md:table-cell">Domaines</th>
-                  <th className="w-[12%] whitespace-nowrap px-2 py-3 font-medium">Modifié</th>
-                  <th className="w-[18%] px-2 py-3 font-medium">Actions</th>
+                  <th className="hidden w-[12%] whitespace-nowrap px-2 py-3 font-medium md:table-cell">Modifié</th>
+                  <th className="px-2 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -166,6 +166,10 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                               {article.excerpt}
                             </p>
                           ) : null}
+                          <p className="mt-1 text-xs text-primary/50 md:hidden">
+                            {formatDate(article.updatedAt)}
+                            {isAdmin ? ` · ${article.author.name}` : ""}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -173,7 +177,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                       <ArticleStatusBadge status={article.status} />
                     </td>
                     {isAdmin ? (
-                      <td className="px-2 py-3 break-words text-primary/70">{article.author.name}</td>
+                      <td className="hidden px-2 py-3 break-words text-primary/70 md:table-cell">{article.author.name}</td>
                     ) : null}
                     <td className="hidden px-2 py-3 text-primary/70 md:table-cell">
                       {article.categories.length > 0 ? (
@@ -191,7 +195,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                         "—"
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-2 py-3 text-primary/70">
+                    <td className="hidden whitespace-nowrap px-2 py-3 text-primary/70 md:table-cell">
                       {formatDate(article.updatedAt)}
                     </td>
                     <td className="px-2 py-3">

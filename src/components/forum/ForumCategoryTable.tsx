@@ -33,13 +33,13 @@ function CategoryRow({ row }: { row: ForumIndexRow }) {
           </p>
           {last ? (
             <div className="space-y-1">
-              <Link
-                href={`/forum/s/${last.slug}`}
-                className={topicTitleButtonClassName}
-              >
-                <span className="truncate">{last.title}</span>
-              </Link>
-              <p>
+              <p className="truncate text-primary/65">
+                <span className="font-medium text-primary/75">
+                  Dernière activité :
+                </span>{" "}
+                {last.title}
+              </p>
+              <p className="truncate">
                 {formatDate(last.lastPostAt)} · {last.lastAuthorName}
               </p>
             </div>
