@@ -70,15 +70,31 @@ export function AdminHeader({ userName, userRole }: AdminHeaderProps) {
             href="/"
             className="inline-flex items-center rounded-full border border-primary/15 px-3 py-1.5 text-xs font-medium text-primary/75 transition-colors hover:border-accent/40 hover:bg-bg-soft hover:text-accent-dark"
           >
-            Voir le site
+            <span className="sm:hidden">Site</span>
+            <span className="hidden sm:inline">Voir le site</span>
           </Link>
 
           <form action={signOutAction}>
             <button
               type="submit"
-              className="inline-flex items-center rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary-dark"
+              aria-label="Déconnexion"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white transition-colors hover:bg-primary-dark sm:h-auto sm:w-auto sm:rounded-full sm:px-3 sm:py-1.5 sm:text-xs sm:font-medium"
             >
-              Déconnexion
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4 sm:hidden"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span className="hidden sm:inline">Déconnexion</span>
             </button>
           </form>
         </div>

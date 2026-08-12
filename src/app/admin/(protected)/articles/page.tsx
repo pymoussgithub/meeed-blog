@@ -199,7 +199,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                       {formatDate(article.updatedAt)}
                     </td>
                     <td className="px-2 py-3">
-                      <div className="flex flex-col items-stretch gap-2">
+                      <div className="flex flex-col items-end gap-1.5 md:items-stretch md:gap-2">
                         <Link
                           href={`/admin/articles/${article.id}`}
                           className={`${tableActionClassName} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}

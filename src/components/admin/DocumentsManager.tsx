@@ -74,9 +74,9 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                   <th className="w-[28%] px-3 py-3">Titre</th>
                   <th className="w-[10%] whitespace-nowrap px-2 py-3">Statut</th>
                   <th className="w-[16%] px-2 py-3">Domaine</th>
-                  <th className="w-[14%] px-2 py-3">Article</th>
-                  <th className="w-[14%] px-2 py-3">Visibilité</th>
-                  <th className="w-[18%] px-2 py-3">Actions</th>
+                  <th className="hidden w-[14%] px-2 py-3 md:table-cell">Article</th>
+                  <th className="hidden w-[14%] px-2 py-3 md:table-cell">Visibilité</th>
+                  <th className="px-2 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -121,7 +121,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                           <span className="text-primary/40">—</span>
                         )}
                       </td>
-                      <td className="max-w-0 px-2 py-3">
+                      <td className="hidden max-w-0 px-2 py-3 md:table-cell">
                         {document.article ? (
                           <Link
                             href={`/admin/articles/${document.article.id}`}
@@ -134,7 +134,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                           <span className="text-primary/40">—</span>
                         )}
                       </td>
-                      <td className="px-2 py-3">
+                      <td className="hidden px-2 py-3 md:table-cell">
                         <select
                           defaultValue={document.visibility}
                           disabled={document.isArchived}
@@ -158,7 +158,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                         </select>
                       </td>
                       <td className="px-2 py-3">
-                        <div className="flex flex-col items-stretch gap-2">
+                        <div className="flex flex-col items-end gap-1.5 md:items-stretch md:gap-2">
                           <Link
                             href={`/admin/documents/${document.id}`}
                             className={`${tableActionClassName} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}
