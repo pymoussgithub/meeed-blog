@@ -122,22 +122,24 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
             <table className="w-full table-fixed text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
-                  <th className={`${isAdmin ? "w-[30%] md:w-[30%]" : "w-[50%] md:w-[36%]"} px-3 py-3 font-medium`}>
+                  <th className={`${isAdmin ? "w-[70%] md:w-[30%]" : "w-[70%] md:w-[36%]"} px-4 py-3 font-medium sm:px-3`}>
                     Article
                   </th>
-                  <th className="w-[10%] whitespace-nowrap px-2 py-3 font-medium">Statut</th>
+                  <th className="w-[30%] whitespace-nowrap px-4 py-3 font-medium sm:w-[10%] sm:px-2">
+                    Statut
+                  </th>
                   {isAdmin ? (
                     <th className="hidden w-[12%] px-2 py-3 font-medium md:table-cell">Auteur</th>
                   ) : null}
                   <th className="hidden w-[14%] px-2 py-3 font-medium md:table-cell">Domaines</th>
                   <th className="hidden w-[12%] whitespace-nowrap px-2 py-3 font-medium md:table-cell">Modifié</th>
-                  <th className="px-2 py-3 font-medium">Actions</th>
+                  <th className="hidden w-[18%] px-2 py-3 font-medium md:table-cell">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {result.articles.map((article) => (
                   <tr key={article.id} className="group hover:bg-gray-50/60">
-                    <td className="px-3 py-3">
+                    <td className="px-4 py-3 sm:px-3">
                       <div className="flex items-start gap-3">
                         <div className="hidden h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:block">
                           {article.coverImageUrl ? (
@@ -162,18 +164,14 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                             {article.title}
                           </Link>
                           {article.excerpt ? (
-                            <p className="mt-0.5 break-words text-xs text-primary/50">
+                            <p className="mt-0.5 hidden break-words text-xs text-primary/50 sm:block">
                               {article.excerpt}
                             </p>
                           ) : null}
-                          <p className="mt-1 text-xs text-primary/50 md:hidden">
-                            {formatDate(article.updatedAt)}
-                            {isAdmin ? ` · ${article.author.name}` : ""}
-                          </p>
                         </div>
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-2 py-3">
+                    <td className="whitespace-nowrap px-4 py-3 sm:px-2">
                       <ArticleStatusBadge status={article.status} />
                     </td>
                     {isAdmin ? (
@@ -198,8 +196,8 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                     <td className="hidden whitespace-nowrap px-2 py-3 text-primary/70 md:table-cell">
                       {formatDate(article.updatedAt)}
                     </td>
-                    <td className="px-2 py-3">
-                      <div className="flex flex-col items-end gap-1.5 md:items-stretch md:gap-2">
+                    <td className="hidden px-2 py-3 md:table-cell">
+                      <div className="flex flex-col items-stretch gap-2">
                         <Link
                           href={`/admin/articles/${article.id}`}
                           className={`${tableActionClassName} border-accent/30 bg-accent/10 text-accent-dark hover:bg-accent/20`}
