@@ -16,6 +16,31 @@ export type HelpArticle = {
 
 export type HelpAudience = "CONTRIBUTEUR" | "ADMIN";
 
+const CONTRIBUTEUR_ONLY_ARTICLES: HelpArticle[] = [
+  {
+    id: "mobile-usage",
+    category: "Prise en main",
+    title: "Navigation sur smartphone",
+    summary:
+      "La navigation sur smartphone peut être problématique. La gestion du compte est prévue pour l’ordinateur ; le téléphone sert surtout à consulter le forum et lire les articles.",
+    keywords: [
+      "mobile",
+      "smartphone",
+      "téléphone",
+      "ordinateur",
+      "PC",
+      "compte",
+      "navigation",
+      "responsive",
+    ],
+    tips: [
+      "La navigation sur smartphone peut aussi être problématique.",
+      "La partie gestion du compte est faite pour être utilisée sur ordinateur, pas sur téléphone.",
+      "Le téléphone sert surtout à consulter rapidement les réponses du forum et à lire les articles.",
+    ],
+  },
+];
+
 const SHARED_ARTICLES: HelpArticle[] = [
   {
     id: "dashboard",
@@ -249,6 +274,28 @@ const SHARED_ARTICLES: HelpArticle[] = [
 
 const ADMIN_ONLY_ARTICLES: HelpArticle[] = [
   {
+    id: "admin-mobile-pc",
+    category: "Prise en main",
+    title: "Administrer le site sur un PC",
+    summary:
+      "Il est recommandé d’administrer le site sur un PC. Les écrans d’administration n’ont pas été dimensionnés pour les téléphones mobiles.",
+    keywords: [
+      "mobile",
+      "smartphone",
+      "téléphone",
+      "PC",
+      "ordinateur",
+      "administration",
+      "distorsion",
+      "écran",
+    ],
+    tips: [
+      "Il est recommandé que l’administration du site se fasse sur un PC.",
+      "Les écrans de cette administration n’ont pas été dimensionnés pour les téléphones mobiles.",
+      "Ils peuvent présenter des distorsions graphiques.",
+    ],
+  },
+  {
     id: "admin-articles-tous",
     category: "Administration",
     title: "Voir et gérer tous les articles",
@@ -425,7 +472,7 @@ export function getHelpArticles(audience: HelpAudience): HelpArticle[] {
   if (audience === "ADMIN") {
     return [...SHARED_ARTICLES, ...ADMIN_ONLY_ARTICLES];
   }
-  return SHARED_ARTICLES;
+  return [...SHARED_ARTICLES, ...CONTRIBUTEUR_ONLY_ARTICLES];
 }
 
 export function getHelpIntro(audience: HelpAudience) {
@@ -433,14 +480,14 @@ export function getHelpIntro(audience: HelpAudience) {
     return {
       title: "Aide administrateur",
       description:
-        "Guide pour publier du contenu, gérer le site et modérer le forum. Utilisez la recherche pour trouver rapidement une rubrique.",
+        "Guide pour publier du contenu, gérer le site et modérer le forum. Utilisez la recherche pour trouver rapidement une rubrique. Il est recommandé que l’administration du site se fasse sur un PC : les écrans n’ont pas été dimensionnés pour les téléphones mobiles et peuvent présenter des distorsions graphiques.",
     };
   }
 
   return {
     title: "Aide contributeur",
     description:
-      "Guide pour publier des articles, gérer vos documents et participer au forum. Utilisez la recherche pour trouver rapidement une rubrique.",
+      "Guide pour publier des articles, gérer vos documents et participer au forum. Utilisez la recherche pour trouver rapidement une rubrique. La navigation sur smartphone peut aussi être problématique : la gestion du compte est prévue pour l’ordinateur, pas le téléphone. Le téléphone sert surtout à consulter rapidement les réponses du forum et à lire les articles.",
   };
 }
 
