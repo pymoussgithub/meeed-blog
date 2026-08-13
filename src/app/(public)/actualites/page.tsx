@@ -109,7 +109,7 @@ export default async function ActualitesPage({ searchParams }: PageProps) {
 
   return (
     <div className="container-meeed py-4 sm:py-5">
-      <h1 className="sr-only">Nos articles</h1>
+      <h1 className="sr-only">Articles</h1>
 
       {dbError ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">

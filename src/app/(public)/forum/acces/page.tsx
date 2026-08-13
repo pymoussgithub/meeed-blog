@@ -5,7 +5,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Accès au forum",
   description:
-    "Le forum MEEED est réservé aux membres. Connectez-vous ou créez un compte pour y accéder.",
+    "Pour participer au forum, connectez-vous et  créez un compte",
   path: "/forum/acces",
 });
 

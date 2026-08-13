@@ -1,27 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
-const HIGHLIGHTS = [
-  {
-    title: "Eau",
-    description:
-      "Des solutions techniques pour réduire la consommation d'eau en maraîchage de petite et moyenne dimension.",
-    accent: "bg-accent-blue/15 text-accent-blue",
-  },
-  {
-    title: "Énergie décarbonée",
-    description:
-      "Des alternatives aux énergies fossiles pour l'autonomie énergétique et la décarbonation des exploitations.",
-    accent: "bg-accent/15 text-accent-dark",
-  },
-  {
-    title: "Savoir-faire",
-    description:
-      "Communication, formation et dossiers réplicables pour diffuser nos solutions auprès du monde agricole.",
-    accent: "bg-accent-green/15 text-accent-green",
-  },
-] as const;
-
 export function HomeWelcome() {
   return (
     <section
@@ -39,32 +18,17 @@ export function HomeWelcome() {
           </h2>
           <div className="mt-3 h-1 w-20 rounded-full bg-accent" />
           <p className="mt-5 text-base leading-relaxed text-primary/75 sm:text-lg">
-            L&apos;association MEEED établit, décrit et maintient un savoir-faire sur des
-            solutions et moyens technologiques applicables à un maraîchage efficient en eau
-            et en énergie décarbonée. Nous communiquons, informons et formons pour diffuser
-            ce savoir-faire en France et dans l&apos;espace francophone.
+            L&apos;association MEEED analyse, développe, test et décrit des savoir-faire sur des
+            solutions et moyens technologiques visant une réduction des consommations d&apos;eau
+            et une décarbonation de l&apos;agriculture avec un focus sur le maraichage. Nous
+            diffusons ces savoir-faire en France et dans l&apos;espace francophone.
           </p>
           <p className="mt-4 text-base leading-relaxed text-primary/75">
-            Notre équipe de bénévoles imagine des domaines pragmatiques et réplicables pour
-            apporter à la culture maraîchère des solutions innovantes. Une fois nos domaines
-            testés, les documents de création sont mis à disposition.
+            Notre équipe de bénévoles imagine des projets pragmatiques et réplicables pour
+            apporter à l&apos;agriculture des solutions innovantes. Une fois ces projets
+            travaillés, réalisés et testés, des documents descriptifs sont mis à disposition
+            au sein de ce blog ou par des formations
           </p>
-        </div>
-
-        <div className="mt-10 grid gap-5 sm:grid-cols-3">
-          {HIGHLIGHTS.map((item) => (
-            <article
-              key={item.title}
-              className="rounded-2xl border border-gray-100 bg-bg-soft/40 p-6 transition-shadow hover:shadow-md"
-            >
-              <span
-                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${item.accent}`}
-              >
-                {item.title}
-              </span>
-              <p className="mt-4 text-sm leading-relaxed text-primary/70">{item.description}</p>
-            </article>
-          ))}
         </div>
 
         <div className="mt-10 flex flex-wrap items-center gap-4">

@@ -6,7 +6,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Faire un don",
   description:
-    "Soutenez l'association MEEED et contribuez au développement de solutions pour un maraîchage efficient en eau et en énergie décarbonée.",
+    "Soutenez l'association MEEED et contribuez au développement de solutions innovantes pour une agriculture plus efficiente en eau et en énergie décarbonée.",
   path: "/don",
 });
 
@@ -20,14 +20,13 @@ export default function DonPage() {
         <p className="lead text-lg text-primary/70">
           MEEED est une association loi 1901 d&apos;intérêt général, portée par des bénévoles.
           Vos dons nous permettent de développer, tester et diffuser des solutions concrètes pour
-          un maraîchage plus économe en eau et moins dépendant des énergies fossiles.
+          une agriculture plus économe en eau et moins dépendant des énergies fossiles.
         </p>
 
         <h2 className="text-xl font-semibold text-primary-dark">Comment donner ?</h2>
         <p>
           Les dons sont collectés via HelloAsso, plateforme sécurisée dédiée aux associations.
-          Vous pouvez choisir le montant de votre contribution et, si vous le souhaitez, la
-          affecter à l&apos;association ou à l&apos;un de nos domaines en cours.
+          Vous pouvez choisir librement le montant de votre contribution.
         </p>
 
         <div className="not-prose mt-8">
