@@ -71,12 +71,12 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
             <table className="w-full table-fixed text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
-                  <th className="w-[28%] px-3 py-3">Titre</th>
-                  <th className="w-[10%] whitespace-nowrap px-2 py-3">Statut</th>
-                  <th className="w-[16%] px-2 py-3">Domaine</th>
+                  <th className="w-[70%] px-3 py-3 desk-md:w-[28%]">Titre</th>
+                  <th className="w-[30%] whitespace-nowrap px-2 py-3 desk-md:w-[10%]">Statut</th>
+                  <th className="hidden w-[16%] px-2 py-3 desk-md:table-cell">Domaine</th>
                   <th className="hidden w-[14%] px-2 py-3 desk-md:table-cell">Article</th>
                   <th className="hidden w-[14%] px-2 py-3 desk-md:table-cell">Visibilité</th>
-                  <th className="px-2 py-3">Actions</th>
+                  <th className="hidden px-2 py-3 desk-md:table-cell">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -97,7 +97,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                           {document.title}
                         </Link>
                         {document.description ? (
-                          <p className="mt-0.5 line-clamp-2 break-all text-xs text-primary/60">
+                          <p className="mt-0.5 hidden line-clamp-2 break-all text-xs text-primary/60 desk-sm:block">
                             {document.description}
                           </p>
                         ) : null}
@@ -105,7 +105,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                       <td className="whitespace-nowrap px-2 py-3">
                         <DocumentStatusBadge isArchived={document.isArchived} />
                       </td>
-                      <td className="px-2 py-3">
+                      <td className="hidden px-2 py-3 desk-md:table-cell">
                         {domains.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {domains.map((domain) => (
@@ -157,7 +157,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                           ))}
                         </select>
                       </td>
-                      <td className="px-2 py-3">
+                      <td className="hidden px-2 py-3 desk-md:table-cell">
                         <div className="flex flex-col items-end gap-1.5 md:items-stretch md:gap-2">
                           <Link
                             href={`/admin/documents/${document.id}`}

@@ -84,13 +84,13 @@ export function ForumModerationTable({ topics, categories }: ForumModerationTabl
         <table className="w-full table-fixed text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left">
             <tr>
-              <th className="w-[18%] px-3 py-3 font-medium">Discussion</th>
-              <th className="w-[8%] px-2 py-3 font-medium">Statut</th>
+              <th className="w-[70%] px-3 py-3 font-medium desk-md:w-[18%]">Discussion</th>
+              <th className="w-[30%] px-2 py-3 font-medium desk-md:w-[8%]">Statut</th>
               <th className="hidden w-[9%] px-2 py-3 font-medium desk-lg:table-cell">Auteur</th>
               <th className="hidden w-[9%] px-2 py-3 font-medium desk-xl:table-cell">Rubrique</th>
-              <th className="w-[6%] px-2 py-3 font-medium text-center">Msg</th>
+              <th className="hidden w-[6%] px-2 py-3 font-medium text-center desk-md:table-cell">Msg</th>
               <th className="hidden w-[10%] px-2 py-3 font-medium desk-md:table-cell">Modifié</th>
-              <th className="w-[40%] px-3 py-3 font-medium">Actions</th>
+              <th className="hidden w-[40%] px-3 py-3 font-medium desk-md:table-cell">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -109,14 +109,14 @@ export function ForumModerationTable({ topics, categories }: ForumModerationTabl
                       >
                         {topic.title}
                       </Link>
-                      <div className="mt-1 flex flex-wrap gap-1">
+                      <div className="mt-1 hidden flex-wrap gap-1 desk-md:flex">
                         {topic.isPinned ? <Badge color="#292f36">Épinglé</Badge> : null}
                         {topic.isHidden ? <Badge color="#e09f3e">Masqué</Badge> : null}
                         {topic.deletedAt ? <Badge color="#c0392b">Supprimé</Badge> : null}
                       </div>
-                      <p className="mt-1 truncate text-xs text-primary/45 lg:hidden">
+                      <p className="mt-1 hidden truncate text-xs text-primary/45 desk-md:block desk-lg:hidden">
                         {topic.author.name}
-                        <span className="xl:hidden"> · {topic.category.name}</span>
+                        <span className="desk-xl:hidden"> · {topic.category.name}</span>
                       </p>
                     </div>
                   </td>
@@ -129,13 +129,13 @@ export function ForumModerationTable({ topics, categories }: ForumModerationTabl
                   <td className="hidden truncate px-2 py-3 align-top text-primary/70 desk-xl:table-cell">
                     {topic.category.name}
                   </td>
-                  <td className="px-2 py-3 align-top text-center text-primary/70">
+                  <td className="hidden px-2 py-3 align-top text-center text-primary/70 desk-md:table-cell">
                     {topic.postsCount}
                   </td>
                   <td className="hidden whitespace-nowrap px-2 py-3 align-top text-xs text-primary/70 desk-md:table-cell">
                     {formatDate(topic.updatedAt)}
                   </td>
-                  <td className="px-3 py-3 align-top">
+                  <td className="hidden px-3 py-3 align-top desk-md:table-cell">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <Link
                         href={`/forum/s/${topic.slug}`}

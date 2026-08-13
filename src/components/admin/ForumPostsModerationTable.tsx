@@ -37,16 +37,16 @@ function plainExcerpt(html: string, max = 120) {
 export function ForumPostsModerationTable({ posts }: ForumPostsModerationTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-      <table className="min-w-full text-sm">
+      <table className="w-full table-fixed text-sm">
         <thead className="border-b border-gray-200 bg-gray-50 text-left">
           <tr>
-            <th className="px-4 py-3 font-medium">Message</th>
-            <th className="px-4 py-3 font-medium">Discussion</th>
-            <th className="px-4 py-3 font-medium">Auteur</th>
+            <th className="w-[70%] px-4 py-3 font-medium desk-md:w-[28%]">Message</th>
+            <th className="hidden px-4 py-3 font-medium desk-md:table-cell">Discussion</th>
+            <th className="hidden px-4 py-3 font-medium desk-md:table-cell">Auteur</th>
             <th className="hidden px-4 py-3 font-medium desk-md:table-cell">Rubrique</th>
-            <th className="px-4 py-3 font-medium">État</th>
-            <th className="px-4 py-3 font-medium">Date</th>
-            <th className="px-4 py-3 font-medium">Actions</th>
+            <th className="w-[30%] px-4 py-3 font-medium desk-md:w-[10%]">État</th>
+            <th className="hidden px-4 py-3 font-medium desk-md:table-cell">Date</th>
+            <th className="hidden px-4 py-3 font-medium desk-md:table-cell">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -62,7 +62,7 @@ export function ForumPostsModerationTable({ posts }: ForumPostsModerationTablePr
                   {plainExcerpt(post.body)}
                 </Link>
               </td>
-              <td className="max-w-[180px] px-4 py-3">
+              <td className="hidden max-w-[180px] px-4 py-3 desk-md:table-cell">
                 <Link
                   href={`/forum/s/${post.topic.slug}`}
                   target="_blank"
@@ -72,7 +72,7 @@ export function ForumPostsModerationTable({ posts }: ForumPostsModerationTablePr
                   {post.topic.title}
                 </Link>
               </td>
-              <td className="px-4 py-3 text-primary/70">{post.author.name}</td>
+              <td className="hidden px-4 py-3 text-primary/70 desk-md:table-cell">{post.author.name}</td>
               <td className="hidden max-w-[160px] truncate px-4 py-3 text-primary/70 desk-md:table-cell">
                 {post.topic.category.name}
               </td>
@@ -87,8 +87,8 @@ export function ForumPostsModerationTable({ posts }: ForumPostsModerationTablePr
                   )}
                 </div>
               </td>
-              <td className="px-4 py-3 text-primary/70">{formatDate(post.createdAt)}</td>
-              <td className="px-4 py-3">
+              <td className="hidden px-4 py-3 text-primary/70 desk-md:table-cell">{formatDate(post.createdAt)}</td>
+              <td className="hidden px-4 py-3 desk-md:table-cell">
                 <ForumPostModerationActions
                   postId={post.id}
                   isHidden={post.isHidden}
