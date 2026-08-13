@@ -86,10 +86,10 @@ export function ForumModerationTable({ topics, categories }: ForumModerationTabl
             <tr>
               <th className="w-[18%] px-3 py-3 font-medium">Discussion</th>
               <th className="w-[8%] px-2 py-3 font-medium">Statut</th>
-              <th className="hidden w-[9%] px-2 py-3 font-medium lg:table-cell">Auteur</th>
-              <th className="hidden w-[9%] px-2 py-3 font-medium xl:table-cell">Rubrique</th>
+              <th className="hidden w-[9%] px-2 py-3 font-medium desk-lg:table-cell">Auteur</th>
+              <th className="hidden w-[9%] px-2 py-3 font-medium desk-xl:table-cell">Rubrique</th>
               <th className="w-[6%] px-2 py-3 font-medium text-center">Msg</th>
-              <th className="hidden w-[10%] px-2 py-3 font-medium md:table-cell">Modifié</th>
+              <th className="hidden w-[10%] px-2 py-3 font-medium desk-md:table-cell">Modifié</th>
               <th className="w-[40%] px-3 py-3 font-medium">Actions</th>
             </tr>
           </thead>
@@ -123,16 +123,16 @@ export function ForumModerationTable({ topics, categories }: ForumModerationTabl
                   <td className="px-2 py-3 align-top">
                     <ForumTopicStatusBadge status={topic.status} />
                   </td>
-                  <td className="hidden truncate px-2 py-3 align-top text-primary/70 lg:table-cell">
+                  <td className="hidden truncate px-2 py-3 align-top text-primary/70 desk-lg:table-cell">
                     {topic.author.name}
                   </td>
-                  <td className="hidden truncate px-2 py-3 align-top text-primary/70 xl:table-cell">
+                  <td className="hidden truncate px-2 py-3 align-top text-primary/70 desk-xl:table-cell">
                     {topic.category.name}
                   </td>
                   <td className="px-2 py-3 align-top text-center text-primary/70">
                     {topic.postsCount}
                   </td>
-                  <td className="hidden whitespace-nowrap px-2 py-3 align-top text-xs text-primary/70 md:table-cell">
+                  <td className="hidden whitespace-nowrap px-2 py-3 align-top text-xs text-primary/70 desk-md:table-cell">
                     {formatDate(topic.updatedAt)}
                   </td>
                   <td className="px-3 py-3 align-top">

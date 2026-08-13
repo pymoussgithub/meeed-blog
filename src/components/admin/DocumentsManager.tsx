@@ -74,8 +74,8 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                   <th className="w-[28%] px-3 py-3">Titre</th>
                   <th className="w-[10%] whitespace-nowrap px-2 py-3">Statut</th>
                   <th className="w-[16%] px-2 py-3">Domaine</th>
-                  <th className="hidden w-[14%] px-2 py-3 md:table-cell">Article</th>
-                  <th className="hidden w-[14%] px-2 py-3 md:table-cell">Visibilité</th>
+                  <th className="hidden w-[14%] px-2 py-3 desk-md:table-cell">Article</th>
+                  <th className="hidden w-[14%] px-2 py-3 desk-md:table-cell">Visibilité</th>
                   <th className="px-2 py-3">Actions</th>
                 </tr>
               </thead>
@@ -121,7 +121,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                           <span className="text-primary/40">—</span>
                         )}
                       </td>
-                      <td className="hidden max-w-0 px-2 py-3 md:table-cell">
+                      <td className="hidden max-w-0 px-2 py-3 desk-md:table-cell">
                         {document.article ? (
                           <Link
                             href={`/admin/articles/${document.article.id}`}
@@ -134,7 +134,7 @@ export function DocumentsManager({ documents }: DocumentsManagerProps) {
                           <span className="text-primary/40">—</span>
                         )}
                       </td>
-                      <td className="hidden px-2 py-3 md:table-cell">
+                      <td className="hidden px-2 py-3 desk-md:table-cell">
                         <select
                           defaultValue={document.visibility}
                           disabled={document.isArchived}

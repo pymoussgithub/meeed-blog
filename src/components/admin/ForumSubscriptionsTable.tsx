@@ -78,11 +78,11 @@ export function ForumSubscriptionsTable({ subscriptions }: ForumSubscriptionsTab
         <thead className="border-b border-gray-200 bg-bg-soft/40 text-xs uppercase tracking-wide text-primary/55">
           <tr>
             <th className="px-4 py-3 font-semibold">Discussion</th>
-            <th className="hidden px-4 py-3 font-semibold md:table-cell">Rubrique</th>
-            <th className="hidden px-4 py-3 font-semibold md:table-cell">Statut</th>
-            <th className="hidden px-4 py-3 font-semibold md:table-cell">Messages</th>
-            <th className="hidden px-4 py-3 font-semibold md:table-cell">Dernière activité</th>
-            <th className="hidden px-4 py-3 font-semibold md:table-cell">Articles liés</th>
+            <th className="hidden px-4 py-3 font-semibold desk-md:table-cell">Rubrique</th>
+            <th className="hidden px-4 py-3 font-semibold desk-md:table-cell">Statut</th>
+            <th className="hidden px-4 py-3 font-semibold desk-md:table-cell">Messages</th>
+            <th className="hidden px-4 py-3 font-semibold desk-md:table-cell">Dernière activité</th>
+            <th className="hidden px-4 py-3 font-semibold desk-md:table-cell">Articles liés</th>
             <th className="px-4 py-3 font-semibold text-right">Action</th>
           </tr>
         </thead>
@@ -102,7 +102,7 @@ export function ForumSubscriptionsTable({ subscriptions }: ForumSubscriptionsTab
                     {topic.title}
                   </Link>
                 </td>
-                <td className="hidden px-4 py-3 align-top text-primary/70 md:table-cell">
+                <td className="hidden px-4 py-3 align-top text-primary/70 desk-md:table-cell">
                   <Link
                     href={`/forum/r/${topic.category.slug}`}
                     className="hover:text-accent-dark"
@@ -110,16 +110,16 @@ export function ForumSubscriptionsTable({ subscriptions }: ForumSubscriptionsTab
                     {topic.category.name}
                   </Link>
                 </td>
-                <td className="hidden px-4 py-3 align-top text-primary/70 md:table-cell">
+                <td className="hidden px-4 py-3 align-top text-primary/70 desk-md:table-cell">
                   {statusLabel[topic.status]}
                 </td>
-                <td className="hidden px-4 py-3 align-top text-primary/70 md:table-cell">
+                <td className="hidden px-4 py-3 align-top text-primary/70 desk-md:table-cell">
                   {topic.postsCount}
                 </td>
-                <td className="hidden px-4 py-3 align-top text-primary/70 md:table-cell">
+                <td className="hidden px-4 py-3 align-top text-primary/70 desk-md:table-cell">
                   {formatDate(topic.lastPostAt ?? updatedAt)}
                 </td>
-                <td className="hidden max-w-xs px-4 py-3 align-top text-primary/70 md:table-cell">
+                <td className="hidden max-w-xs px-4 py-3 align-top text-primary/70 desk-md:table-cell">
                   {publishedArticles.length > 0
                     ? publishedArticles.map((article) => article.title).join(", ")
                     : "—"}

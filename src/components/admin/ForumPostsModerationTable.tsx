@@ -43,7 +43,7 @@ export function ForumPostsModerationTable({ posts }: ForumPostsModerationTablePr
             <th className="px-4 py-3 font-medium">Message</th>
             <th className="px-4 py-3 font-medium">Discussion</th>
             <th className="px-4 py-3 font-medium">Auteur</th>
-            <th className="hidden px-4 py-3 font-medium md:table-cell">Rubrique</th>
+            <th className="hidden px-4 py-3 font-medium desk-md:table-cell">Rubrique</th>
             <th className="px-4 py-3 font-medium">État</th>
             <th className="px-4 py-3 font-medium">Date</th>
             <th className="px-4 py-3 font-medium">Actions</th>
@@ -73,7 +73,7 @@ export function ForumPostsModerationTable({ posts }: ForumPostsModerationTablePr
                 </Link>
               </td>
               <td className="px-4 py-3 text-primary/70">{post.author.name}</td>
-              <td className="hidden max-w-[160px] truncate px-4 py-3 text-primary/70 md:table-cell">
+              <td className="hidden max-w-[160px] truncate px-4 py-3 text-primary/70 desk-md:table-cell">
                 {post.topic.category.name}
               </td>
               <td className="px-4 py-3">

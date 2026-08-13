@@ -232,11 +232,11 @@ function ArticlesTable({
               <th className="px-4 py-3 font-heading font-semibold text-primary-dark sm:px-5">
                 Titre
               </th>
-              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark sm:table-cell">
+              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark desk-sm:table-cell">
                 Auteur
               </th>
               <th className="px-4 py-3 font-heading font-semibold text-primary-dark">Statut</th>
-              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark md:table-cell">
+              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark desk-md:table-cell">
                 Mis à jour
               </th>
             </tr>
@@ -252,13 +252,13 @@ function ArticlesTable({
                     {article.title}
                   </Link>
                 </td>
-                <td className="hidden px-4 py-3 text-primary/65 sm:table-cell">
+                <td className="hidden px-4 py-3 text-primary/65 desk-sm:table-cell">
                   {article.author.name}
                 </td>
                 <td className="px-4 py-3">
                   <ArticleStatusBadge status={article.status} />
                 </td>
-                <td className="hidden px-4 py-3 text-primary/55 md:table-cell">
+                <td className="hidden px-4 py-3 text-primary/55 desk-md:table-cell">
                   {formatDate(article.updatedAt)}
                 </td>
               </tr>
@@ -295,14 +295,14 @@ function DocumentsTable({
               <th className="px-4 py-3 font-heading font-semibold text-primary-dark sm:px-5">
                 Titre
               </th>
-              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark sm:table-cell">
+              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark desk-sm:table-cell">
                 Taille
               </th>
-              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark md:table-cell">
+              <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark desk-md:table-cell">
                 Lié à
               </th>
               {isAdmin ? (
-                <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark lg:table-cell">
+                <th className="hidden px-4 py-3 font-heading font-semibold text-primary-dark desk-lg:table-cell">
                   Par
                 </th>
               ) : null}
@@ -321,14 +321,14 @@ function DocumentsTable({
                   </Link>
                   <p className="mt-0.5 text-xs text-primary/45">{document.fileName}</p>
                 </td>
-                <td className="hidden px-4 py-3 text-primary/65 sm:table-cell">
+                <td className="hidden px-4 py-3 text-primary/65 desk-sm:table-cell">
                   {(document.fileSize / 1024).toFixed(1)} Ko
                 </td>
-                <td className="hidden px-4 py-3 text-primary/65 md:table-cell">
+                <td className="hidden px-4 py-3 text-primary/65 desk-md:table-cell">
                   {document.article?.title ?? "—"}
                 </td>
                 {isAdmin ? (
-                  <td className="hidden px-4 py-3 text-primary/65 lg:table-cell">
+                  <td className="hidden px-4 py-3 text-primary/65 desk-lg:table-cell">
                     {document.uploadedBy.name}
                   </td>
                 ) : null}

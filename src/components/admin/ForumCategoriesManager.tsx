@@ -407,7 +407,7 @@ export function ForumCategoriesManager({
                   {canReorder ? <th className="w-10 px-2 py-3" aria-label="Réordonner" /> : null}
                   <th className="px-4 py-3 font-medium">Rubrique</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="hidden px-4 py-3 font-medium sm:table-cell">Sujets</th>
+                  <th className="hidden px-4 py-3 font-medium desk-sm:table-cell">Sujets</th>
                   <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -515,7 +515,7 @@ export function ForumCategoriesManager({
                       <td className="px-4 py-3">
                         <StatusBadge isActive={category.isActive} />
                       </td>
-                      <td className="hidden px-4 py-3 text-primary/70 sm:table-cell">
+                      <td className="hidden px-4 py-3 text-primary/70 desk-sm:table-cell">
                         {category._count.topics}
                       </td>
                       <td className="px-4 py-3">

@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Smartphone (portrait et paysage) : ne pas élargir les tableaux du compte.
+   Un téléphone en paysage dépasse souvent sm/md en largeur, mais sa hauteur reste basse. */
+@custom-variant desk-sm (@media (min-width: 640px) and (min-height: 600px));
+@custom-variant desk-md (@media (min-width: 768px) and (min-height: 600px));
+@custom-variant desk-lg (@media (min-width: 1024px) and (min-height: 600px));
+@custom-variant desk-xl (@media (min-width: 1280px) and (min-height: 600px));
+
 @theme {
   --color-primary: #292f36;
   --color-primary-dark: #1f2329;

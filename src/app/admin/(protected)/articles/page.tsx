@@ -122,18 +122,18 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
             <table className="w-full table-fixed text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-left">
                 <tr>
-                  <th className={`${isAdmin ? "w-[70%] md:w-[30%]" : "w-[70%] md:w-[36%]"} px-4 py-3 font-medium sm:px-3`}>
+                  <th className={`${isAdmin ? "w-[70%] desk-md:w-[30%]" : "w-[70%] desk-md:w-[36%]"} px-4 py-3 font-medium sm:px-3`}>
                     Article
                   </th>
-                  <th className="w-[30%] whitespace-nowrap px-4 py-3 font-medium sm:w-[10%] sm:px-2">
+                  <th className="w-[30%] whitespace-nowrap px-4 py-3 font-medium desk-sm:w-[10%] sm:px-2">
                     Statut
                   </th>
                   {isAdmin ? (
-                    <th className="hidden w-[12%] px-2 py-3 font-medium md:table-cell">Auteur</th>
+                    <th className="hidden w-[12%] px-2 py-3 font-medium desk-md:table-cell">Auteur</th>
                   ) : null}
-                  <th className="hidden w-[14%] px-2 py-3 font-medium md:table-cell">Domaines</th>
-                  <th className="hidden w-[12%] whitespace-nowrap px-2 py-3 font-medium md:table-cell">Modifié</th>
-                  <th className="hidden w-[18%] px-2 py-3 font-medium md:table-cell">Actions</th>
+                  <th className="hidden w-[14%] px-2 py-3 font-medium desk-md:table-cell">Domaines</th>
+                  <th className="hidden w-[12%] whitespace-nowrap px-2 py-3 font-medium desk-md:table-cell">Modifié</th>
+                  <th className="hidden w-[18%] px-2 py-3 font-medium desk-md:table-cell">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -141,7 +141,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                   <tr key={article.id} className="group hover:bg-gray-50/60">
                     <td className="px-4 py-3 sm:px-3">
                       <div className="flex items-start gap-3">
-                        <div className="hidden h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:block">
+                        <div className="hidden h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100 desk-sm:block">
                           {article.coverImageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -164,7 +164,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                             {article.title}
                           </Link>
                           {article.excerpt ? (
-                            <p className="mt-0.5 hidden break-words text-xs text-primary/50 sm:block">
+                            <p className="mt-0.5 hidden break-words text-xs text-primary/50 desk-sm:block">
                               {article.excerpt}
                             </p>
                           ) : null}
@@ -175,9 +175,9 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                       <ArticleStatusBadge status={article.status} />
                     </td>
                     {isAdmin ? (
-                      <td className="hidden px-2 py-3 break-words text-primary/70 md:table-cell">{article.author.name}</td>
+                      <td className="hidden px-2 py-3 break-words text-primary/70 desk-md:table-cell">{article.author.name}</td>
                     ) : null}
-                    <td className="hidden px-2 py-3 text-primary/70 md:table-cell">
+                    <td className="hidden px-2 py-3 text-primary/70 desk-md:table-cell">
                       {article.categories.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {article.categories.map((item) => (
@@ -193,10 +193,10 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                         "—"
                       )}
                     </td>
-                    <td className="hidden whitespace-nowrap px-2 py-3 text-primary/70 md:table-cell">
+                    <td className="hidden whitespace-nowrap px-2 py-3 text-primary/70 desk-md:table-cell">
                       {formatDate(article.updatedAt)}
                     </td>
-                    <td className="hidden px-2 py-3 md:table-cell">
+                    <td className="hidden px-2 py-3 desk-md:table-cell">
                       <div className="flex flex-col items-stretch gap-2">
                         <Link
                           href={`/admin/articles/${article.id}`}
