@@ -37,11 +37,14 @@ export function HomeHero({ articles }: HomeHeroProps) {
               dimensions comme le sont le plus souvent les exploitations de maraichage
             </p>
             <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
+              <Button href="/categories" variant="outline">
+                Domaines
+              </Button>
               <Button href="/actualites" variant="accent">
                 Articles
               </Button>
-              <Button href="/categories" variant="outline">
-                Domaines
+              <Button href="/documents" variant="outline">
+                Documents
               </Button>
             </div>
           </div>

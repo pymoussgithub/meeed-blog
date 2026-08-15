@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "Accueil", match: "accueil" as const },
-  { href: "/actualites", label: "Articles", match: "articles" as const },
   { href: "/categories", label: "Domaines", match: "domaines" as const },
+  { href: "/actualites", label: "Articles", match: "articles" as const },
   { href: "/documents", label: "Documents", match: "documents" as const },
   { href: "/forum", label: "Forum", match: "forum" as const },
 ] as const;
