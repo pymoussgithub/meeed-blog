@@ -15,7 +15,7 @@ function CategoryRow({ row }: { row: ForumIndexRow }) {
 
   return (
     <tr className="transition-colors hover:bg-bg-soft/40">
-      <td className="px-4 py-3 text-left align-middle">
+      <td className="min-w-0 px-3 py-3 text-left align-middle sm:px-4">
         <Link href={row.href} className="group block min-w-0" data-tour-id="forum.category.row">
           <span className="font-heading text-base font-semibold text-primary-dark group-hover:text-accent-dark">
             {row.name}
@@ -27,8 +27,6 @@ function CategoryRow({ row }: { row: ForumIndexRow }) {
 
         <div className="mt-2 space-y-1 text-xs text-primary/55 md:hidden">
           <p className="sm:hidden">
-            {row.topicsCount} sujet{row.topicsCount > 1 ? "s" : ""}
-            {" · "}
             {row.messagesCount} message{row.messagesCount > 1 ? "s" : ""}
           </p>
           {last ? (
@@ -49,7 +47,7 @@ function CategoryRow({ row }: { row: ForumIndexRow }) {
         </div>
       </td>
 
-      <td className="px-3 py-3 text-center align-middle tabular-nums text-primary/65">
+      <td className="w-16 px-2 py-3 text-center align-middle tabular-nums text-primary/65 sm:w-20 sm:px-3">
         {row.topicsCount}
       </td>
 
@@ -91,13 +89,13 @@ export function ForumCategoryTable({
 
   return (
     <div className="overflow-x-auto rounded-xl border border-primary/10 bg-white" data-tour-id="forum.categories.table">
-      <table className="min-w-full text-sm">
+      <table className="w-full table-fixed text-sm sm:min-w-full sm:table-auto">
         <thead className="border-b border-primary/10 bg-bg-soft/60 text-primary/70">
           <tr>
-            <th className="min-w-[12rem] px-4 py-2.5 text-left font-heading font-semibold text-primary-dark">
+            <th className="min-w-0 px-3 py-2.5 text-left font-heading font-semibold text-primary-dark sm:min-w-[12rem] sm:px-4">
               Rubrique
             </th>
-            <th className="w-20 px-3 py-2.5 text-center font-heading font-semibold text-primary-dark">
+            <th className="w-16 whitespace-nowrap px-2 py-2.5 text-center font-heading font-semibold text-primary-dark sm:w-20 sm:px-3">
               Sujets
             </th>
             <th className="hidden w-24 px-3 py-2.5 text-center font-heading font-semibold text-primary-dark sm:table-cell">
