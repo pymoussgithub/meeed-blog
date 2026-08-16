@@ -101,7 +101,7 @@ export function MobileMenu({ links }: MobileMenuProps) {
                 <div className="mb-4 flex items-center justify-between rounded-3xl bg-gradient-to-br from-bg-soft via-white to-accent/10 px-4 py-4 shadow-sm ring-1 ring-white/70">
                   <div>
                     <p className="text-sm font-semibold text-primary">Navigation</p>
-                    <p className="text-xs text-primary/55">Acces rapide aux rubriques</p>
+                    <p className="text-xs text-primary/55">Accès rapide aux rubriques</p>
                   </div>
                   <button
                     type="button"

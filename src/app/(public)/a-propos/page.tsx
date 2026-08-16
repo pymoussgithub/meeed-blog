@@ -34,18 +34,18 @@ export default function AboutPage() {
 
       <div className="prose prose-neutral mt-8 max-w-3xl text-primary/80">
         <p className="lead text-lg text-primary/70">
-          Association loi 1901 d&apos;intérêt général — Maraichage Efficient en Eau et en
-          Energie Décarbonée.
+          Association loi 1901 d&apos;intérêt général — Maraîchage Efficient en Eau et en
+          Énergie Décarbonée.
         </p>
 
         <h2 className="text-xl font-semibold text-primary-dark">Notre objet</h2>
         <p>L&apos;association MEEED a pour objet :</p>
         <ul className="list-disc space-y-3 pl-5">
           <li>
-            L&apos;association MEEED développe, test et décrit des savoir-faire sur des
+            L&apos;association MEEED développe, teste et décrit des savoir-faire sur des
             solutions et moyens technologiques visant une réduction des consommations
             d&apos;eau et une décarbonation de l&apos;agriculture avec un focus sur le
-            maraichage. Nous diffusons ces savoir-faire en France et dans l&apos;espace
+            maraîchage. Nous diffusons ces savoir-faire en France et dans l&apos;espace
             francophone.
           </li>
           <li>
@@ -54,15 +54,15 @@ export default function AboutPage() {
             francophone.
           </li>
           <li>
-            Développer et faire évoluer des solutions capable d&apos;améliorer les
+            Développer et faire évoluer des solutions capables d&apos;améliorer les
             consommations d&apos;eau et les bilans carbone, par des alternatives innovantes et
             performantes — et, quand nécessaire et possible, concevoir des prototypes
-            démonstratifs
+            démonstratifs.
           </li>
           <li>
             Agir de façon générale sur toutes les activités liées aux énergies renouvelables,
             à l&apos;autonomie énergétique, à la décarbonation et à l&apos;optimisation des
-            usages de l&apos;eau et de l&apos;énergie dans l&apos;agriculture
+            usages de l&apos;eau et de l&apos;énergie dans l&apos;agriculture.
           </li>
         </ul>
 
@@ -75,8 +75,8 @@ export default function AboutPage() {
         <ul className="list-disc space-y-2 pl-5">
           <li>
             <strong>Des idées techniques</strong> pour réduire la consommation d&apos;eau et
-            la dépendance aux énergies fossiles des exploitation agricoles de petites et
-            moyennes dimensions
+            la dépendance aux énergies fossiles des exploitations agricoles de petites et
+            moyennes dimensions.
           </li>
           <li>
             <strong>Des dossiers réplicables</strong> : une fois nos domaines testés, les

@@ -1,0 +1,250 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word"
+ xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8"/>
+<meta name="ProgId" content="Word.Document"/>
+<title>Rapport de corrections — textes fixes MEEED</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #222; }
+  h1 { color: #1B5E20; font-size: 22pt; margin-bottom: 4pt; }
+  h2 { color: #1B5E20; }
+  .subtitle { color: #2E7D32; font-size: 14pt; font-weight: bold; margin-top: 0; }
+  .meta { color: #555; font-style: italic; }
+</style>
+</head>
+<body>
+  <p class="meta">MEEED — Textes fixes — Corrections orthographe et ponctuation</p>
+  <h1>Rapport de corrections</h1>
+  <p class="subtitle">Orthographe, grammaire et ponctuation des textes fixes</p>
+  <p class="meta">Date : 16/08/2026 · Association MEEED · 17 fautes corrigées dans l’application</p>
+
+  <h2>1. Objet</h2>
+  <p>Relecture des textes dits « fixes » de l’application (libellés, paragraphes et métadonnées
+  non édités via le back-office), à partir du référentiel des textes fixes et de l’interface
+  publique. Les coquilles introduites lors de la reprise FC1 ont été corrigées dans le code.
+  Les URL HelloAsso (sans accents) n’ont pas été modifiées, car ce sont des adresses techniques.</p>
+
+  <h2>2. Synthèse</h2>
+  <p>• 17 corrections appliquées dans le code<br/>
+  • Accents / orthographe : 6 occurrence(s)<br/>
+  • Accords, conjugaison, grammaire : 9 occurrence(s)<br/>
+  • Ponctuation (points manquants, doubles espaces) : 8 occurrence(s)</p>
+
+  <h2>3. Détail de chaque faute corrigée</h2>
+  <p class="meta">Pour chaque entrée : le texte fautif, le texte corrigé, la règle, la page et le fichier source.</p>
+  
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 1 — ACC-03 / titre
+            </h2>
+            <p><b>Page / écran :</b> Accueil — bandeau<br/>
+            <b>Fichier :</b> src/components/home/HomeHero.tsx<br/>
+            <b>Type :</b> Orthographe (accent)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">Maraichage Efficient en Eau et en Energie Décarbonée</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">Maraîchage Efficient en Eau et en Énergie Décarbonée</i></p>
+            <p><b>Règle :</b> Circonflexe obligatoire sur « maraîchage ». Accent sur majuscule : « Énergie ».</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 2 — ACC-03 / paragraphe
+            </h2>
+            <p><b>Page / écran :</b> Accueil — bandeau<br/>
+            <b>Fichier :</b> src/components/home/HomeHero.tsx<br/>
+            <b>Type :</b> Accord + orthographe + ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">…adaptées aux exploitation de petites dimensions comme le sont le plus souvent les exploitations de maraichage</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">…adaptées aux exploitations de petites dimensions comme le sont le plus souvent les exploitations de maraîchage.</i></p>
+            <p><b>Règle :</b> « aux » exige le pluriel « exploitations ». Accent sur « maraîchage ». Point final obligatoire.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 3 — Métadonnées
+            </h2>
+            <p><b>Page / écran :</b> Titre d’onglet du site<br/>
+            <b>Fichier :</b> src/app/layout.tsx<br/>
+            <b>Type :</b> Orthographe (accent)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">MEEED — Maraichage Efficient en Eau et en Energie Décarbonée</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">MEEED — Maraîchage Efficient en Eau et en Énergie Décarbonée</i></p>
+            <p><b>Règle :</b> Même correction que le titre d’accueil (accents).</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 4 — Pied de page
+            </h2>
+            <p><b>Page / écran :</b> Toutes les pages publiques<br/>
+            <b>Fichier :</b> src/components/layout/Footer.tsx<br/>
+            <b>Type :</b> Orthographe (accent)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">Maraichage Efficient en Eau et en Energie Décarbonée</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">Maraîchage Efficient en Eau et en Énergie Décarbonée</i></p>
+            <p><b>Règle :</b> Même correction que le titre d’accueil (accents).</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 5 — APR-01
+            </h2>
+            <p><b>Page / écran :</b> À propos — chapô<br/>
+            <b>Fichier :</b> src/app/(public)/a-propos/page.tsx<br/>
+            <b>Type :</b> Orthographe (accent)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">Maraichage Efficient en Eau et en Energie Décarbonée</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">Maraîchage Efficient en Eau et en Énergie Décarbonée</i></p>
+            <p><b>Règle :</b> Même correction que le titre d’accueil (accents).</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 6 — ACC-12
+            </h2>
+            <p><b>Page / écran :</b> Accueil — message d’accueil<br/>
+            <b>Fichier :</b> src/components/home/HomeWelcome.tsx<br/>
+            <b>Type :</b> Conjugaison + orthographe</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">analyse, développe, test et décrit … focus sur le maraichage</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">analyse, développe, teste et décrit … focus sur le maraîchage</i></p>
+            <p><b>Règle :</b> 3e personne du singulier : « teste » (pas « test »). Accent sur « maraîchage ».</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 7 — ACC-13
+            </h2>
+            <p><b>Page / écran :</b> Accueil — message d’accueil<br/>
+            <b>Fichier :</b> src/components/home/HomeWelcome.tsx<br/>
+            <b>Type :</b> Ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">…mis à disposition au sein de ce blog ou par des formations</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">…mis à disposition au sein de ce blog ou par des formations.</i></p>
+            <p><b>Règle :</b> Toute phrase se termine par un point.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 8 — APR-07
+            </h2>
+            <p><b>Page / écran :</b> À propos — objet, point 1<br/>
+            <b>Fichier :</b> src/app/(public)/a-propos/page.tsx<br/>
+            <b>Type :</b> Conjugaison + orthographe</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">développe, test et décrit … focus sur le maraichage</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">développe, teste et décrit … focus sur le maraîchage</i></p>
+            <p><b>Règle :</b> Même conjugaison « teste » et accent sur « maraîchage ».</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 9 — APR-09
+            </h2>
+            <p><b>Page / écran :</b> À propos — objet, point 3<br/>
+            <b>Fichier :</b> src/app/(public)/a-propos/page.tsx<br/>
+            <b>Type :</b> Accord + ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">des solutions capable d’améliorer … concevoir des prototypes démonstratifs</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">des solutions capables d’améliorer … concevoir des prototypes démonstratifs.</i></p>
+            <p><b>Règle :</b> Accord au pluriel : « capables ». Point final obligatoire.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 10 — APR-10
+            </h2>
+            <p><b>Page / écran :</b> À propos — objet, point 4<br/>
+            <b>Fichier :</b> src/app/(public)/a-propos/page.tsx<br/>
+            <b>Type :</b> Ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">…optimisation des usages de l’eau et de l’énergie dans l’agriculture</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">…optimisation des usages de l’eau et de l’énergie dans l’agriculture.</i></p>
+            <p><b>Règle :</b> Toute phrase se termine par un point.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 11 — APR-13
+            </h2>
+            <p><b>Page / écran :</b> À propos — approche, point 1<br/>
+            <b>Fichier :</b> src/app/(public)/a-propos/page.tsx<br/>
+            <b>Type :</b> Accord + ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">des exploitation agricoles de petites et moyennes dimensions</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">des exploitations agricoles de petites et moyennes dimensions.</i></p>
+            <p><b>Règle :</b> « des » exige le pluriel « exploitations ». Point final obligatoire.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 12 — DON-04
+            </h2>
+            <p><b>Page / écran :</b> Faire un don — chapô<br/>
+            <b>Fichier :</b> src/app/(public)/don/page.tsx<br/>
+            <b>Type :</b> Accord (genre)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">une agriculture plus économe en eau et moins dépendant des énergies fossiles</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">une agriculture plus économe en eau et moins dépendante des énergies fossiles</i></p>
+            <p><b>Règle :</b> « agriculture » est féminin : « dépendante ».</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 13 — CTC-04
+            </h2>
+            <p><b>Page / écran :</b> Contact — introduction<br/>
+            <b>Fichier :</b> src/app/(public)/contact/page.tsx<br/>
+            <b>Type :</b> Grammaire + ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">discuter de nos ou de vos projets, en savoir plus sur comment participer à la communauté MEEED</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">discuter de nos projets ou des vôtres, et en savoir plus sur comment participer à la communauté MEEED.</i></p>
+            <p><b>Règle :</b> Construction incomplète (« de nos ou de vos »). Virgule + « et » avant le dernier infinitif. Point final.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 14 — FOR-02
+            </h2>
+            <p><b>Page / écran :</b> Forum — description SEO /accès<br/>
+            <b>Fichier :</b> src/app/(public)/forum/acces/page.tsx<br/>
+            <b>Type :</b> Grammaire + ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">connectez-vous et  créez un compte</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">connectez-vous ou créez un compte.</i></p>
+            <p><b>Règle :</b> Double espace. « et » remplacé par « ou » (on se connecte ou on crée un compte). Point final.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 15 — FOR-11
+            </h2>
+            <p><b>Page / écran :</b> Forum — description SEO<br/>
+            <b>Fichier :</b> src/app/(public)/forum/page.tsx<br/>
+            <b>Type :</b> Accord + ponctuation</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">posez vos questionnement à la communauté MEEED et  trouvez</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">posez vos questionnements à la communauté MEEED et trouvez</i></p>
+            <p><b>Règle :</b> « vos » exige le pluriel « questionnements ». Double espace supprimé.</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 16 — NAV
+            </h2>
+            <p><b>Page / écran :</b> Menu (groupe Forum)<br/>
+            <b>Fichier :</b> src/lib/navigation.ts<br/>
+            <b>Type :</b> Orthographe (accent)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">Communaute</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">Communauté</i></p>
+            <p><b>Règle :</b> Accent aigu obligatoire : « Communauté ».</p>
+            
+            <h2 style="color:#1B5E20;font-size:14pt;margin:18pt 0 6pt 0;">
+              Correction n° 17 — NAV mobile
+            </h2>
+            <p><b>Page / écran :</b> Menu mobile<br/>
+            <b>Fichier :</b> src/components/layout/MobileMenu.tsx<br/>
+            <b>Type :</b> Orthographe (accent)</p>
+            <p><b style="color:#B71C1C;">Avant :</b>
+              <i style="color:#B71C1C;">Acces rapide aux rubriques</i></p>
+            <p><b style="color:#1B5E20;">Après :</b>
+              <i style="color:#1B5E20;">Accès rapide aux rubriques</i></p>
+            <p><b>Règle :</b> Accent grave obligatoire : « Accès ».</p>
+            
+
+  <h2>4. Non modifié volontairement</h2>
+  <p>Les adresses HelloAsso contenant « maraichage-efficient-en-eau-et-en-energie-decarbonee »
+  n’ont pas été corrigées : il s’agit d’URL techniques, sans accents.
+  Les contenus éditoriaux (articles, documents, messages du forum) ne font pas partie des textes fixes.</p>
+
+  <h2>5. Fichiers modifiés</h2>
+  <p>• src/app/(public)/a-propos/page.tsx<br/>• src/app/(public)/contact/page.tsx<br/>• src/app/(public)/don/page.tsx<br/>• src/app/(public)/forum/acces/page.tsx<br/>• src/app/(public)/forum/page.tsx<br/>• src/app/layout.tsx<br/>• src/components/home/HomeHero.tsx<br/>• src/components/home/HomeWelcome.tsx<br/>• src/components/layout/Footer.tsx<br/>• src/components/layout/MobileMenu.tsx<br/>• src/lib/navigation.ts</p>
+</body>
+</html>

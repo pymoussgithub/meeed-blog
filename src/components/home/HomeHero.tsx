@@ -28,13 +28,13 @@ export function HomeHero({ articles }: HomeHeroProps) {
               Association loi 1901 d&apos;intérêt général
             </span>
             <h1 className="mt-3 text-2xl leading-snug break-words sm:mt-4 sm:text-3xl sm:leading-tight lg:text-4xl lg:leading-[1.15]">
-              Maraichage Efficient en Eau et en Energie Décarbonée
+              Maraîchage Efficient en Eau et en Énergie Décarbonée
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-primary/70 sm:mt-4 sm:text-base lg:text-lg">
               Solutions innovantes pour une agriculture plus efficiente en eau et en énergie
               décarbonée. Retrouvez nos actualités, projets et documents pour la transition
-              agricole. Ces solutions sont principalement adaptées aux exploitation de petites
-              dimensions comme le sont le plus souvent les exploitations de maraichage
+              agricole. Ces solutions sont principalement adaptées aux exploitations de petites
+              dimensions comme le sont le plus souvent les exploitations de maraîchage.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
               <Button href="/categories" variant="outline">

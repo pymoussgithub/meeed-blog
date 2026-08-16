@@ -5,7 +5,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Accès au forum",
   description:
-    "Pour participer au forum, connectez-vous et  créez un compte",
+    "Pour participer au forum, connectez-vous ou créez un compte.",
   path: "/forum/acces",
 });
 

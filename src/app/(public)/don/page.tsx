@@ -20,7 +20,7 @@ export default function DonPage() {
         <p className="lead text-lg text-primary/70">
           MEEED est une association loi 1901 d&apos;intérêt général, portée par des bénévoles.
           Vos dons nous permettent de développer, tester et diffuser des solutions concrètes pour
-          une agriculture plus économe en eau et moins dépendant des énergies fossiles.
+          une agriculture plus économe en eau et moins dépendante des énergies fossiles.
         </p>
 
         <h2 className="text-xl font-semibold text-primary-dark">Comment donner ?</h2>

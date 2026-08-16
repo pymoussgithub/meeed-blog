@@ -18,16 +18,16 @@ export function HomeWelcome() {
           </h2>
           <div className="mt-3 h-1 w-20 rounded-full bg-accent" />
           <p className="mt-5 text-base leading-relaxed text-primary/75 sm:text-lg">
-            L&apos;association MEEED analyse, développe, test et décrit des savoir-faire sur des
+            L&apos;association MEEED analyse, développe, teste et décrit des savoir-faire sur des
             solutions et moyens technologiques visant une réduction des consommations d&apos;eau
-            et une décarbonation de l&apos;agriculture avec un focus sur le maraichage. Nous
+            et une décarbonation de l&apos;agriculture avec un focus sur le maraîchage. Nous
             diffusons ces savoir-faire en France et dans l&apos;espace francophone.
           </p>
           <p className="mt-4 text-base leading-relaxed text-primary/75">
             Notre équipe de bénévoles imagine des projets pragmatiques et réplicables pour
             apporter à l&apos;agriculture des solutions innovantes. Une fois ces projets
             travaillés, réalisés et testés, des documents descriptifs sont mis à disposition
-            au sein de ce blog ou par des formations
+            au sein de ce blog ou par des formations.
           </p>
         </div>
 

@@ -8,7 +8,7 @@ import { buildBreadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Forum",
   description:
-    "Échangez autour des projets MEEED, posez vos questionnement à la communauté MEEED et  trouvez des réponses dans les discussions de la communauté.",
+    "Échangez autour des projets MEEED, posez vos questionnements à la communauté MEEED et trouvez des réponses dans les discussions de la communauté.",
   path: "/forum",
 });
 

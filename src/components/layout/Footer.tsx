@@ -16,8 +16,8 @@ export function Footer() {
               className="h-12 w-auto brightness-0 invert"
             />
             <p className="mt-4 max-w-sm text-sm text-white/70">
-              Association loi 1901 d&apos;intérêt général — Maraichage Efficient en Eau
-              et en Energie Décarbonée.
+              Association loi 1901 d&apos;intérêt général — Maraîchage Efficient en Eau
+              et en Énergie Décarbonée.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-8 text-sm sm:grid-cols-3">
@@ -25,23 +25,23 @@ export function Footer() {
               <p className="mb-3 font-semibold">Navigation</p>
               <ul className="space-y-2 text-white/70">
                 <li>
-                  <Link href="/actualites" className="hover:text-white" data-tour-id="nav.header.articles">
-                    Actualités
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/forum" className="hover:text-white" data-tour-id="nav.header.forum">
-                    Forum
-                  </Link>
-                </li>
-                <li>
                   <Link href="/categories" className="hover:text-white" data-tour-id="nav.header.domaines">
                     Domaines
                   </Link>
                 </li>
                 <li>
+                  <Link href="/actualites" className="hover:text-white" data-tour-id="nav.header.articles">
+                    Articles
+                  </Link>
+                </li>
+                <li>
                   <Link href="/documents" className="hover:text-white" data-tour-id="nav.header.documents">
                     Documents
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/forum" className="hover:text-white" data-tour-id="nav.header.forum">
+                    Forum
                   </Link>
                 </li>
                 <li>

@@ -32,7 +32,7 @@ function resolveMetadataBase(): URL {
 export const metadata: Metadata = {
   metadataBase: resolveMetadataBase(),
   title: {
-    default: `${SITE_NAME} — Maraichage Efficient en Eau et en Energie Décarbonée`,
+    default: `${SITE_NAME} — Maraîchage Efficient en Eau et en Énergie Décarbonée`,
     template: `%s — ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,

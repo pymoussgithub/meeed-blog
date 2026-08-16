@@ -17,8 +17,8 @@ export default function ContactPage() {
     <div className="container-meeed py-12">
       <h1 className="text-3xl sm:text-4xl">Contactez-nous</h1>
       <p className="mt-4 max-w-2xl text-primary/70">
-        Pour nous écrire, discuter de nos ou de vos projets, en savoir plus sur comment
-        participer à la communauté MEEED.
+        Pour nous écrire, discuter de nos projets ou des vôtres, et en savoir plus sur
+        comment participer à la communauté MEEED.
       </p>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-16">
