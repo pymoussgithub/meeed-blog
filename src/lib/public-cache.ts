@@ -13,6 +13,18 @@ import {
 /** TTL court pour les listes publiques (navigation soft quasi instantanée). */
 export const PUBLIC_REVALIDATE_SECONDS = 60;
 
+/** En `next dev`, le Data Cache Next peut servir d’anciens articles après un wipe DB. */
+const skipDataCache = process.env.NODE_ENV === "development";
+
+function cachedQuery<T>(
+  fn: () => Promise<T>,
+  keyParts: string[],
+  options: { revalidate: number; tags: string[] },
+): () => Promise<T> {
+  if (skipDataCache) return fn;
+  return unstable_cache(fn, keyParts, options);
+}
+
 /** Tags pour invalider le cache public après édition d’articles / domaines. */
 export const PUBLIC_CACHE_TAGS = {
   homeNews: "public-home-news",
@@ -36,7 +48,7 @@ function filtersCacheKey(filters: PublicArticleFilters): string {
   });
 }
 
-export const getCachedHomeNews = unstable_cache(
+export const getCachedHomeNews = cachedQuery(
   async () => getFilteredPublishedArticlesForListing({ contentType: "news" }, 6, 0),
   ["public-home-news"],
   {
@@ -45,7 +57,7 @@ export const getCachedHomeNews = unstable_cache(
   },
 );
 
-export const getCachedAllCategories = unstable_cache(
+export const getCachedAllCategories = cachedQuery(
   async () => getAllCategories(),
   ["public-all-categories"],
   {
@@ -54,7 +66,7 @@ export const getCachedAllCategories = unstable_cache(
   },
 );
 
-export const getCachedCategoriesWithPublishedCounts = unstable_cache(
+export const getCachedCategoriesWithPublishedCounts = cachedQuery(
   async () => getCategoriesWithPublishedCounts(),
   ["public-categories-with-counts"],
   {
@@ -63,7 +75,7 @@ export const getCachedCategoriesWithPublishedCounts = unstable_cache(
   },
 );
 
-export const getCachedPublishedArticleAuthors = unstable_cache(
+export const getCachedPublishedArticleAuthors = cachedQuery(
   async () => getPublishedArticleAuthors(),
   ["public-article-authors"],
   {
@@ -74,7 +86,7 @@ export const getCachedPublishedArticleAuthors = unstable_cache(
 
 export async function getCachedActualitesListing(filters: PublicArticleFilters) {
   const key = filtersCacheKey(filters);
-  return unstable_cache(
+  return cachedQuery(
     async () => {
       const [total, articles] = await Promise.all([
         countFilteredPublishedArticles(filters),

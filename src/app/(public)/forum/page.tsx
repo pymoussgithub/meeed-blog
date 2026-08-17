@@ -12,6 +12,9 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/forum",
 });
 
+/** Doit être un littéral (Next parse l’export `revalidate` statiquement). */
+export const revalidate = 60;
+
 export default async function ForumHomePage() {
   let rows: Awaited<ReturnType<typeof getForumHomeIndex>> = [];
   let dbError = false;
